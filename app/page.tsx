@@ -193,10 +193,6 @@ export default function App() {
                 {/* Staffed Courthouses */}
                 {staffedCourts.length > 0 && (
                   <div className="mb-6">
-                    <h2 className="text-xs uppercase tracking-wider text-zinc-500 mb-2 flex items-center gap-2">
-                      <Building2 size={14} />
-                      Staffed Courthouses ({staffedCourts.length})
-                    </h2>
                     <div className="space-y-2">
                       {staffedCourts.map(court => (
                         <CourtCard 
