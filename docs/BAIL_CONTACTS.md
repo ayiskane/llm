@@ -61,6 +61,8 @@
 
 ## Federal Crown (PPSC)
 
+> **Note:** Due to low volume of evening bail hearings for Federal Crown, the same contacts are used for **both daytime and evening** bail matters.
+
 ### Vancouver Coastal
 | Area | Email | Organization | Phone |
 |------|-------|--------------|-------|
