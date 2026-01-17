@@ -201,3 +201,34 @@ When parsing contact PDFs, look for these patterns:
 - `ReVOII` → Repeat Violent Offender Intervention Initiative team
 - `RABC` → Regional Administrative Bail Coordinator
 - `Office#####@gov.bc.ca` → Generic registry email (use court code to identify)
+
+---
+
+## R5 - North Crown Office Emails
+
+| Court | Crown Email | Phone |
+|-------|-------------|-------|
+| Prince George | PrGeorge.Crown@gov.bc.ca | 250-614-2601 |
+| Quesnel | Quesnel.Crown@gov.bc.ca | 250-992-4262 |
+| Vanderhoof | Vanderhoof.Crown@gov.bc.ca | 250-567-6835 |
+| Williams Lake | WilliamsLake.Crown@gov.bc.ca | 250-398-4473 |
+| Dawson Creek | DawsonCreek.CrownCounsel@gov.bc.ca | 250-784-2290 |
+| Fort Nelson | FortNelson.Crown@gov.bc.ca | 250-774-5984 |
+| Fort St. John | FtStJohn.Crown@gov.bc.ca | 250-787-3276 |
+| Prince Rupert | PrinceRupert.Crown@gov.bc.ca | 250-624-7440 |
+| Smithers | Smithers.Crown@gov.bc.ca | 250-847-7364 |
+| Terrace | Terrace.Crown@gov.bc.ca | 250-638-2131 |
+
+## R5 VB Contact Details
+
+**Main Email:** Region5.VirtualBail@gov.bc.ca
+
+**Email Subject Line:** `URGENT IC VB – (Reason)- VR1/VR2Location – Today's Date`
+
+**RABC:** Jacqueline Ettinger - Jacqueline.ettinger@gov.bc.ca / 250-570-0422
+
+| Time | Contact |
+|------|---------|
+| **Daytime** | Region5.VirtualBail@gov.bc.ca |
+| **Evening (1-9pm)** | Claire Ducluzeau: Claire.ducluzeau@gov.bc.ca |
+| **Weekends** | Terry Lawrence (Sat-Tue): Terence.lawrence@gov.bc.ca |
