@@ -4,8 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Court, CourtRegion, CourtContacts } from '@/types/database';
 import { 
-  Search, ChevronLeft, ChevronRight, 
-  Copy, Check, Phone, Mail, X, MoreHorizontal,
+  Search, ChevronLeft, ChevronRight,
+  Copy, Check, X,
   Building2, MapPin, Scale, Home, Users, Shield, Briefcase
 } from 'lucide-react';
 
@@ -25,7 +25,6 @@ export default function App() {
   const [selectedCourt, setSelectedCourt] = useState<Court | null>(null);
   const [hubCourt, setHubCourt] = useState<Court | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [showOptionsFor, setShowOptionsFor] = useState<string | null>(null);
   const [courtLevel, setCourtLevel] = useState<'provincial' | 'supreme'>('provincial');
 
   // Fetch courts from Supabase
@@ -95,8 +94,6 @@ export default function App() {
         onBack={() => { setSelectedCourt(null); setHubCourt(null); }}
         copiedField={copiedField}
         onCopy={copyToClipboard}
-        showOptionsFor={showOptionsFor}
-        setShowOptionsFor={setShowOptionsFor}
         courtLevel={courtLevel}
         setCourtLevel={setCourtLevel}
       />
@@ -369,8 +366,6 @@ function CourtDetailView({
   onBack, 
   copiedField, 
   onCopy,
-  showOptionsFor,
-  setShowOptionsFor,
   courtLevel,
   setCourtLevel
 }: { 
@@ -380,8 +375,6 @@ function CourtDetailView({
   onBack: () => void;
   copiedField: string | null;
   onCopy: (text: string, field: string) => void;
-  showOptionsFor: string | null;
-  setShowOptionsFor: (field: string | null) => void;
   courtLevel: 'provincial' | 'supreme';
   setCourtLevel: (level: 'provincial' | 'supreme') => void;
 }) {
@@ -435,37 +428,6 @@ function CourtDetailView({
           <p className="text-sm text-zinc-400 ml-9 mb-3">{court.address}</p>
         )}
 
-        {/* Quick Actions - use hub court info for circuit courts */}
-        <div className="flex gap-2 ml-9">
-          {(contactSource.phone || court.phone) && (
-            <a 
-              href={`tel:${contactSource.phone || court.phone}`}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-zinc-800 rounded-lg text-sm hover:bg-zinc-700"
-            >
-              <Phone size={14} />
-              Main
-            </a>
-          )}
-          {(contactSource.fax || court.fax) && (
-            <button 
-              onClick={() => onCopy((contactSource.fax || court.fax)!, 'fax')}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-zinc-800 rounded-lg text-sm hover:bg-zinc-700"
-            >
-              {copiedField === 'fax' ? <Check size={14} /> : <Copy size={14} />}
-              Fax
-            </button>
-          )}
-          {(contactSource.sheriff_phone || court.sheriff_phone) && (
-            <a 
-              href={`tel:${contactSource.sheriff_phone || court.sheriff_phone}`}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-zinc-800 rounded-lg text-sm hover:bg-zinc-700"
-            >
-              <Phone size={14} />
-              Sheriff
-            </a>
-          )}
-        </div>
-
         {/* Provincial/Supreme Toggle */}
         {showToggle && (
           <div className="flex mt-4 ml-9 p-1 bg-zinc-800 rounded-lg">
@@ -510,17 +472,31 @@ function CourtDetailView({
           </div>
         )}
 
+        {/* SC Fax Filing Box - Supreme Court Only */}
+        {courtLevel === 'supreme' && contacts && contacts.fax_filing && (
+          <button
+            onClick={() => onCopy(contacts.fax_filing!, 'fax_filing')}
+            className="w-full p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl flex items-center justify-between hover:bg-blue-500/20 active:bg-blue-500/30 transition-colors"
+          >
+            <div>
+              <p className="text-xs uppercase tracking-wider text-blue-400 mb-1">SC Fax Filing</p>
+              <p className="text-lg font-medium text-white">{contacts.fax_filing}</p>
+            </div>
+            <div className="text-blue-400">
+              {copiedField === 'fax_filing' ? <Check size={20} /> : <Copy size={20} />}
+            </div>
+          </button>
+        )}
+
         {/* Registry & JCM Section */}
         {contacts && (contacts.registry_email || contacts.criminal_registry_email || contacts.jcm_scheduling_email || contacts.scheduling_email) && (
           <ContactSection 
             title="Registry & JCM" 
             color="emerald"
             contacts={contacts}
-            fields={['registry_email', 'criminal_registry_email', 'jcm_scheduling_email', 'scheduling_email', 'fax_filing']}
+            fields={['registry_email', 'criminal_registry_email', 'jcm_scheduling_email', 'scheduling_email']}
             copiedField={copiedField}
             onCopy={onCopy}
-            showOptionsFor={showOptionsFor}
-            setShowOptionsFor={setShowOptionsFor}
           />
         )}
 
@@ -533,8 +509,6 @@ function CourtDetailView({
             fields={['crown_email']}
             copiedField={copiedField}
             onCopy={onCopy}
-            showOptionsFor={showOptionsFor}
-            setShowOptionsFor={setShowOptionsFor}
           />
         )}
 
@@ -547,8 +521,6 @@ function CourtDetailView({
             fields={['bail_crown_email', 'bail_jcm_email']}
             copiedField={copiedField}
             onCopy={onCopy}
-            showOptionsFor={showOptionsFor}
-            setShowOptionsFor={setShowOptionsFor}
           />
         )}
 
@@ -561,8 +533,6 @@ function CourtDetailView({
             fields={['transcripts_email', 'interpreter_email']}
             copiedField={copiedField}
             onCopy={onCopy}
-            showOptionsFor={showOptionsFor}
-            setShowOptionsFor={setShowOptionsFor}
           />
         )}
 
@@ -589,15 +559,6 @@ function CourtDetailView({
           Copied to clipboard!
         </div>
       )}
-
-      {/* Options popup */}
-      {showOptionsFor && (
-        <OptionsPopup 
-          field={showOptionsFor}
-          onClose={() => setShowOptionsFor(null)}
-          onCopy={onCopy}
-        />
-      )}
     </div>
   );
 }
@@ -609,9 +570,7 @@ function ContactSection({
   contacts,
   fields,
   copiedField,
-  onCopy,
-  showOptionsFor,
-  setShowOptionsFor
+  onCopy
 }: {
   title: string;
   color: 'emerald' | 'blue' | 'amber' | 'purple';
@@ -619,8 +578,6 @@ function ContactSection({
   fields: string[];
   copiedField: string | null;
   onCopy: (text: string, field: string) => void;
-  showOptionsFor: string | null;
-  setShowOptionsFor: (field: string | null) => void;
 }) {
   const colorClasses = {
     emerald: 'border-emerald-500/30 bg-emerald-500/5',
@@ -689,75 +646,3 @@ function ContactSection({
   );
 }
 
-// Options Popup Component
-function OptionsPopup({
-  field,
-  onClose,
-  onCopy
-}: {
-  field: string;
-  onClose: () => void;
-  onCopy: (text: string, field: string) => void;
-}) {
-  const value = field.split('-').slice(1).join('-'); // Extract value from fieldKey
-  const isEmail = value.includes('@');
-  const isPhone = /^\d{3}-\d{3}-\d{4}$/.test(value) || /^\(\d{3}\) \d{3}-\d{4}$/.test(value);
-
-  return (
-    <>
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/60 z-40"
-        onClick={onClose}
-      />
-      
-      {/* Popup */}
-      <div className="fixed bottom-0 left-0 right-0 bg-zinc-900 rounded-t-2xl z-50 p-4 pb-safe">
-        <div className="w-12 h-1 bg-zinc-700 rounded-full mx-auto mb-4" />
-        
-        <p className="text-sm text-zinc-400 text-center mb-4 truncate px-4">
-          {value}
-        </p>
-
-        <div className="space-y-2">
-          <button
-            onClick={() => { onCopy(value, field); onClose(); }}
-            className="w-full flex items-center gap-3 p-4 bg-zinc-800 rounded-xl hover:bg-zinc-700"
-          >
-            <Copy size={20} className="text-zinc-400" />
-            <span>Copy to Clipboard</span>
-          </button>
-
-          {isEmail && (
-            <a
-              href={`mailto:${value}`}
-              onClick={onClose}
-              className="w-full flex items-center gap-3 p-4 bg-zinc-800 rounded-xl hover:bg-zinc-700"
-            >
-              <Mail size={20} className="text-blue-400" />
-              <span>Send Email</span>
-            </a>
-          )}
-
-          {isPhone && (
-            <a
-              href={`tel:${value}`}
-              onClick={onClose}
-              className="w-full flex items-center gap-3 p-4 bg-zinc-800 rounded-xl hover:bg-zinc-700"
-            >
-              <Phone size={20} className="text-emerald-400" />
-              <span>Call</span>
-            </a>
-          )}
-        </div>
-
-        <button
-          onClick={onClose}
-          className="w-full mt-4 p-4 text-zinc-400 hover:text-white"
-        >
-          Cancel
-        </button>
-      </div>
-    </>
-  );
-}
