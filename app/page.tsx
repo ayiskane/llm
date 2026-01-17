@@ -864,8 +864,9 @@ function BailPage({
                   className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-zinc-800/50 text-left border-t border-zinc-800/30"
                 >
                   <div>
-                    <p className="text-xs text-zinc-500">RABC: {region.rabc.name}</p>
-                    <p className="text-sm text-white">{region.rabc.email}</p>
+                    <p className="text-xs text-zinc-500">RABC (Regional Administrative Bail Coordinator)</p>
+                    <p className="text-sm text-white">{region.rabc.name} • {region.rabc.phone}</p>
+                    <p className="text-xs text-zinc-400">{region.rabc.email}</p>
                   </div>
                   {copiedField === `${region.region}-rabc` ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} className="text-zinc-500" />}
                 </button>
