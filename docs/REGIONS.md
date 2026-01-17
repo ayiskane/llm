@@ -32,32 +32,38 @@
 ### VR4 (Interior - R4)
 - Kamloops
 
-### VR8 (Island - R1)
+### VR8 (South Island - R1)
+- Colwood / Western Communities
 - Duncan
-- Western Communities (Colwood)
 - Victoria
 
-### VR9 (Island - R1)
+### VR9 (North Island - R1)
 - Campbell River
 - Courtenay
 - Nanaimo
+- Port Alberni
 - Port Hardy
 - Powell River
-- Port Alberni
-
-## Regional Virtual Bail Crown Contacts
-
-| Region | Email |
-|--------|-------|
-| R1 (Island) | Region1.VirtualBail@gov.bc.ca |
-| R4 (Interior) | Region4.VirtualBail@gov.bc.ca |
-| R5 (North) | Region5.VirtualBail@gov.bc.ca |
-
-*Note: R2 (Vancouver Coastal) and R3 (Fraser) use **court-specific** VB contacts below.*
 
 ---
 
-## R2 - Vancouver Coastal VB Contacts
+## R1 - Vancouver Island VB Contacts (Regional)
+
+**Email Subject Line:** `URGENT IC Daytime Program – (Reason: ex. Prisoner Slate) – Name of Detachment – Today's Date`
+
+| Time | VB Email |
+|------|----------|
+| **Daytime** | Region1.VirtualBail@gov.bc.ca |
+| **Evening** | VictoriaCrown.Public@gov.bc.ca |
+
+*Note: Evening bail team works remotely – No access to fax machines.*
+
+**Regional Administrative Bail Coordinator (RABC):**
+- Chloe Rathjen: chloe.rathjen@gov.bc.ca / 250-940-8522
+
+---
+
+## R2 - Vancouver Coastal VB Contacts (Court-Specific)
 
 **Email Subject Line:** `URGENT IC – Accused Name/File No. – Today's date`
 
@@ -73,7 +79,7 @@
 
 ---
 
-## R3 - Fraser VB Contacts
+## R3 - Fraser VB Contacts (Court-Specific)
 
 **Email Subject Line:** `URGENT IC Daytime Program: (reason)-Detachment Name – Today's date`
 
@@ -85,6 +91,22 @@
 | Port Coquitlam | Poco.VirtualBail@gov.bc.ca |
 | Surrey | Surrey.VirtualBail@gov.bc.ca |
 | **Region 3 ReVOII Team** | BCPSReVOII3@gov.bc.ca |
+
+---
+
+## R4 - Interior VB Contacts (Regional)
+
+| Time | VB Email |
+|------|----------|
+| **Daytime** | Region4.VirtualBail@gov.bc.ca |
+
+---
+
+## R5 - North VB Contacts (Regional)
+
+| Time | VB Email |
+|------|----------|
+| **Daytime** | Region5.VirtualBail@gov.bc.ca |
 
 ---
 
@@ -109,11 +131,14 @@ When parsing contact PDFs, look for these patterns:
 - `R3_*.pdf` or `Fraser*.pdf` → Fraser
 - `R4_*.pdf` or `Interior*.pdf` → Interior
 - `R5_*.pdf` or `North*.pdf` or `Region 5*.pdf` → North
+- `*DAYTIME*.pdf` → Daytime VB contacts
+- `*EVENING*.pdf` → Evening VB contacts
 
 **By content:**
 - `VR#` in label → Virtual Room assignment
 - `VB E-Mail Proxy:` → Virtual Bail contact email
 - `ReVOII` → Repeat Violent Offender Intervention Initiative team
+- `RABC` → Regional Administrative Bail Coordinator
 - `*Crown*.pdf` → Crown counsel contacts
 - `*Bail*.pdf` → Bail-specific contacts
 - `*Sheriff*.pdf` → Sheriff/custody contacts
