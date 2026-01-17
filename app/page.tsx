@@ -472,29 +472,17 @@ function CourtDetailView({
           </div>
         )}
 
-        {/* SC Fax Filing Box - Supreme Court Only */}
-        {courtLevel === 'supreme' && contacts && contacts.fax_filing && (
-          <button
-            onClick={() => onCopy(contacts.fax_filing!, 'fax_filing')}
-            className="w-full p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl flex items-center justify-between hover:bg-blue-500/20 active:bg-blue-500/30 transition-colors"
-          >
-            <div>
-              <p className="text-xs uppercase tracking-wider text-blue-400 mb-1">SC Fax Filing</p>
-              <p className="text-lg font-medium text-white">{contacts.fax_filing}</p>
-            </div>
-            <div className="text-blue-400">
-              {copiedField === 'fax_filing' ? <Check size={20} /> : <Copy size={20} />}
-            </div>
-          </button>
-        )}
-
-        {/* Registry & JCM Section */}
-        {contacts && (contacts.registry_email || contacts.criminal_registry_email || contacts.jcm_scheduling_email || contacts.scheduling_email) && (
+        {/* Registry & JCM/Scheduling Section */}
+        {contacts && (contacts.registry_email || contacts.criminal_registry_email || contacts.jcm_scheduling_email || contacts.scheduling_email || contacts.fax_filing) && (
           <ContactSection 
-            title="Registry & JCM" 
+            title={courtLevel === 'provincial' ? "Registry & JCM" : "Registry & Scheduling"}
             color="emerald"
             contacts={contacts}
-            fields={['registry_email', 'criminal_registry_email', 'jcm_scheduling_email', 'scheduling_email']}
+            fields={courtLevel === 'provincial' 
+              ? ['registry_email', 'criminal_registry_email', 'jcm_scheduling_email'] 
+              : ['registry_email', 'criminal_registry_email', 'scheduling_email']
+            }
+            faxFiling={courtLevel === 'supreme' ? contacts.fax_filing : undefined}
             copiedField={copiedField}
             onCopy={onCopy}
           />
@@ -569,6 +557,7 @@ function ContactSection({
   color,
   contacts,
   fields,
+  faxFiling,
   copiedField,
   onCopy
 }: {
@@ -576,6 +565,7 @@ function ContactSection({
   color: 'emerald' | 'blue' | 'amber' | 'purple';
   contacts: CourtContacts;
   fields: string[];
+  faxFiling?: string;
   copiedField: string | null;
   onCopy: (text: string, field: string) => void;
 }) {
@@ -608,7 +598,7 @@ function ContactSection({
 
   const activeFields = fields.filter(f => contacts[f as keyof CourtContacts]);
 
-  if (activeFields.length === 0) return null;
+  if (activeFields.length === 0 && !faxFiling) return null;
 
   return (
     <div className={`rounded-xl border ${colorClasses[color]}`}>
@@ -642,6 +632,28 @@ function ContactSection({
           );
         })}
       </div>
+      
+      {/* Fax Filing Sub-section */}
+      {faxFiling && (
+        <>
+          <div className="px-3 py-2 border-t border-zinc-800/50">
+            <h4 className="text-xs uppercase tracking-wider text-zinc-500">Fax Filing</h4>
+          </div>
+          <button
+            onClick={() => onCopy(faxFiling, 'fax_filing')}
+            className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-zinc-800/50 active:bg-zinc-800 transition-colors text-left"
+          >
+            <p className="text-sm text-white">{faxFiling}</p>
+            <div className="flex items-center">
+              {copiedField === 'fax_filing' ? (
+                <Check size={16} className="text-emerald-500" />
+              ) : (
+                <Copy size={16} className="text-zinc-500" />
+              )}
+            </div>
+          </button>
+        </>
+      )}
     </div>
   );
 }
