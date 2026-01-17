@@ -820,14 +820,18 @@ function BailPage({
                 </div>
               )}
               
-              {/* Daytime */}
+              {/* Daytime / All Hours */}
               <button
                 onClick={() => onCopy(region.daytime, `${region.region}-daytime`)}
                 className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-zinc-800/50 text-left"
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded">☀️ DAY</span>
+                    {region.afterHours ? (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded">☀️ DAY</span>
+                    ) : (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">☀️🌙 ALL HOURS</span>
+                    )}
                     <p className="text-xs text-zinc-500">{region.daytimeNote}</p>
                   </div>
                   <p className="text-sm text-white mt-0.5">{region.daytime}</p>
@@ -966,8 +970,11 @@ function BailPage({
       {(selectedRegion === 'all' || selectedRegion === 'federal') && (
         <div className="space-y-3">
           <div className="px-1">
-            <p className="text-xs font-medium text-purple-400">Federal Crown (PPSC)</p>
-            <p className="text-[10px] text-zinc-600">For federal offenses (drugs, etc.)</p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs font-medium text-purple-400">Federal Crown (PPSC)</p>
+              <span className="text-[10px] px-1.5 py-0.5 bg-purple-500/20 text-purple-400 rounded">☀️🌙 ALL HOURS</span>
+            </div>
+            <p className="text-[10px] text-zinc-600">For federal offenses (CDSA, firearms, etc.) • Same contacts for daytime & evening</p>
           </div>
           {bailContacts.federal.map(region => (
             <div key={region.region} className="rounded-xl border border-purple-500/30 bg-purple-500/5 overflow-hidden">
