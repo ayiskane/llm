@@ -36,6 +36,7 @@ export interface CourtContacts {
   transcripts_email?: string;
   interpreter_email?: string;
   fax_filing?: string;
+  vb_email_proxy?: string;  // Virtual Bail Email Proxy
 }
 
 export interface Court {
