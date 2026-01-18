@@ -277,7 +277,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="flex-shrink-0 flex border-t border-zinc-800 bg-zinc-900 pb-safe">
+      <nav className="flex-shrink-0 flex border-t border-zinc-800 bg-zinc-900 pb-1">
         <NavButton icon={Home} label="Home" active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
         <NavButton icon={Building2} label="Courts" active={activeTab === 'courts'} onClick={() => setActiveTab('courts')} />
         <NavButton icon={Gavel} label="Bail" active={activeTab === 'bail'} onClick={() => setActiveTab('bail')} />
@@ -305,7 +305,7 @@ function NavButton({ icon: Icon, label, active, onClick }: {
   return (
     <button
       onClick={onClick}
-      className={`flex-1 flex flex-col items-center py-3 ${active ? 'text-white' : 'text-zinc-500'}`}
+      className={`flex-1 flex flex-col items-center py-2 ${active ? 'text-white' : 'text-zinc-500'}`}
     >
       <Icon size={20} />
       <span className="text-xs mt-1">{label}</span>
@@ -1047,6 +1047,7 @@ function BailPage({
     </div>
   );
 }
+
 
 
 
