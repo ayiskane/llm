@@ -404,7 +404,7 @@ function CourtDetailView({
       <div className="flex-shrink-0 px-4 pt-safe">
         <button 
           onClick={onBack} 
-          className="flex items-center gap-1 py-3 text-zinc-400 hover:text-white transition-colors"
+          className="flex items-center gap-1 py-1.5 text-zinc-400 hover:text-white transition-colors"
         >
           <ChevronLeft size={20} />
           <span className="text-sm">Courts</span>
@@ -412,12 +412,12 @@ function CourtDetailView({
       </div>
 
       {/* Header */}
-      <header className="flex-shrink-0 px-4 pb-4">
+      <header className="flex-shrink-0 px-4 pb-3">
         {/* Title */}
         <h1 className="text-xl font-bold leading-tight">{court.name}</h1>
         
         {/* Badges row */}
-        <div className="flex items-center gap-2 mt-2 flex-wrap">
+        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
           {court.access_code && (
             <button 
               onClick={() => onCopy(court.access_code!, 'access_code')}
@@ -442,7 +442,7 @@ function CourtDetailView({
         {court.address && (
           <button
             onClick={() => openInMaps(court.address!)}
-            className="flex items-center gap-2 mt-3 text-left group"
+            className="flex items-center gap-2 mt-2 text-left group"
           >
             <MapPin size={14} className="text-zinc-500 flex-shrink-0 group-hover:text-blue-400 transition-colors" />
             <span className="text-sm text-zinc-400 group-hover:text-blue-400 transition-colors underline decoration-zinc-600 group-hover:decoration-blue-400">
@@ -453,7 +453,7 @@ function CourtDetailView({
 
         {/* Provincial/Supreme Toggle */}
         {showToggle && (
-          <div className="flex mt-4 p-1 bg-zinc-800 rounded-lg">
+          <div className="flex mt-3 p-1 bg-zinc-800 rounded-lg">
             <button
               onClick={() => setCourtLevel('provincial')}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
@@ -1035,5 +1035,6 @@ function BailPage({
     </div>
   );
 }
+
 
 
