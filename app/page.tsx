@@ -975,25 +975,21 @@ function BailPage({
 
           {/* Contact Rows - Each fully tappable */}
           <div className="divide-y divide-zinc-800/50">
-            {/* Virtual Bail Email - Primary */}
-            {(court || region.daytime) && (
+            {/* For court-specific regions (R2, R3), show the court email */}
+            {court && (
               <button 
-                onClick={() => onCopy(court?.email || region.daytime!, 'primary-email')}
+                onClick={() => onCopy(court.email, 'court-email')}
                 className="w-full p-4 flex items-center gap-4 hover:bg-white/5 active:bg-white/10 transition text-left"
               >
                 <div className={`w-10 h-10 ${colors.bg} rounded-xl flex items-center justify-center flex-shrink-0`}>
                   <Briefcase size={20} className={colors.text} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-zinc-400 text-xs mb-0.5">
-                    {region.allHours ? 'Virtual Bail (All Hours)' : isDaytime() ? 'Virtual Bail (Daytime)' : 'Virtual Bail (After Hours)'}
-                  </p>
-                  <p className="text-white font-medium truncate">
-                    {court?.email || (region.allHours ? region.daytime : (isDaytime() ? region.daytime : region.afterHours))}
-                  </p>
+                  <p className="text-zinc-400 text-xs mb-0.5">Virtual Bail - {court.court}</p>
+                  <p className="text-white font-medium truncate">{court.email}</p>
                 </div>
                 <div className="w-10 h-10 bg-zinc-800 hover:bg-zinc-700 rounded-xl flex items-center justify-center flex-shrink-0">
-                  {copiedField === 'primary-email' ? (
+                  {copiedField === 'court-email' ? (
                     <Check size={20} className="text-emerald-500" />
                   ) : (
                     <Copy size={20} className="text-zinc-400" />
@@ -1002,8 +998,40 @@ function BailPage({
               </button>
             )}
 
-            {/* After Hours Email (if not all hours and showing daytime) */}
-            {!region.allHours && region.afterHours && isDaytime() && (
+            {/* For regional contacts - Daytime Email (R1, R4, R5) */}
+            {!court && region.daytime && (
+              <button 
+                onClick={() => onCopy(region.daytime!, 'daytime-email')}
+                className="w-full p-4 flex items-center gap-4 hover:bg-white/5 active:bg-white/10 transition text-left"
+              >
+                <div className={`w-10 h-10 ${region.allHours ? 'bg-green-500/20' : 'bg-yellow-500/20'} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                  <Briefcase size={20} className={region.allHours ? 'text-green-400' : 'text-yellow-400'} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className="text-zinc-400 text-xs">
+                      {region.allHours ? 'Virtual Bail (All Hours)' : 'Daytime (8am-5pm weekdays)'}
+                    </p>
+                    {region.allHours ? (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">☀️🌙</span>
+                    ) : (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded">☀️</span>
+                    )}
+                  </div>
+                  <p className="text-white font-medium truncate">{region.daytime}</p>
+                </div>
+                <div className="w-10 h-10 bg-zinc-800 hover:bg-zinc-700 rounded-xl flex items-center justify-center flex-shrink-0">
+                  {copiedField === 'daytime-email' ? (
+                    <Check size={20} className="text-emerald-500" />
+                  ) : (
+                    <Copy size={20} className="text-zinc-400" />
+                  )}
+                </div>
+              </button>
+            )}
+
+            {/* After Hours Email - Always show if available (not for all-hours regions) */}
+            {!court && !region.allHours && region.afterHours && (
               <button 
                 onClick={() => onCopy(region.afterHours!, 'afterhours-email')}
                 className="w-full p-4 flex items-center gap-4 hover:bg-white/5 active:bg-white/10 transition text-left"
@@ -1012,8 +1040,12 @@ function BailPage({
                   <Briefcase size={20} className="text-indigo-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-zinc-400 text-xs mb-0.5">After Hours / Weekends</p>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className="text-zinc-400 text-xs">After Hours / Weekends / Holidays</p>
+                    <span className="text-[10px] px-1.5 py-0.5 bg-indigo-500/20 text-indigo-400 rounded">🌙</span>
+                  </div>
                   <p className="text-white font-medium truncate">{region.afterHours}</p>
+                  <p className="text-zinc-500 text-xs mt-0.5">Remote - no fax available</p>
                 </div>
                 <div className="w-10 h-10 bg-zinc-800 hover:bg-zinc-700 rounded-xl flex items-center justify-center flex-shrink-0">
                   {copiedField === 'afterhours-email' ? (
@@ -1203,44 +1235,6 @@ function BailPage({
             </button>
           );
         })}
-      </div>
-
-      {/* Quick Actions */}
-      <div>
-        <p className="text-xs font-semibold tracking-wider text-zinc-500 uppercase mb-3">Quick Access</p>
-        <div className="flex gap-2">
-          <button 
-            onClick={() => onCopy(bailContacts.federal[0].areas[0].email, 'quick-federal')}
-            className="flex-1 p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl text-center hover:border-zinc-700 transition-colors"
-          >
-            <span className="text-xl mb-2 block">🏛️</span>
-            <span className="text-xs text-zinc-400">Federal Crown</span>
-          </button>
-          <button 
-            onClick={() => onCopy(bailContacts.sheriffs[0].email, 'quick-sheriff')}
-            className="flex-1 p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl text-center hover:border-zinc-700 transition-colors"
-          >
-            <span className="text-xl mb-2 block">🛡️</span>
-            <span className="text-xs text-zinc-400">Sheriff</span>
-          </button>
-          <button 
-            onClick={() => onCopy(bailContacts.revoi[0].email, 'quick-revoi')}
-            className="flex-1 p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl text-center hover:border-zinc-700 transition-colors"
-          >
-            <span className="text-xl mb-2 block">📋</span>
-            <span className="text-xs text-zinc-400">ReVOII</span>
-          </button>
-          <button 
-            onClick={() => {
-              const rabc = bailContacts.regional.find(r => r.rabc)?.rabc;
-              if (rabc) onCopy(rabc.phone, 'quick-rabc');
-            }}
-            className="flex-1 p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl text-center hover:border-zinc-700 transition-colors"
-          >
-            <span className="text-xl mb-2 block">📞</span>
-            <span className="text-xs text-zinc-400">RABC</span>
-          </button>
-        </div>
       </div>
     </div>
   );
