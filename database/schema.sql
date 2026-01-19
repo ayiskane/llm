@@ -312,3 +312,22 @@ FROM indigenous_justice_centres;
 -- ALTER TABLE courts ENABLE ROW LEVEL SECURITY;
 -- CREATE POLICY "Public read access" ON courts FOR SELECT USING (true);
 
+
+-- ============================================
+-- DUTY COUNSEL LAWYERS
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS duty_counsel_lawyers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    labc_id VARCHAR(20),
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    location VARCHAR(255),
+    region VARCHAR(100),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_dc_lawyers_name ON duty_counsel_lawyers(name);
+CREATE INDEX idx_dc_lawyers_region ON duty_counsel_lawyers(region);
+CREATE INDEX idx_dc_lawyers_location ON duty_counsel_lawyers(location);
