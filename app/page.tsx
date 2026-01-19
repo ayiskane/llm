@@ -1,97 +1,58 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useState, useCallback, memo, useMemo, useEffect } from 'react';
 import { Court, CourtRegion, CourtContacts } from '@/types/database';
 import { 
-  Search, ChevronLeft, ChevronRight,
-  Copy, Check, X,
+  ChevronLeft, ChevronRight, Check, Copy,
   Building2, MapPin, Scale, Home, Users, Shield, Briefcase, Gavel
 } from 'lucide-react';
+import { 
+  NavButton, CourtCard, ContactSection, Toast, SearchInput, RegionFilter 
+} from './components/ui';
+import { 
+  useClipboard, useCourts, useFilteredCourts, useDaytime, useHubCourt 
+} from '@/lib/hooks';
+import { BAIL_CONTACTS, BAIL_COLOR_CLASSES } from '@/lib/constants/bail-contacts';
 
-// Regions for filtering
+// Constants
 const REGIONS: CourtRegion[] = ['Fraser', 'Interior', 'North', 'Vancouver Island', 'Vancouver Coastal'];
+const REGION_CODES: Record<string, string> = {
+  'Vancouver Island': 'R1',
+  'Vancouver Coastal': 'R2',
+  'Fraser': 'R3',
+  'Interior': 'R4',
+  'North': 'R5'
+};
 
-// Navigation tabs
 type NavTab = 'home' | 'courts' | 'bail' | 'police' | 'custody' | 'services';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('courts');
-  const [courts, setCourts] = useState<Court[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<CourtRegion | 'All'>('All');
   const [hideCircuit, setHideCircuit] = useState(false);
   const [selectedCourt, setSelectedCourt] = useState<Court | null>(null);
-  const [hubCourt, setHubCourt] = useState<Court | null>(null);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [courtLevel, setCourtLevel] = useState<'provincial' | 'supreme'>('provincial');
 
-  // Fetch courts from Supabase
-  useEffect(() => {
-    async function fetchCourts() {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('courts')
-        .select('*')
-        .order('name');
-      
-      if (error) {
-        console.error('Error fetching courts:', error);
-      } else {
-        setCourts(data || []);
-      }
-      setLoading(false);
-    }
-    fetchCourts();
-  }, []);
+  const { courts, loading } = useCourts();
+  const { copiedField, copyToClipboard } = useClipboard();
+  const { filteredCourts, staffedCourts, circuitCourts } = useFilteredCourts(
+    courts, searchQuery, selectedRegion, hideCircuit
+  );
+  const hubCourt = useHubCourt(selectedCourt, courts);
 
-  // Filter courts based on search, region, and circuit filter
-  const filteredCourts = useMemo(() => {
-    return courts.filter(court => {
-      const matchesSearch = searchQuery === '' || 
-        court.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        court.city?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesRegion = selectedRegion === 'All' || court.region === selectedRegion;
-      const matchesCircuit = !hideCircuit || !court.is_circuit;
-      return matchesSearch && matchesRegion && matchesCircuit;
-    });
-  }, [courts, searchQuery, selectedRegion, hideCircuit]);
+  const handleSelectCourt = useCallback((court: Court) => setSelectedCourt(court), []);
+  const handleBack = useCallback(() => setSelectedCourt(null), []);
+  const handleClearSearch = useCallback(() => setSearchQuery(''), []);
+  const handleRegionSelect = useCallback((region: string) => setSelectedRegion(region as CourtRegion | 'All'), []);
+  const handleToggleCircuit = useCallback(() => setHideCircuit(prev => !prev), []);
 
-  // Separate staffed and circuit courts
-  const staffedCourts = filteredCourts.filter(c => !c.is_circuit);
-  const circuitCourts = filteredCourts.filter(c => c.is_circuit);
-
-  // Copy to clipboard
-  const copyToClipboard = (text: string, field: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 2000);
-  };
-
-  // Select a court and fetch hub court if it's a circuit court
-  const selectCourt = (court: Court) => {
-    setSelectedCourt(court);
-    
-    if (court.is_circuit && court.hub_court_name) {
-      // Find the hub court from loaded courts
-      const hub = courts.find(c => 
-        c.name.toLowerCase().includes(court.hub_court_name!.toLowerCase().replace(' law courts', '').replace(' provincial court', ''))
-      );
-      setHubCourt(hub || null);
-    } else {
-      setHubCourt(null);
-    }
-  };
-
-  // If a court is selected, show the detail view
   if (selectedCourt) {
     return (
-      <CourtDetailView 
+      <CourtDetailView
         court={selectedCourt}
         hubCourt={hubCourt}
-        allCourts={courts}
-        onBack={() => { setSelectedCourt(null); setHubCourt(null); }}
+        onBack={handleBack}
         copiedField={copiedField}
         onCopy={copyToClipboard}
         courtLevel={courtLevel}
@@ -100,183 +61,28 @@ export default function App() {
     );
   }
 
-  // Main app with tabs
   return (
     <div className="h-screen flex flex-col bg-zinc-950 text-white overflow-hidden">
-      {/* Header */}
       <header className="flex-shrink-0 px-4 pt-2 pb-3 bg-gradient-to-b from-zinc-900 to-zinc-950">
         <h1 className="text-xl font-bold mb-3">BC Legal Directory</h1>
-        
-        {/* Search - only show on courts tab */}
         {activeTab === 'courts' && (
           <>
-            <div className="relative">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-              <input
-                type="text"
-                placeholder="Search courts..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
-              />
-              {searchQuery && (
-                <button 
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500"
-                >
-                  <X size={18} />
-                </button>
-              )}
-            </div>
-
-            {/* Region Filter */}
-            <div className="flex gap-2 mt-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-              <button
-                onClick={() => setSelectedRegion('All')}
-                className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
-                  selectedRegion === 'All' 
-                    ? 'bg-white text-black' 
-                    : 'bg-zinc-800 text-zinc-400'
-                }`}
-              >
-                All
-              </button>
-              {REGIONS.map(region => (
-                <button
-                  key={region}
-                  onClick={() => setSelectedRegion(region)}
-                  className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
-                    selectedRegion === region 
-                      ? 'bg-white text-black' 
-                      : 'bg-zinc-800 text-zinc-400'
-                  }`}
-                >
-                  {region}
-                </button>
-              ))}
-              {/* Circuit Court Toggle */}
-              <button
-                onClick={() => setHideCircuit(!hideCircuit)}
-                className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors flex items-center gap-1.5 ${
-                  hideCircuit 
-                    ? 'bg-amber-500 text-black' 
-                    : 'bg-zinc-800 text-zinc-400'
-                }`}
-              >
-                <MapPin size={12} />
-                {hideCircuit ? 'Circuit Hidden' : 'Hide Circuit'}
-              </button>
+            <SearchInput value={searchQuery} onChange={setSearchQuery} onClear={handleClearSearch} placeholder="Search courts..." />
+            <div className="mt-3">
+              <RegionFilter regions={REGIONS} selectedRegion={selectedRegion} onSelect={handleRegionSelect} hideCircuit={hideCircuit} onToggleCircuit={handleToggleCircuit} />
             </div>
           </>
         )}
       </header>
 
-      {/* Content */}
       <main className="flex-1 overflow-y-auto min-h-0 px-4 pb-4">
-        {activeTab === 'courts' && (
-          <>
-            {loading ? (
-              <div className="flex items-center justify-center h-32">
-                <div className="text-zinc-500">Loading courts...</div>
-              </div>
-            ) : (
-              <>
-                {/* Stats */}
-                <div className="text-sm text-zinc-500 mb-4">
-                  {filteredCourts.length} courts found
-                  {selectedRegion !== 'All' && ` in ${selectedRegion}`}
-                </div>
-
-                {/* Staffed Courthouses */}
-                {staffedCourts.length > 0 && (
-                  <div className="mb-6">
-                    <div className="space-y-2">
-                      {staffedCourts.map(court => (
-                        <CourtCard 
-                          key={court.id} 
-                          court={court} 
-                          onClick={() => selectCourt(court)} 
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Circuit Courts */}
-                {circuitCourts.length > 0 && (
-                  <div>
-                    <h2 className="text-xs uppercase tracking-wider text-zinc-500 mb-2 flex items-center gap-2">
-                      <MapPin size={14} />
-                      Circuit Courts ({circuitCourts.length})
-                    </h2>
-                    <div className="space-y-2">
-                      {circuitCourts.map(court => (
-                        <CourtCard 
-                          key={court.id} 
-                          court={court} 
-                          onClick={() => selectCourt(court)} 
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {filteredCourts.length === 0 && (
-                  <div className="text-center text-zinc-500 py-8">
-                    No courts found matching your search.
-                  </div>
-                )}
-              </>
-            )}
-          </>
-        )}
-
-        {activeTab === 'home' && (
-          <div className="text-center py-12">
-            <Scale size={48} className="mx-auto text-zinc-600 mb-4" />
-            <h2 className="text-xl font-semibold mb-2">BC Legal Directory</h2>
-            <p className="text-zinc-400 mb-6">Quick access to BC courts, bail contacts, police cells, and custody facilities.</p>
-            <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => setActiveTab('courts')} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700">
-                <Building2 size={24} className="mx-auto mb-2 text-emerald-500" />
-                <span className="text-sm">Courts</span>
-              </button>
-              <button onClick={() => setActiveTab('bail')} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700">
-                <Gavel size={24} className="mx-auto mb-2 text-red-500" />
-                <span className="text-sm">Bail</span>
-              </button>
-              <button onClick={() => setActiveTab('police')} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700">
-                <Shield size={24} className="mx-auto mb-2 text-blue-500" />
-                <span className="text-sm">Police</span>
-              </button>
-              <button onClick={() => setActiveTab('custody')} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700">
-                <Users size={24} className="mx-auto mb-2 text-amber-500" />
-                <span className="text-sm">Custody</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'police' && (
-          <div className="text-center py-12 text-zinc-500">
-            <Shield size={48} className="mx-auto mb-4 opacity-50" />
-            <p>Police & RCMP contacts coming soon</p>
-          </div>
-        )}
-
-        {activeTab === 'bail' && (
-          <BailPage copiedField={copiedField} onCopy={copyToClipboard} />
-        )}
-
-        {activeTab === 'custody' && (
-          <div className="text-center py-12 text-zinc-500">
-            <Users size={48} className="mx-auto mb-4 opacity-50" />
-            <p>Correctional facilities coming soon</p>
-          </div>
-        )}
+        {activeTab === 'courts' && <CourtsTab loading={loading} filteredCourts={filteredCourts} staffedCourts={staffedCourts} circuitCourts={circuitCourts} selectedRegion={selectedRegion} onSelectCourt={handleSelectCourt} />}
+        {activeTab === 'home' && <HomeTab onNavigate={setActiveTab} />}
+        {activeTab === 'bail' && <BailPage copiedField={copiedField} onCopy={copyToClipboard} />}
+        {activeTab === 'police' && <PlaceholderTab icon={Shield} message="Police & RCMP contacts coming soon" />}
+        {activeTab === 'custody' && <PlaceholderTab icon={Users} message="Correctional facilities coming soon" />}
       </main>
 
-      {/* Bottom Navigation */}
       <nav className="flex-shrink-0 flex border-t border-zinc-800 bg-zinc-900 pb-1">
         <NavButton icon={Home} label="Home" active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
         <NavButton icon={Building2} label="Courts" active={activeTab === 'courts'} onClick={() => setActiveTab('courts')} />
@@ -284,980 +90,198 @@ export default function App() {
         <NavButton icon={Shield} label="Police" active={activeTab === 'police'} onClick={() => setActiveTab('police')} />
         <NavButton icon={Users} label="Custody" active={activeTab === 'custody'} onClick={() => setActiveTab('custody')} />
       </nav>
-
-      {/* Toast notification */}
-      {copiedField && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2 bg-emerald-600 text-white rounded-full text-sm shadow-lg z-50">
-          Copied to clipboard!
-        </div>
-      )}
+      <Toast message="Copied to clipboard!" visible={!!copiedField} position="bottom-nav" />
     </div>
   );
 }
 
-// Navigation Button Component
-function NavButton({ icon: Icon, label, active, onClick }: { 
-  icon: typeof Home; 
-  label: string; 
-  active: boolean; 
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex-1 flex flex-col items-center py-2 ${active ? 'text-white' : 'text-zinc-500'}`}
-    >
-      <Icon size={20} />
-      <span className="text-xs mt-1">{label}</span>
-    </button>
-  );
+interface CourtsTabProps {
+  loading: boolean;
+  filteredCourts: Court[];
+  staffedCourts: Court[];
+  circuitCourts: Court[];
+  selectedRegion: CourtRegion | 'All';
+  onSelectCourt: (court: Court) => void;
 }
 
-// Court Card Component
-function CourtCard({ court, onClick }: { court: Court; onClick: () => void }) {
+const CourtsTab = memo(function CourtsTab({ loading, filteredCourts, staffedCourts, circuitCourts, selectedRegion, onSelectCourt }: CourtsTabProps) {
+  if (loading) return <div className="flex items-center justify-center h-32"><div className="text-zinc-500">Loading courts...</div></div>;
   return (
-    <button
-      onClick={onClick}
-      className="w-full text-left p-3 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-colors"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-white truncate">{court.name}</h3>
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
-            {court.access_code && (
-              <span className="text-xs px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded">
-                {court.access_code}
-              </span>
-            )}
-            <span className="text-xs text-zinc-500">{court.region}</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-1 flex-shrink-0">
-          {court.has_provincial && (
-            <span className="text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded">
-              Prov
-            </span>
-          )}
-          {court.has_supreme && (
-            <span className="text-[10px] px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded">
-              Sup
-            </span>
-          )}
-          <ChevronRight size={16} className="text-zinc-600 ml-1" />
-        </div>
+    <>
+      <div className="text-sm text-zinc-500 mb-4">{filteredCourts.length} courts found{selectedRegion !== 'All' && ` in ${selectedRegion}`}</div>
+      {staffedCourts.length > 0 && <div className="mb-6"><div className="space-y-2">{staffedCourts.map(court => <CourtCard key={court.id} court={court} onClick={() => onSelectCourt(court)} />)}</div></div>}
+      {circuitCourts.length > 0 && <div><h2 className="text-xs uppercase tracking-wider text-zinc-500 mb-2 flex items-center gap-2"><MapPin size={14} />Circuit Courts ({circuitCourts.length})</h2><div className="space-y-2">{circuitCourts.map(court => <CourtCard key={court.id} court={court} onClick={() => onSelectCourt(court)} />)}</div></div>}
+      {filteredCourts.length === 0 && <div className="text-center text-zinc-500 py-8">No courts found matching your search.</div>}
+    </>
+  );
+});
+
+const HomeTab = memo(function HomeTab({ onNavigate }: { onNavigate: (tab: NavTab) => void }) {
+  return (
+    <div className="text-center py-12">
+      <Scale size={48} className="mx-auto text-zinc-600 mb-4" />
+      <h2 className="text-xl font-semibold mb-2">BC Legal Directory</h2>
+      <p className="text-zinc-400 mb-6">Quick access to BC courts, bail contacts, police cells, and custody facilities.</p>
+      <div className="grid grid-cols-2 gap-3">
+        <button onClick={() => onNavigate('courts')} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700"><Building2 size={24} className="mx-auto mb-2 text-emerald-500" /><span className="text-sm">Courts</span></button>
+        <button onClick={() => onNavigate('bail')} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700"><Gavel size={24} className="mx-auto mb-2 text-red-500" /><span className="text-sm">Bail</span></button>
+        <button onClick={() => onNavigate('police')} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700"><Shield size={24} className="mx-auto mb-2 text-blue-500" /><span className="text-sm">Police</span></button>
+        <button onClick={() => onNavigate('custody')} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700"><Users size={24} className="mx-auto mb-2 text-amber-500" /><span className="text-sm">Custody</span></button>
       </div>
-      {court.is_circuit && court.hub_court_name && (
-        <p className="text-xs text-zinc-500 mt-1">
-          Contact: {court.hub_court_name}
-        </p>
-      )}
-    </button>
+    </div>
   );
-}
+});
 
-// Court Detail View Component - Updated
-function CourtDetailView({ 
-  court, 
-  hubCourt,
-  allCourts,
-  onBack, 
-  copiedField, 
-  onCopy,
-  courtLevel,
-  setCourtLevel
-}: { 
+const PlaceholderTab = memo(function PlaceholderTab({ icon: Icon, message }: { icon: React.ComponentType<{ size?: number; className?: string }>; message: string }) {
+  return <div className="text-center py-12 text-zinc-500"><Icon size={48} className="mx-auto mb-4 opacity-50" /><p>{message}</p></div>;
+});
+
+interface CourtDetailViewProps {
   court: Court;
   hubCourt: Court | null;
-  allCourts: Court[];
   onBack: () => void;
   copiedField: string | null;
   onCopy: (text: string, field: string) => void;
   courtLevel: 'provincial' | 'supreme';
   setCourtLevel: (level: 'provincial' | 'supreme') => void;
-}) {
-  // For circuit courts, use the hub court's contacts
+}
+
+const CourtDetailView = memo(function CourtDetailView({ court, hubCourt, onBack, copiedField, onCopy, courtLevel, setCourtLevel }: CourtDetailViewProps) {
   const contactSource = court.is_circuit && hubCourt ? hubCourt : court;
   const showToggle = contactSource.has_provincial && contactSource.has_supreme;
-  const contacts: CourtContacts | null = courtLevel === 'provincial' 
-    ? contactSource.provincial_contacts 
-    : contactSource.supreme_contacts;
+  const contacts: CourtContacts | null = courtLevel === 'provincial' ? contactSource.provincial_contacts : contactSource.supreme_contacts;
 
-  // Reset to appropriate court level when court changes
   useEffect(() => {
-    if (contactSource.has_provincial) {
-      setCourtLevel('provincial');
-    } else if (contactSource.has_supreme) {
-      setCourtLevel('supreme');
-    }
+    if (contactSource.has_provincial) setCourtLevel('provincial');
+    else if (contactSource.has_supreme) setCourtLevel('supreme');
   }, [court.id, contactSource.has_provincial, contactSource.has_supreme, setCourtLevel]);
 
-  // Open address in maps app
-  const openInMaps = (address: string) => {
-    const encodedAddress = encodeURIComponent(address);
-    // This URL works on both iOS (opens Apple Maps) and Android (opens Google Maps)
-    window.open(`https://maps.google.com/maps?q=${encodedAddress}`, '_blank');
-  };
+  const openInMaps = useCallback((address: string) => window.open(`https://maps.google.com/maps?q=${encodeURIComponent(address)}`, '_blank'), []);
+  const regionCode = REGION_CODES[court.region] || '';
 
   return (
     <div className="h-screen flex flex-col bg-zinc-950 text-white overflow-hidden">
-      {/* Back button row - separate from header content */}
       <div className="flex-shrink-0 px-4 pt-safe">
-        <button 
-          onClick={onBack} 
-          className="flex items-center gap-1 py-1.5 text-zinc-400 hover:text-white transition-colors"
-        >
-          <ChevronLeft size={20} />
-          <span className="text-sm">Courts</span>
+        <button onClick={onBack} className="flex items-center gap-1 py-1.5 text-zinc-400 hover:text-white transition-colors">
+          <ChevronLeft size={20} /><span className="text-sm">Courts</span>
         </button>
       </div>
 
-      {/* Header */}
       <header className="flex-shrink-0 px-4 pb-3">
-        {/* Title */}
         <h1 className="text-xl font-bold leading-tight">{court.name}</h1>
-        
-        {/* Badges row */}
         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
           {court.access_code && (
-            <button 
-              onClick={() => onCopy(court.access_code!, 'access_code')}
-              className="text-xs px-2 py-1 bg-amber-500/20 text-amber-400 rounded flex items-center gap-1 hover:bg-amber-500/30 transition-colors"
-              title={court.access_code_notes || 'Access code'}
-            >
-              {copiedField === 'access_code' ? <Check size={12} /> : null}
-              {court.access_code}
+            <button onClick={() => onCopy(court.access_code!, 'access_code')} className="text-xs px-2 py-1 bg-amber-500/20 text-amber-400 rounded flex items-center gap-1 hover:bg-amber-500/30 transition-colors">
+              {copiedField === 'access_code' && <Check size={12} />}{court.access_code}
             </button>
           )}
-          {court.virtual_courtroom_code && (
-            <span className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded">
-              {court.virtual_courtroom_code}
-            </span>
-          )}
-          <span className="text-xs px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded">
-            {court.region}
-          </span>
+          {court.virtual_courtroom_code && <span className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded">{court.virtual_courtroom_code}</span>}
+          <span className="text-xs px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded">{court.region}</span>
         </div>
-
-        {/* Address - tappable to open in maps */}
         {court.address && (
-          <button
-            onClick={() => openInMaps(court.address!)}
-            className="flex items-center gap-2 mt-2 text-left group"
-          >
+          <button onClick={() => openInMaps(court.address!)} className="flex items-center gap-2 mt-2 text-left group">
             <MapPin size={14} className="text-zinc-500 flex-shrink-0 group-hover:text-blue-400 transition-colors" />
-            <span className="text-sm text-zinc-400 group-hover:text-blue-400 transition-colors underline decoration-zinc-600 group-hover:decoration-blue-400">
-              {court.address}
-            </span>
+            <span className="text-sm text-zinc-400 group-hover:text-blue-400 transition-colors underline decoration-zinc-600 group-hover:decoration-blue-400">{court.address}</span>
           </button>
         )}
-
-        {/* Provincial/Supreme Toggle */}
         {showToggle && (
           <div className="flex mt-3 p-1 bg-zinc-800 rounded-lg">
-            <button
-              onClick={() => setCourtLevel('provincial')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                courtLevel === 'provincial' 
-                  ? 'bg-emerald-600 text-white' 
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              Provincial
-            </button>
-            <button
-              onClick={() => setCourtLevel('supreme')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                courtLevel === 'supreme' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              Supreme
-            </button>
+            <button onClick={() => setCourtLevel('provincial')} className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${courtLevel === 'provincial' ? 'bg-emerald-600 text-white' : 'text-zinc-400 hover:text-white'}`}>Provincial</button>
+            <button onClick={() => setCourtLevel('supreme')} className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${courtLevel === 'supreme' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white'}`}>Supreme</button>
           </div>
         )}
       </header>
 
-      {/* Content */}
       <main className="flex-1 overflow-y-auto min-h-0 p-4 space-y-4">
-        {/* Circuit Court Notice */}
-        {court.is_circuit && (() => {
-          // Get region code
-          const regionCodes: Record<string, string> = {
-            'Vancouver Island': 'R1',
-            'Vancouver Coastal': 'R2',
-            'Fraser': 'R3',
-            'Interior': 'R4',
-            'North': 'R5'
-          };
-          const regionCode = regionCodes[court.region] || '';
-          const hubName = hubCourt?.name || court.hub_court_name || 'the hub court';
-          
-          return (
-            <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl">
-              <p className="text-sm text-amber-400">
-                <strong>{regionCode} Circuit Court</strong>: Please contact {hubName}.
-              </p>
-            </div>
-          );
-        })()}
-
-        {/* Registry & JCM/Scheduling Section */}
-        {contacts && (contacts.registry_email || contacts.criminal_registry_email || contacts.jcm_scheduling_email || contacts.scheduling_email || contacts.fax_filing) && (() => {
-          // Build fields array, excluding registry_email if it's the same as criminal_registry_email
-          const registryFields = courtLevel === 'provincial'
-            ? ['registry_email', 'criminal_registry_email', 'jcm_scheduling_email']
-            : ['registry_email', 'criminal_registry_email', 'scheduling_email'];
-          
-          // Filter out registry_email if it matches criminal_registry_email
-          const filteredFields = registryFields.filter(field => {
-            if (field === 'registry_email' && contacts.registry_email && contacts.criminal_registry_email) {
-              return contacts.registry_email !== contacts.criminal_registry_email;
-            }
-            return true;
-          });
-
-          return (
-            <ContactSection 
-              title={courtLevel === 'provincial' ? "Registry & JCM" : "Registry & Scheduling"}
-              color="emerald"
-              contacts={contacts}
-              fields={filteredFields}
-              faxFiling={courtLevel === 'supreme' ? contacts.fax_filing : undefined}
-              copiedField={copiedField}
-              onCopy={onCopy}
-            />
-          );
-        })()}
-
-        {/* Crown Section */}
-        {contacts && contacts.crown_email && (
-          <ContactSection 
-            title="Crown" 
-            color="blue"
-            contacts={contacts}
-            fields={['crown_email']}
-            copiedField={copiedField}
-            onCopy={onCopy}
-          />
-        )}
-
-        {/* Bail Section - Provincial Only */}
-        {courtLevel === 'provincial' && contacts && (contacts.bail_crown_email || contacts.bail_jcm_email) && (
-          <ContactSection 
-            title="Bail" 
-            color="amber"
-            contacts={contacts}
-            fields={['bail_crown_email', 'bail_jcm_email']}
-            copiedField={copiedField}
-            onCopy={onCopy}
-          />
-        )}
-
-        {/* Other - Transcripts & Interpreters */}
-        {contacts && (contacts.transcripts_email || contacts.interpreter_email) && (
-          <ContactSection 
-            title="Other" 
-            color="purple"
-            contacts={contacts}
-            fields={['transcripts_email', 'interpreter_email']}
-            copiedField={copiedField}
-            onCopy={onCopy}
-          />
-        )}
-
-        {/* Notes */}
-        {court.notes && (
-          <div className="p-3 bg-zinc-900 border border-zinc-800 rounded-xl">
-            <p className="text-xs uppercase tracking-wider text-zinc-500 mb-2">Notes</p>
-            <p className="text-sm text-zinc-300">{court.notes}</p>
-          </div>
-        )}
-
-        {/* Access Code Notes */}
-        {court.access_code_notes && (
+        {court.is_circuit && (
           <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl">
-            <p className="text-xs uppercase tracking-wider text-amber-500 mb-2">Access Code Instructions</p>
-            <p className="text-sm text-amber-300">{court.access_code_notes}</p>
+            <p className="text-sm text-amber-400"><strong>{regionCode} Circuit Court</strong>: Please contact {hubCourt?.name || court.hub_court_name || 'the hub court'}.</p>
           </div>
         )}
+        {contacts && (contacts.registry_email || contacts.criminal_registry_email || contacts.jcm_scheduling_email || contacts.scheduling_email) && (
+          <ContactSection title={courtLevel === 'provincial' ? "Registry & JCM" : "Registry & Scheduling"} color="emerald" contacts={contacts}
+            fields={courtLevel === 'provincial' ? ['registry_email', 'criminal_registry_email', 'jcm_scheduling_email'] : ['registry_email', 'criminal_registry_email', 'scheduling_email']}
+            faxFiling={courtLevel === 'supreme' ? contacts.fax_filing : undefined} copiedField={copiedField} onCopy={onCopy} />
+        )}
+        {contacts?.crown_email && <ContactSection title="Crown" color="blue" contacts={contacts} fields={['crown_email']} copiedField={copiedField} onCopy={onCopy} />}
+        {courtLevel === 'provincial' && contacts && (contacts.bail_crown_email || contacts.bail_jcm_email) && (
+          <ContactSection title="Bail" color="amber" contacts={contacts} fields={['bail_crown_email', 'bail_jcm_email']} copiedField={copiedField} onCopy={onCopy} />
+        )}
+        {contacts && (contacts.transcripts_email || contacts.interpreter_email) && (
+          <ContactSection title="Other" color="purple" contacts={contacts} fields={['transcripts_email', 'interpreter_email']} copiedField={copiedField} onCopy={onCopy} />
+        )}
+        {court.notes && <div className="p-3 bg-zinc-900 border border-zinc-800 rounded-xl"><p className="text-xs uppercase tracking-wider text-zinc-500 mb-2">Notes</p><p className="text-sm text-zinc-300">{court.notes}</p></div>}
+        {court.access_code_notes && <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl"><p className="text-xs uppercase tracking-wider text-amber-500 mb-2">Access Code Instructions</p><p className="text-sm text-amber-300">{court.access_code_notes}</p></div>}
       </main>
-
-      {/* Toast notification */}
-      {copiedField && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 px-4 py-2 bg-emerald-600 text-white rounded-full text-sm shadow-lg">
-          Copied to clipboard!
-        </div>
-      )}
+      <Toast message="Copied to clipboard!" visible={!!copiedField} />
     </div>
   );
-}
+});
 
-
-// Contact Section Component
-function ContactSection({
-  title,
-  color,
-  contacts,
-  fields,
-  faxFiling,
-  copiedField,
-  onCopy
-}: {
-  title: string;
-  color: 'emerald' | 'blue' | 'amber' | 'purple';
-  contacts: CourtContacts;
-  fields: string[];
-  faxFiling?: string;
+interface BailPageProps {
   copiedField: string | null;
   onCopy: (text: string, field: string) => void;
-}) {
-  const colorClasses = {
-    emerald: 'border-emerald-500/30 bg-emerald-500/5',
-    blue: 'border-blue-500/30 bg-blue-500/5',
-    amber: 'border-amber-500/30 bg-amber-500/5',
-    purple: 'border-purple-500/30 bg-purple-500/5'
-  };
-
-  const labelColorClasses = {
-    emerald: 'text-emerald-500',
-    blue: 'text-blue-500',
-    amber: 'text-amber-500',
-    purple: 'text-purple-500'
-  };
-
-  const fieldLabels: Record<string, string> = {
-    registry_email: 'Registry',
-    criminal_registry_email: 'Criminal Registry',
-    jcm_scheduling_email: 'JCM Scheduling',
-    scheduling_email: 'Scheduling',
-    crown_email: 'Crown Counsel',
-    bail_crown_email: 'Bail Crown',
-    bail_jcm_email: 'Bail JCM',
-    transcripts_email: 'Transcripts',
-    interpreter_email: 'Interpreter Request',
-    fax_filing: 'Fax Filing'
-  };
-
-  const activeFields = fields.filter(f => contacts[f as keyof CourtContacts]);
-
-  if (activeFields.length === 0 && !faxFiling) return null;
-
-  return (
-    <div className={`rounded-xl border ${colorClasses[color]}`}>
-      <div className="px-3 py-2 border-b border-zinc-800/50">
-        <h3 className={`text-xs uppercase tracking-wider ${labelColorClasses[color]}`}>
-          {title}
-        </h3>
-      </div>
-      <div className="divide-y divide-zinc-800/50">
-        {activeFields.map(field => {
-          const value = contacts[field as keyof CourtContacts] as string;
-          const fieldKey = `${field}-${value}`;
-          return (
-            <button
-              key={field}
-              onClick={() => onCopy(value, fieldKey)}
-              className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-zinc-800/50 active:bg-zinc-800 transition-colors text-left"
-            >
-              <div className="flex-1 min-w-0 pr-2">
-                <p className="text-xs text-zinc-500">{fieldLabels[field]}</p>
-                <p className="text-sm text-white truncate">{value}</p>
-              </div>
-              <div className="flex items-center">
-                {copiedField === fieldKey ? (
-                  <Check size={16} className="text-emerald-500" />
-                ) : (
-                  <Copy size={16} className="text-zinc-500" />
-                )}
-              </div>
-            </button>
-          );
-        })}
-      </div>
-      
-      {/* Fax Filing Sub-section */}
-      {faxFiling && (
-        <button
-          onClick={() => onCopy(faxFiling, 'fax_filing')}
-          className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-zinc-800/50 active:bg-zinc-800 transition-colors text-left border-t border-zinc-800/50"
-        >
-          <div className="flex-1 min-w-0 pr-2">
-            <p className="text-xs text-zinc-500">Fax Filing</p>
-            <p className="text-sm text-white">{faxFiling}</p>
-          </div>
-          <div className="flex items-center">
-            {copiedField === 'fax_filing' ? (
-              <Check size={16} className="text-emerald-500" />
-            ) : (
-              <Copy size={16} className="text-zinc-500" />
-            )}
-          </div>
-        </button>
-      )}
-    </div>
-  );
 }
 
-
-// Bail Page Component - Design A (Main) + Design B (Result Card)
-function BailPage({ 
-  copiedField, 
-  onCopy 
-}: { 
-  copiedField: string | null; 
-  onCopy: (text: string, field: string) => void;
-}) {
+const BailPage = memo(function BailPage({ copiedField, onCopy }: BailPageProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedResult, setSelectedResult] = useState<{
-    region: string;
-    name: string;
-    court?: string;
-  } | null>(null);
+  const [selectedResult, setSelectedResult] = useState<{ region: string; name: string; court?: string } | null>(null);
+  const isDaytime = useDaytime();
 
-  // Check if it's daytime (8am-5pm on weekdays)
-  const isDaytime = () => {
-    const now = new Date();
-    const hour = now.getHours();
-    const day = now.getDay();
-    return day >= 1 && day <= 5 && hour >= 8 && hour < 17;
-  };
-
-  // Bail contact data
-  const bailContacts = {
-    // Regional contacts (R1, R4, R5)
-    regional: [
-      {
-        region: 'VR1',
-        code: 'R1',
-        name: 'Vancouver Island',
-        color: 'cyan',
-        daytime: 'Region1.VirtualBail@gov.bc.ca',
-        daytimeNote: 'Regular weekday',
-        afterHours: 'VictoriaCrown.Public@gov.bc.ca',
-        afterHoursNote: 'Evenings, weekends, holidays (remote - no fax)',
-        rabc: { name: 'Chloe Rathjen', email: 'chloe.rathjen@gov.bc.ca', phone: '250-940-8522' },
-        subjectLine: 'URGENT IC Daytime Program – (Reason) – Detachment – Date',
-        vrs: ['VR8 (South Island)', 'VR9 (North Island)'],
-        courtCount: 12,
-        areas: ['Victoria', 'Colwood', 'Western Communities', 'Duncan', 'Nanaimo', 'Campbell River', 'Courtenay', 'Port Alberni', 'Port Hardy', 'Powell River', 'Tofino', 'Gold River']
-      },
-      {
-        region: 'VR2',
-        code: 'R2',
-        name: 'Vancouver Coastal',
-        color: 'violet',
-        contactType: 'court-specific',
-        subjectLine: 'URGENT IC – Accused Name/File No. – Date',
-        courtCount: 8,
-        courts: [
-          { court: 'Vancouver Provincial (222 Main)', email: '222MainCrownBail@gov.bc.ca', areas: ['Vancouver', 'Burnaby'] },
-          { court: 'North Vancouver', email: 'NorthVanCrown@gov.bc.ca', areas: ['North Vancouver', 'West Vancouver', 'Squamish', 'Whistler', 'Pemberton'] },
-          { court: 'Richmond', email: 'RichmondCrown@gov.bc.ca', areas: ['Richmond'] },
-          { court: 'Sechelt', email: 'SecheltCrown@gov.bc.ca', note: 'Heard in North Van', areas: ['Sechelt', 'Gibsons', 'Sunshine Coast'] },
-          { court: 'Vancouver Youth (Robson)', email: 'VancouverYouthCrown@gov.bc.ca', note: 'Own bail process', areas: ['Vancouver Youth'] },
-        ],
-        areas: ['Vancouver', 'Burnaby', 'North Vancouver', 'West Vancouver', 'Richmond', 'Squamish', 'Whistler', 'Pemberton', 'Sechelt', 'Gibsons']
-      },
-      {
-        region: 'VR3',
-        code: 'R3',
-        name: 'Fraser',
-        color: 'amber',
-        contactType: 'court-specific',
-        subjectLine: 'URGENT IC Daytime Program: (reason) – Detachment – Date',
-        courtCount: 15,
-        courts: [
-          { court: 'Abbotsford', email: 'Abbotsford.VirtualBail@gov.bc.ca', areas: ['Abbotsford', 'Mission'] },
-          { court: 'Chilliwack', email: 'Chilliwack.VirtualBail@gov.bc.ca', areas: ['Chilliwack', 'Hope', 'Agassiz'] },
-          { court: 'New Westminster', email: 'NewWestProv.VirtualBail@gov.bc.ca', areas: ['New Westminster', 'Burnaby'] },
-          { court: 'Port Coquitlam', email: 'Poco.VirtualBail@gov.bc.ca', areas: ['Port Coquitlam', 'Coquitlam', 'Port Moody', 'Maple Ridge', 'Pitt Meadows'] },
-          { court: 'Surrey', email: 'Surrey.VirtualBail@gov.bc.ca', areas: ['Surrey', 'Langley', 'Delta', 'White Rock'] },
-        ],
-        areas: ['Surrey', 'Langley', 'Delta', 'White Rock', 'Abbotsford', 'Mission', 'Chilliwack', 'Hope', 'Agassiz', 'New Westminster', 'Port Coquitlam', 'Coquitlam', 'Port Moody', 'Maple Ridge', 'Pitt Meadows']
-      },
-      {
-        region: 'VR4',
-        code: 'R4',
-        name: 'Interior',
-        color: 'emerald',
-        daytime: 'Region4.VirtualBail@gov.bc.ca',
-        daytimeNote: 'Regular weekday',
-        afterHours: 'AGBCPSReg4BailKelownaGen@gov.bc.ca',
-        afterHoursNote: 'Evenings, weekends, holidays (remote - no fax)',
-        rabc: { name: 'Pamela Robertson', email: 'pamela.robertson@gov.bc.ca', phone: '778-940-0050' },
-        subjectLine: 'URGENT IC – (Reason) – Detachment – Date',
-        vrs: ['VR3 (Kelowna area)', 'VR4 (Kamloops area)'],
-        courtCount: 18,
-        areas: ['Kamloops', 'Kelowna', 'Vernon', 'Penticton', 'Salmon Arm', 'Cranbrook', 'Nelson', 'Trail', 'Castlegar', 'Merritt', 'Lillooet', 'Revelstoke', 'Golden', 'Invermere', 'Fernie', 'Grand Forks', 'Princeton', 'Clearwater', 'Ashcroft', 'Chase', 'Oliver', 'Keremeos', 'Osoyoos', 'Summerland', 'Falkland', 'Armstrong', 'Lumby', 'Nakusp', 'Rossland', 'Creston']
-      },
-      {
-        region: 'VR5',
-        code: 'R5',
-        name: 'North',
-        color: 'red',
-        daytime: 'Region5.VirtualBail@gov.bc.ca',
-        daytimeNote: 'All bail matters (day/evening/weekend/holidays)',
-        allHours: true,
-        rabc: { name: 'Jacqueline Ettinger', email: 'Jacqueline.ettinger@gov.bc.ca', phone: '250-570-0422' },
-        subjectLine: 'URGENT IC VB – (Reason) – VR1/VR2 Location – Date',
-        vrs: ['VR1 (Prince George area)', 'VR2 (Peace/Northwest)'],
-        courtCount: 24,
-        areas: ['Prince George', 'Quesnel', 'Williams Lake', 'Vanderhoof', 'Fort St. John', 'Dawson Creek', 'Fort Nelson', 'Terrace', 'Prince Rupert', 'Smithers', 'Kitimat', 'Burns Lake', 'Mackenzie', '100 Mile House']
-      }
-    ],
-    // Sheriff coordinators
-    sheriffs: [
-      { area: '222 Main Street', email: 'CSB222MainStreet.SheriffVirtualBail@gov.bc.ca' },
-      { area: 'Vancouver Coastal', email: 'CSBVancouverCoastal.SheriffVirtualBail@gov.bc.ca' },
-      { area: 'Fraser Region', email: 'CSBFraser.SheriffVirtualBail@gov.bc.ca' },
-      { area: 'Surrey', email: 'CSBSurrey.SheriffVirtualBail@gov.bc.ca' },
-    ],
-    // Federal Crown (PPSC) contacts
-    federal: [
-      {
-        region: 'Vancouver Coastal',
-        areas: [
-          { area: 'Vancouver & Burnaby', email: 'Van.detention.van@ppsc-sppc.gc.ca', phone: '604-666-2141', org: 'PPSC 222 Main' },
-          { area: 'Richmond', email: 'ppscsupportstaff@mtclaw.ca', phone: '604-590-8855', org: 'MTC Law' },
-          { area: 'North Shore, Squamish, Sechelt, Whistler', email: 'NorthShoreandCRC@ppsc-sppc.gc.ca', org: 'PPSC North Van' },
-        ]
-      },
-      {
-        region: 'Vancouver Island',
-        areas: [
-          { area: 'Victoria & Colwood', email: 'Vicinfo@joneslaw.ca', phone: '250-220-6942', org: 'Jones & Co.' },
-          { area: 'Nanaimo & Duncan', email: 'Naninfo@joneslaw.ca', phone: '250-714-1113', org: 'Jones & Co.' },
-          { area: 'Campbell River, Courtenay, Port Alberni, Port Hardy', email: 'Naninfo@joneslaw.ca', phone: '250-714-1113', org: 'Jones & Co.' },
-        ]
-      },
-      {
-        region: 'Fraser',
-        areas: [
-          { area: 'Surrey, Langley, Delta, White Rock', email: 'PPSC.SurreyInCustody-EnDetentionSurrey.SPPC@ppsc-sppc.gc.ca', phone: '236-456-0015', org: 'PPSC Surrey' },
-          { area: 'Port Coquitlam & New Westminster', email: 'ppscsupportstaff@mtclaw.ca', phone: '604-590-8855', org: 'MTC Law' },
-          { area: 'Chilliwack & Abbotsford', email: 'jir@jmldlaw.com', phone: '604-514-8203', org: 'JM LeDressay' },
-        ]
-      },
-      {
-        region: 'Interior',
-        areas: [
-          { area: 'Kamloops, Ashcroft, Chase, Clearwater, Lillooet, Merritt, Salmon Arm', email: 'ppscsupportstaff@mtclaw.ca', phone: '604-590-8855', org: 'MTC Law' },
-          { area: 'Kelowna, Penticton, Vernon & area', email: 'jir@jmldlaw.com', phone: '604-514-8203', org: 'JM LeDressay' },
-          { area: 'Kootenays (Cranbrook, Nelson, Trail, etc.)', email: 'PPSC.SurreyInCustody-EnDetentionSurrey.SPPC@ppsc-sppc.gc.ca', phone: '604-354-9146', org: 'PPSC Surrey' },
-        ]
-      }
-    ],
-    // ReVOII contacts
-    revoi: [
-      { region: 'R2', email: 'BCPSReVOII2@gov.bc.ca' },
-      { region: 'R3', email: 'BCPSReVOII3@gov.bc.ca' },
-    ]
-  };
-
-  // Find region by search
-  const findRegionBySearch = (query: string) => {
+  const findRegionBySearch = useCallback((query: string) => {
     const q = query.toLowerCase();
-    for (const region of bailContacts.regional) {
-      // Check if query matches area name
+    for (const region of BAIL_CONTACTS.regional) {
       if (region.areas?.some(a => a.toLowerCase().includes(q))) {
-        // For court-specific regions, find the specific court
         if (region.contactType === 'court-specific' && region.courts) {
           for (const court of region.courts) {
-            if (court.areas?.some(a => a.toLowerCase().includes(q))) {
-              return { region: region.region, name: region.name, court: court.court };
-            }
+            if (court.areas?.some(a => a.toLowerCase().includes(q))) return { region: region.region, name: region.name, court: court.court };
           }
         }
         return { region: region.region, name: region.name };
       }
-      // Check region name
-      if (region.name.toLowerCase().includes(q)) {
-        return { region: region.region, name: region.name };
-      }
+      if (region.name.toLowerCase().includes(q)) return { region: region.region, name: region.name };
     }
     return null;
-  };
+  }, []);
 
-  // Handle search
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     if (searchQuery.trim()) {
       const result = findRegionBySearch(searchQuery);
-      if (result) {
-        setSelectedResult(result);
-      }
+      if (result) setSelectedResult(result);
     }
-  };
+  }, [searchQuery, findRegionBySearch]);
 
-  // Get color classes
-  const getColorClasses = (color: string) => {
-    const colors: Record<string, { bg: string; border: string; text: string; gradient: string }> = {
-      cyan: { bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', text: 'text-cyan-400', gradient: 'from-cyan-500 to-cyan-600' },
-      violet: { bg: 'bg-violet-500/10', border: 'border-violet-500/30', text: 'text-violet-400', gradient: 'from-violet-500 to-violet-600' },
-      amber: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400', gradient: 'from-amber-500 to-amber-600' },
-      emerald: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400', gradient: 'from-emerald-500 to-emerald-600' },
-      red: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', gradient: 'from-red-500 to-orange-500' },
-    };
-    return colors[color] || colors.cyan;
-  };
-
-  // If a result is selected, show the detail view (Design B)
   if (selectedResult) {
-    const region = bailContacts.regional.find(r => r.region === selectedResult.region);
-    if (!region) return null;
-
-    const colors = getColorClasses(region.color);
-    const court = region.courts?.find(c => c.court === selectedResult.court);
-    const federalContacts = bailContacts.federal.find(f => 
-      f.region === region.name || 
-      (region.name === 'Vancouver Island' && f.region === 'Vancouver Island') ||
-      (region.name === 'Interior' && f.region === 'Interior')
-    );
-
-    return (
-      <div className="space-y-4">
-        {/* Back Button */}
-        <button 
-          onClick={() => { setSelectedResult(null); setSearchQuery(''); }}
-          className="flex items-center gap-1 text-zinc-400 hover:text-white transition-colors"
-        >
-          <ChevronLeft size={20} />
-          <span className="text-sm">Back to regions</span>
-        </button>
-
-        {/* Search showing current location */}
-        <div className="relative">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder="Search city or detachment..."
-            className="w-full pl-10 pr-20 py-3 bg-zinc-900 border border-zinc-700 rounded-2xl text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
-          />
-          <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-1 ${colors.bg} ${colors.text} rounded-lg`}>
-            {region.code}
-          </span>
-        </div>
-
-        {/* Main Result Card (Design B - All-In-One) */}
-        <div className={`rounded-3xl border ${colors.border} ${colors.bg} overflow-hidden`}>
-          {/* Card Header */}
-          <div className={`p-4 ${colors.bg} border-b border-zinc-800/50`}>
-            <div className="flex items-center gap-3">
-              <div className={`w-14 h-14 bg-gradient-to-br ${colors.gradient} rounded-2xl flex items-center justify-center shadow-lg`}>
-                <span className="text-white font-bold text-lg">{region.code}</span>
-              </div>
-              <div className="flex-1">
-                <h2 className="text-white font-bold text-lg">{region.name}</h2>
-                <p className="text-zinc-400 text-sm">
-                  {court ? court.court : region.vrs?.join(' • ')}
-                </p>
-              </div>
-              <div className="text-right">
-                {region.allHours ? (
-                  <>
-                    <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded-lg block mb-1">☀️🌙</span>
-                    <span className="text-zinc-500 text-xs">ALL HOURS</span>
-                  </>
-                ) : region.contactType === 'court-specific' ? (
-                  <>
-                    <span className="text-xs px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded-lg block mb-1">☀️</span>
-                    <span className="text-zinc-500 text-xs">DAYTIME ONLY</span>
-                  </>
-                ) : (
-                  <>
-                    <span className={`text-xs px-2 py-1 ${isDaytime() ? 'bg-yellow-500/20 text-yellow-400' : 'bg-indigo-500/20 text-indigo-400'} rounded-lg block mb-1`}>
-                      {isDaytime() ? '☀️ DAY' : '🌙 NIGHT'}
-                    </span>
-                    <span className="text-zinc-500 text-xs">{isDaytime() ? '8am-5pm' : 'After hours'}</span>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Contact Rows - Each fully tappable */}
-          <div className="divide-y divide-zinc-800/50">
-            {/* For court-specific regions (R2, R3), show the court email */}
-            {court && (
-              <button 
-                onClick={() => onCopy(court.email, 'court-email')}
-                className="w-full p-4 flex items-center gap-4 hover:bg-white/5 active:bg-white/10 transition text-left"
-              >
-                <div className={`w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center flex-shrink-0`}>
-                  <Briefcase size={20} className="text-yellow-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <p className="text-zinc-400 text-xs">Virtual Bail - {court.court}</p>
-                    <span className="text-[10px] px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded">☀️ Daytime</span>
-                  </div>
-                  <p className="text-white font-medium truncate">{court.email}</p>
-                  <p className="text-zinc-500 text-xs mt-0.5">8am-5pm weekdays only</p>
-                </div>
-                <div className="w-10 h-10 bg-zinc-800 hover:bg-zinc-700 rounded-xl flex items-center justify-center flex-shrink-0">
-                  {copiedField === 'court-email' ? (
-                    <Check size={20} className="text-emerald-500" />
-                  ) : (
-                    <Copy size={20} className="text-zinc-400" />
-                  )}
-                </div>
-              </button>
-            )}
-            
-            {/* After Hours notice for court-specific regions (R2, R3) - No afterhours available */}
-            {court && region.contactType === 'court-specific' && (
-              <div className="w-full p-4 flex items-center gap-4 text-left bg-zinc-900/50">
-                <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Briefcase size={20} className="text-zinc-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <p className="text-zinc-500 text-xs">After Hours / Weekends / Holidays</p>
-                    <span className="text-[10px] px-1.5 py-0.5 bg-zinc-800 text-zinc-500 rounded">🌙</span>
-                  </div>
-                  <p className="text-zinc-500 font-medium">No evening virtual bail for {region.code}</p>
-                  <p className="text-zinc-600 text-xs mt-0.5">Contact individual Crown offices or wait for daytime hours</p>
-                </div>
-              </div>
-            )}
-
-            {/* For regional contacts - Daytime Email (R1, R4, R5) */}
-            {!court && region.daytime && (
-              <button 
-                onClick={() => onCopy(region.daytime!, 'daytime-email')}
-                className="w-full p-4 flex items-center gap-4 hover:bg-white/5 active:bg-white/10 transition text-left"
-              >
-                <div className={`w-10 h-10 ${region.allHours ? 'bg-green-500/20' : 'bg-yellow-500/20'} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                  <Briefcase size={20} className={region.allHours ? 'text-green-400' : 'text-yellow-400'} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <p className="text-zinc-400 text-xs">
-                      {region.allHours ? 'Virtual Bail (All Hours)' : 'Daytime (8am-5pm weekdays)'}
-                    </p>
-                    {region.allHours ? (
-                      <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">☀️🌙</span>
-                    ) : (
-                      <span className="text-[10px] px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded">☀️</span>
-                    )}
-                  </div>
-                  <p className="text-white font-medium truncate">{region.daytime}</p>
-                </div>
-                <div className="w-10 h-10 bg-zinc-800 hover:bg-zinc-700 rounded-xl flex items-center justify-center flex-shrink-0">
-                  {copiedField === 'daytime-email' ? (
-                    <Check size={20} className="text-emerald-500" />
-                  ) : (
-                    <Copy size={20} className="text-zinc-400" />
-                  )}
-                </div>
-              </button>
-            )}
-
-            {/* After Hours Email - Always show if available (not for all-hours regions) */}
-            {!court && !region.allHours && region.afterHours && (
-              <button 
-                onClick={() => onCopy(region.afterHours!, 'afterhours-email')}
-                className="w-full p-4 flex items-center gap-4 hover:bg-white/5 active:bg-white/10 transition text-left"
-              >
-                <div className="w-10 h-10 bg-indigo-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Briefcase size={20} className="text-indigo-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <p className="text-zinc-400 text-xs">After Hours / Weekends / Holidays</p>
-                    <span className="text-[10px] px-1.5 py-0.5 bg-indigo-500/20 text-indigo-400 rounded">🌙</span>
-                  </div>
-                  <p className="text-white font-medium truncate">{region.afterHours}</p>
-                  <p className="text-zinc-500 text-xs mt-0.5">Remote - no fax available</p>
-                </div>
-                <div className="w-10 h-10 bg-zinc-800 hover:bg-zinc-700 rounded-xl flex items-center justify-center flex-shrink-0">
-                  {copiedField === 'afterhours-email' ? (
-                    <Check size={20} className="text-emerald-500" />
-                  ) : (
-                    <Copy size={20} className="text-zinc-400" />
-                  )}
-                </div>
-              </button>
-            )}
-
-            {/* RABC */}
-            {region.rabc && (
-              <div className="p-4">
-                <p className="text-zinc-500 text-xs mb-2">RABC (Bail Coordinator)</p>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1">
-                    <p className="text-white font-medium">{region.rabc.name}</p>
-                  </div>
-                  <button 
-                    onClick={() => onCopy(region.rabc!.email, 'rabc-email')}
-                    className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-sm text-zinc-300 transition flex items-center gap-2"
-                  >
-                    {copiedField === 'rabc-email' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                    Email
-                  </button>
-                  <a 
-                    href={`tel:${region.rabc.phone}`}
-                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 rounded-xl text-sm text-white font-medium transition"
-                  >
-                    📞 Call
-                  </a>
-                </div>
-                <p className="text-zinc-500 text-xs mt-2">{region.rabc.phone}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Subject Line Footer */}
-          <div className="p-3 bg-zinc-900/80 border-t border-zinc-800/50">
-            <button 
-              onClick={() => onCopy(region.subjectLine, 'subject-line')}
-              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-zinc-800 transition"
-            >
-              <div>
-                <p className="text-zinc-500 text-xs">Subject Line Template</p>
-                <p className="text-zinc-300 text-sm">{region.subjectLine}</p>
-              </div>
-              {copiedField === 'subject-line' ? (
-                <Check size={20} className="text-emerald-500" />
-              ) : (
-                <Copy size={20} className="text-zinc-500" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Quick Links - Federal & Sheriff */}
-        <div className="grid grid-cols-2 gap-3">
-          <button 
-            onClick={() => federalContacts && onCopy(federalContacts.areas[0].email, 'federal')}
-            className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-2xl text-left hover:bg-purple-500/20 transition"
-          >
-            <span className="text-xs text-purple-400 font-medium">FEDERAL (PPSC)</span>
-            <p className="text-white text-sm mt-1">Federal Crown</p>
-            <p className="text-zinc-500 text-xs">CDSA, firearms</p>
-          </button>
-          <button 
-            onClick={() => onCopy(bailContacts.sheriffs[0].email, 'sheriff')}
-            className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-left hover:bg-amber-500/20 transition"
-          >
-            <span className="text-xs text-amber-400 font-medium">SHERIFF</span>
-            <p className="text-white text-sm mt-1">VB Coordinator</p>
-            <p className="text-zinc-500 text-xs">Prisoner transport</p>
-          </button>
-        </div>
-
-        {/* Areas Served */}
-        <div className="p-3 bg-zinc-900/50 rounded-xl">
-          <p className="text-zinc-500 text-xs mb-2">Areas served by {region.name}</p>
-          <p className="text-zinc-400 text-xs leading-relaxed">
-            {(court?.areas || region.areas)?.join(' • ')}
-          </p>
-        </div>
-
-        {/* Other Courts in Region (for court-specific regions) */}
-        {region.courts && region.courts.length > 1 && (
-          <div>
-            <p className="text-zinc-500 text-xs mb-2">OTHER {region.code} COURTS</p>
-            <div className="space-y-2">
-              {region.courts.filter(c => c.court !== court?.court).map(c => (
-                <button 
-                  key={c.court}
-                  onClick={() => setSelectedResult({ region: region.region, name: region.name, court: c.court })}
-                  className="w-full p-3 bg-zinc-800/50 border border-zinc-800 rounded-xl flex items-center justify-between hover:bg-zinc-800 transition"
-                >
-                  <span className="text-zinc-300 text-sm">{c.court}</span>
-                  <ChevronRight size={16} className="text-zinc-600" />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
+    return <BailDetailView selectedResult={selectedResult} setSelectedResult={setSelectedResult} searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+      onBack={() => { setSelectedResult(null); setSearchQuery(''); }} onSearch={handleSearch} isDaytime={isDaytime} copiedField={copiedField} onCopy={onCopy} />;
   }
-
-  // Main Page (Design A - Hub Cards)
-  const currentTime = isDaytime();
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold">Virtual Bail</h2>
-        <p className="text-zinc-500 text-sm mt-1">BC Provincial Court Bail Contacts</p>
-      </div>
-
-      {/* Search Box */}
-      <div className="relative">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          placeholder="Search by city or detachment..."
-          className="w-full pl-11 pr-4 py-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
-        />
-        {searchQuery && (
-          <button 
-            onClick={() => setSearchQuery('')}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white"
-          >
-            <X size={18} />
-          </button>
-        )}
-      </div>
-
-      {/* Time Indicator */}
+      <div className="text-center"><h2 className="text-2xl font-bold">Virtual Bail</h2><p className="text-zinc-500 text-sm mt-1">BC Provincial Court Bail Contacts</p></div>
+      <SearchInput value={searchQuery} onChange={setSearchQuery} onClear={() => setSearchQuery('')} onSubmit={handleSearch} placeholder="Search by city or detachment..." />
       <div className="flex justify-center gap-2">
-        <span className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${
-          currentTime 
-            ? 'bg-gradient-to-r from-yellow-500 to-amber-500 text-black' 
-            : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
-        }`}>
-          ☀️ Daytime Hours
-        </span>
-        <span className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${
-          !currentTime 
-            ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white' 
-            : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
-        }`}>
-          🌙 After Hours
-        </span>
+        <span className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${isDaytime ? 'bg-gradient-to-r from-yellow-500 to-amber-500 text-black' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`}>☀️ Daytime Hours</span>
+        <span className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${!isDaytime ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`}>🌙 After Hours</span>
       </div>
-
-      {/* Regions Grid (Design A) */}
       <div className="grid grid-cols-2 gap-3">
-        {bailContacts.regional.map(region => {
-          const colors = getColorClasses(region.color);
-          const isWide = region.code === 'R5'; // North region spans full width
-          
+        {BAIL_CONTACTS.regional.map(region => {
+          const colors = BAIL_COLOR_CLASSES[region.color] || BAIL_COLOR_CLASSES.cyan;
           return (
-            <button
-              key={region.region}
-              onClick={() => setSelectedResult({ region: region.region, name: region.name })}
-              className={`${isWide ? 'col-span-2' : ''} relative p-5 rounded-2xl border ${colors.border} ${colors.bg} text-left transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]`}
-            >
-              {/* Top accent bar */}
+            <button key={region.region} onClick={() => setSelectedResult({ region: region.region, name: region.name })}
+              className={`${region.code === 'R5' ? 'col-span-2' : ''} relative p-5 rounded-2xl border ${colors.border} ${colors.bg} text-left transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]`}>
               <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${colors.gradient} rounded-t-2xl opacity-80`} />
-              
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-[11px] font-bold tracking-wider text-zinc-500 uppercase mb-1">{region.region}</p>
                   <p className="text-base font-semibold text-white">{region.name}</p>
                   <p className="text-xs text-zinc-500 mt-2 flex items-center gap-1">
-                    <MapPin size={12} />
-                    {region.courtCount} courts
+                    <MapPin size={12} />{region.courtCount} courts
                     {region.allHours && <span className="ml-1 text-green-400">• All hours</span>}
                     {region.contactType === 'court-specific' && <span className="ml-1 text-yellow-400">• Daytime only</span>}
                   </p>
                 </div>
-                {region.contactType === 'court-specific' && (
-                  <span className="text-[10px] px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded-lg">☀️ By court</span>
-                )}
+                {region.contactType === 'court-specific' && <span className="text-[10px] px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded-lg">☀️ By court</span>}
               </div>
             </button>
           );
@@ -1265,11 +289,150 @@ function BailPage({
       </div>
     </div>
   );
+});
+
+interface BailDetailViewProps {
+  selectedResult: { region: string; name: string; court?: string };
+  setSelectedResult: (result: { region: string; name: string; court?: string } | null) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  onBack: () => void;
+  onSearch: () => void;
+  isDaytime: boolean;
+  copiedField: string | null;
+  onCopy: (text: string, field: string) => void;
 }
 
+const BailDetailView = memo(function BailDetailView({ selectedResult, setSelectedResult, searchQuery, setSearchQuery, onBack, onSearch, isDaytime, copiedField, onCopy }: BailDetailViewProps) {
+  const region = useMemo(() => BAIL_CONTACTS.regional.find(r => r.region === selectedResult.region), [selectedResult.region]);
+  if (!region) return null;
 
+  const colors = BAIL_COLOR_CLASSES[region.color] || BAIL_COLOR_CLASSES.cyan;
+  const court = region.courts?.find(c => c.court === selectedResult.court);
+  const federalContacts = BAIL_CONTACTS.federal.find(f => f.region === region.name || (region.name === 'Vancouver Island' && f.region === 'Vancouver Island') || (region.name === 'Interior' && f.region === 'Interior'));
 
+  return (
+    <div className="space-y-4">
+      <button onClick={onBack} className="flex items-center gap-1 text-zinc-400 hover:text-white transition-colors"><ChevronLeft size={20} /><span className="text-sm">Back to regions</span></button>
 
+      <SearchInput value={searchQuery} onChange={setSearchQuery} onClear={() => setSearchQuery('')} onSubmit={onSearch} placeholder="Search city or detachment..."
+        rightElement={<span className={`text-xs px-2 py-1 ${colors.bg} ${colors.text} rounded-lg`}>{region.code}</span>} />
 
+      <div className={`rounded-3xl border ${colors.border} ${colors.bg} overflow-hidden`}>
+        <div className={`p-4 ${colors.bg} border-b border-zinc-800/50`}>
+          <div className="flex items-center gap-3">
+            <div className={`w-14 h-14 bg-gradient-to-br ${colors.gradient} rounded-2xl flex items-center justify-center shadow-lg`}><span className="text-white font-bold text-lg">{region.code}</span></div>
+            <div className="flex-1"><h2 className="text-white font-bold text-lg">{region.name}</h2><p className="text-zinc-400 text-sm">{court ? court.court : region.vrs?.join(' • ')}</p></div>
+            <div className="text-right">
+              {region.allHours ? (<><span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded-lg block mb-1">☀️🌙</span><span className="text-zinc-500 text-xs">ALL HOURS</span></>)
+              : region.contactType === 'court-specific' ? (<><span className="text-xs px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded-lg block mb-1">☀️</span><span className="text-zinc-500 text-xs">DAYTIME ONLY</span></>)
+              : (<><span className={`text-xs px-2 py-1 ${isDaytime ? 'bg-yellow-500/20 text-yellow-400' : 'bg-indigo-500/20 text-indigo-400'} rounded-lg block mb-1`}>{isDaytime ? '☀️ DAY' : '🌙 NIGHT'}</span><span className="text-zinc-500 text-xs">{isDaytime ? '8am-5pm' : 'After hours'}</span></>)}
+            </div>
+          </div>
+        </div>
 
+        <div className="divide-y divide-zinc-800/50">
+          {court && (
+            <button onClick={() => onCopy(court.email, 'court-email')} className="w-full p-4 flex items-center gap-4 hover:bg-white/5 active:bg-white/10 transition text-left">
+              <div className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center flex-shrink-0"><Briefcase size={20} className="text-yellow-400" /></div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5"><p className="text-zinc-400 text-xs">Virtual Bail - {court.court}</p><span className="text-[10px] px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded">☀️ Daytime</span></div>
+                <p className="text-white font-medium truncate">{court.email}</p><p className="text-zinc-500 text-xs mt-0.5">8am-5pm weekdays only</p>
+              </div>
+              <div className="w-10 h-10 bg-zinc-800 hover:bg-zinc-700 rounded-xl flex items-center justify-center flex-shrink-0">
+                {copiedField === 'court-email' ? <Check size={20} className="text-emerald-500" /> : <Copy size={20} className="text-zinc-400" />}
+              </div>
+            </button>
+          )}
 
+          {court && region.contactType === 'court-specific' && (
+            <div className="w-full p-4 flex items-center gap-4 text-left bg-zinc-900/50">
+              <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center flex-shrink-0"><Briefcase size={20} className="text-zinc-600" /></div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5"><p className="text-zinc-500 text-xs">After Hours / Weekends / Holidays</p><span className="text-[10px] px-1.5 py-0.5 bg-zinc-800 text-zinc-500 rounded">🌙</span></div>
+                <p className="text-zinc-500 font-medium">No evening virtual bail for {region.code}</p><p className="text-zinc-600 text-xs mt-0.5">Contact individual Crown offices or wait for daytime hours</p>
+              </div>
+            </div>
+          )}
+
+          {!court && region.daytime && (
+            <button onClick={() => onCopy(region.daytime!, 'daytime-email')} className="w-full p-4 flex items-center gap-4 hover:bg-white/5 active:bg-white/10 transition text-left">
+              <div className={`w-10 h-10 ${region.allHours ? 'bg-green-500/20' : 'bg-yellow-500/20'} rounded-xl flex items-center justify-center flex-shrink-0`}><Briefcase size={20} className={region.allHours ? 'text-green-400' : 'text-yellow-400'} /></div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5"><p className="text-zinc-400 text-xs">{region.allHours ? 'Virtual Bail (All Hours)' : 'Daytime (8am-5pm weekdays)'}</p>
+                  {region.allHours ? <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">☀️🌙</span> : <span className="text-[10px] px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded">☀️</span>}
+                </div>
+                <p className="text-white font-medium truncate">{region.daytime}</p>
+              </div>
+              <div className="w-10 h-10 bg-zinc-800 hover:bg-zinc-700 rounded-xl flex items-center justify-center flex-shrink-0">
+                {copiedField === 'daytime-email' ? <Check size={20} className="text-emerald-500" /> : <Copy size={20} className="text-zinc-400" />}
+              </div>
+            </button>
+          )}
+
+          {!court && !region.allHours && region.afterHours && (
+            <button onClick={() => onCopy(region.afterHours!, 'afterhours-email')} className="w-full p-4 flex items-center gap-4 hover:bg-white/5 active:bg-white/10 transition text-left">
+              <div className="w-10 h-10 bg-indigo-500/20 rounded-xl flex items-center justify-center flex-shrink-0"><Briefcase size={20} className="text-indigo-400" /></div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5"><p className="text-zinc-400 text-xs">After Hours / Weekends / Holidays</p><span className="text-[10px] px-1.5 py-0.5 bg-indigo-500/20 text-indigo-400 rounded">🌙</span></div>
+                <p className="text-white font-medium truncate">{region.afterHours}</p><p className="text-zinc-500 text-xs mt-0.5">Remote - no fax available</p>
+              </div>
+              <div className="w-10 h-10 bg-zinc-800 hover:bg-zinc-700 rounded-xl flex items-center justify-center flex-shrink-0">
+                {copiedField === 'afterhours-email' ? <Check size={20} className="text-emerald-500" /> : <Copy size={20} className="text-zinc-400" />}
+              </div>
+            </button>
+          )}
+
+          {region.rabc && (
+            <div className="p-4">
+              <p className="text-zinc-500 text-xs mb-2">RABC (Bail Coordinator)</p>
+              <div className="flex items-center gap-3">
+                <div className="flex-1"><p className="text-white font-medium">{region.rabc.name}</p></div>
+                <button onClick={() => onCopy(region.rabc!.email, 'rabc-email')} className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-sm text-zinc-300 transition flex items-center gap-2">
+                  {copiedField === 'rabc-email' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}Email
+                </button>
+                <a href={`tel:${region.rabc.phone}`} className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 rounded-xl text-sm text-white font-medium transition">📞 Call</a>
+              </div>
+              <p className="text-zinc-500 text-xs mt-2">{region.rabc.phone}</p>
+            </div>
+          )}
+        </div>
+
+        <div className="p-3 bg-zinc-900/80 border-t border-zinc-800/50">
+          <button onClick={() => onCopy(region.subjectLine, 'subject-line')} className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-zinc-800 transition">
+            <div><p className="text-zinc-500 text-xs">Subject Line Template</p><p className="text-zinc-300 text-sm">{region.subjectLine}</p></div>
+            {copiedField === 'subject-line' ? <Check size={20} className="text-emerald-500" /> : <Copy size={20} className="text-zinc-500" />}
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <button onClick={() => federalContacts && onCopy(federalContacts.areas[0].email, 'federal')} className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-2xl text-left hover:bg-purple-500/20 transition">
+          <span className="text-xs text-purple-400 font-medium">FEDERAL (PPSC)</span><p className="text-white text-sm mt-1">Federal Crown</p><p className="text-zinc-500 text-xs">CDSA, firearms</p>
+        </button>
+        <button onClick={() => onCopy(BAIL_CONTACTS.sheriffs[0].email, 'sheriff')} className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-left hover:bg-amber-500/20 transition">
+          <span className="text-xs text-amber-400 font-medium">SHERIFF</span><p className="text-white text-sm mt-1">VB Coordinator</p><p className="text-zinc-500 text-xs">Prisoner transport</p>
+        </button>
+      </div>
+
+      <div className="p-3 bg-zinc-900/50 rounded-xl">
+        <p className="text-zinc-500 text-xs mb-2">Areas served by {region.name}</p>
+        <p className="text-zinc-400 text-xs leading-relaxed">{(court?.areas || region.areas)?.join(' • ')}</p>
+      </div>
+
+      {region.courts && region.courts.length > 1 && (
+        <div>
+          <p className="text-zinc-500 text-xs mb-2">OTHER {region.code} COURTS</p>
+          <div className="space-y-2">
+            {region.courts.filter(c => c.court !== court?.court).map(c => (
+              <button key={c.court} onClick={() => setSelectedResult({ region: region.region, name: region.name, court: c.court })}
+                className="w-full p-3 bg-zinc-800/50 border border-zinc-800 rounded-xl flex items-center justify-between hover:bg-zinc-800 transition">
+                <span className="text-zinc-300 text-sm">{c.court}</span><ChevronRight size={16} className="text-zinc-600" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
