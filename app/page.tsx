@@ -961,6 +961,11 @@ function BailPage({
                     <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded-lg block mb-1">☀️🌙</span>
                     <span className="text-zinc-500 text-xs">ALL HOURS</span>
                   </>
+                ) : region.contactType === 'court-specific' ? (
+                  <>
+                    <span className="text-xs px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded-lg block mb-1">☀️</span>
+                    <span className="text-zinc-500 text-xs">DAYTIME ONLY</span>
+                  </>
                 ) : (
                   <>
                     <span className={`text-xs px-2 py-1 ${isDaytime() ? 'bg-yellow-500/20 text-yellow-400' : 'bg-indigo-500/20 text-indigo-400'} rounded-lg block mb-1`}>
@@ -981,12 +986,16 @@ function BailPage({
                 onClick={() => onCopy(court.email, 'court-email')}
                 className="w-full p-4 flex items-center gap-4 hover:bg-white/5 active:bg-white/10 transition text-left"
               >
-                <div className={`w-10 h-10 ${colors.bg} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                  <Briefcase size={20} className={colors.text} />
+                <div className={`w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center flex-shrink-0`}>
+                  <Briefcase size={20} className="text-yellow-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-zinc-400 text-xs mb-0.5">Virtual Bail - {court.court}</p>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className="text-zinc-400 text-xs">Virtual Bail - {court.court}</p>
+                    <span className="text-[10px] px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded">☀️ Daytime</span>
+                  </div>
                   <p className="text-white font-medium truncate">{court.email}</p>
+                  <p className="text-zinc-500 text-xs mt-0.5">8am-5pm weekdays only</p>
                 </div>
                 <div className="w-10 h-10 bg-zinc-800 hover:bg-zinc-700 rounded-xl flex items-center justify-center flex-shrink-0">
                   {copiedField === 'court-email' ? (
@@ -996,6 +1005,23 @@ function BailPage({
                   )}
                 </div>
               </button>
+            )}
+            
+            {/* After Hours notice for court-specific regions (R2, R3) - No afterhours available */}
+            {court && region.contactType === 'court-specific' && (
+              <div className="w-full p-4 flex items-center gap-4 text-left bg-zinc-900/50">
+                <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Briefcase size={20} className="text-zinc-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className="text-zinc-500 text-xs">After Hours / Weekends / Holidays</p>
+                    <span className="text-[10px] px-1.5 py-0.5 bg-zinc-800 text-zinc-500 rounded">🌙</span>
+                  </div>
+                  <p className="text-zinc-500 font-medium">No evening virtual bail for {region.code}</p>
+                  <p className="text-zinc-600 text-xs mt-0.5">Contact individual Crown offices or wait for daytime hours</p>
+                </div>
+              </div>
             )}
 
             {/* For regional contacts - Daytime Email (R1, R4, R5) */}
@@ -1226,10 +1252,11 @@ function BailPage({
                     <MapPin size={12} />
                     {region.courtCount} courts
                     {region.allHours && <span className="ml-1 text-green-400">• All hours</span>}
+                    {region.contactType === 'court-specific' && <span className="ml-1 text-yellow-400">• Daytime only</span>}
                   </p>
                 </div>
                 {region.contactType === 'court-specific' && (
-                  <span className="text-[10px] px-2 py-1 bg-zinc-800 text-zinc-400 rounded-lg">By court</span>
+                  <span className="text-[10px] px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded-lg">☀️ By court</span>
                 )}
               </div>
             </button>
