@@ -12,17 +12,17 @@
       "crown_email": "WilliamsLake.Crown@gov.bc.ca",
       "jcm_scheduling_email": "Cariboo.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "Office15231@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 2,
       "name": "Abbotsford (Provincial)",
       "crown_email": "BCPS.Abbotsford.Reception@gov.bc.ca",
       "jcm_scheduling_email": "Abbotsford.CriminalScheduling@provincialcourt.bc.ca",
-      "court_registry_email": "",
+      "court_registry_email": null,
       "criminal_registry_email": "AbbotsfordCriminalRegistry@gov.bc.ca",
       "bail_crown_email": "Abbotsford.VirtualBail@gov.bc.ca",
       "bail_jcm_email": "Abbotsford.VirtualHybridBail@provincialcourt.bc.ca",
@@ -31,13 +31,13 @@
     {
       "id": 3,
       "name": "Abbotsford (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_ab@bccourts.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 4,
@@ -45,10 +45,10 @@
       "crown_email": "Smithers.Crown@gov.bc.ca",
       "jcm_scheduling_email": "Smithers.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "Office15219@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 5,
@@ -56,54 +56,54 @@
       "crown_email": "CampbellRiver.CrownSchedule@gov.bc.ca",
       "jcm_scheduling_email": "CampbellRiver.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "CampbellRiverRegistry@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 6,
       "name": "Campbell River (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_na@bccourts.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 7,
       "name": "Cariboo",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "Cariboo.Scheduling@provincialcourt.bc.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 8,
       "name": "Chilliwack (Provincial)",
       "crown_email": "BCPS.Chilliwack.Reception@gov.bc.ca",
       "jcm_scheduling_email": "Chilliwack.Scheduling@provincialcourt.bc.ca",
-      "court_registry_email": "",
+      "court_registry_email": null,
       "criminal_registry_email": "CSBChilliwackCriminalRegistry@gov.bc.ca",
       "bail_crown_email": "Chilliwack.VirtualBail@gov.bc.ca",
       "bail_jcm_email": "Abbotsford.VirtualHybridBail@provincialcourt.bc.ca",
-      "interpreter_request_email": ""
+      "interpreter_request_email": null
     },
     {
       "id": 9,
       "name": "Chilliwack (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_cw@bccourts.ca",
       "court_registry_email": "[Fax Filing: 604-795-8397]",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 10,
@@ -111,10 +111,10 @@
       "crown_email": "Colwood.Crown@gov.bc.ca",
       "jcm_scheduling_email": "WestComm.CriminalScheduling@provincialcourt.bc.ca",
       "court_registry_email": "wccregistry@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 11,
@@ -122,21 +122,21 @@
       "crown_email": "Courtenay.CrownSchedule@gov.bc.ca",
       "jcm_scheduling_email": "Courtenay.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "CourtenayRegistry@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 12,
       "name": "Courtenay (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_na@bccourts.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 13,
@@ -144,32 +144,32 @@
       "crown_email": "BCPS.CranbrookGen@gov.bc.ca",
       "jcm_scheduling_email": "EKootenays.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "cranbrookcourtregistry@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 14,
       "name": "Cranbrook (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_ka@bccourts.ca",
       "court_registry_email": "[Fax Filing: 250-426-1498]",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 15,
       "name": "Criminal Appeals & Special Prosecutions",
       "crown_email": "BCPS.CASPGen@gov.bc.ca",
-      "jcm_scheduling_email": "",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "jcm_scheduling_email": null,
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 16,
@@ -177,21 +177,21 @@
       "crown_email": "DawsonCreek.CrownCounsel@gov.bc.ca",
       "jcm_scheduling_email": "PeaceDistrict.CriminalScheduling@provincialcourt.bc.ca",
       "court_registry_email": "office15226@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 17,
       "name": "Dawson Creek (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_pg@bccourts.ca",
       "court_registry_email": "[Fax Filing: 250-784-2218]",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 18,
@@ -199,65 +199,65 @@
       "crown_email": "BCPS.Duncan.Reception@gov.bc.ca",
       "jcm_scheduling_email": "Dun.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "JAGCSBDuncanCourtScheduling@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 19,
       "name": "Duncan (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_na@bccourts.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 20,
       "name": "East Kootenays",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "EKootenays.Scheduling@provincialcourt.bc.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 21,
       "name": "Federal Crown (General)",
       "crown_email": "VAN.Detention.VAN@ppsc-sppc.gc.ca",
-      "jcm_scheduling_email": "",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "jcm_scheduling_email": null,
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 22,
       "name": "Federal Crown (Prince George)",
       "crown_email": "susan@luckylaw.ca",
-      "jcm_scheduling_email": "",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "jcm_scheduling_email": null,
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 23,
       "name": "First Nations Court (New West)",
       "crown_email": "Lena.DalSanto@gov.bc.ca",
-      "jcm_scheduling_email": "",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "jcm_scheduling_email": null,
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 24,
@@ -265,10 +265,10 @@
       "crown_email": "FortNelson.Crown@gov.bc.ca",
       "jcm_scheduling_email": "Terrace.CriminalScheduling@provincialcourt.bc.ca",
       "court_registry_email": "Office15229@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 25,
@@ -276,21 +276,21 @@
       "crown_email": "FtStJohn.Crown@gov.bc.ca",
       "jcm_scheduling_email": "PeaceDistrict.CriminalScheduling@provincialcourt.bc.ca",
       "court_registry_email": "Office15228@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 26,
       "name": "Fort St. John (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_pg@BCCourts.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 27,
@@ -298,21 +298,21 @@
       "crown_email": "BCPS.CranbrookGen@gov.bc.ca",
       "jcm_scheduling_email": "EKootenays.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "GoldenCourtRegistry@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 28,
       "name": "Golden (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_ka@bccourts.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 29,
@@ -320,21 +320,21 @@
       "crown_email": "BCPS.KamloopsGen@gov.bc.ca",
       "jcm_scheduling_email": "Kamloops.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "KamloopsCourtRegistry@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 30,
       "name": "Kamloops (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_ka@bccourts.ca",
       "court_registry_email": "[Fax Filing: 250-828-4345]",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 31,
@@ -343,53 +343,53 @@
       "jcm_scheduling_email": "Kelowna.CriminalScheduling@provincialcourt.bc.ca",
       "court_registry_email": "KelownaCourtRegistry@gov.bc.ca",
       "criminal_registry_email": "CSB.KelownaCriminal@gov.bc.ca",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 32,
       "name": "Kelowna (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_ok@bccourts.ca",
       "court_registry_email": "[Fax Filing: 250-979-6768]",
       "criminal_registry_email": "CSB.KelownaSupreme@gov.bc.ca",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 33,
       "name": "MacKenzie",
-      "crown_email": "",
-      "jcm_scheduling_email": "",
+      "crown_email": null,
+      "jcm_scheduling_email": null,
       "court_registry_email": "Office15216@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 34,
       "name": "Nanaimo (Provincial)",
       "crown_email": "Nanaimo.CrownSchedule@gov.bc.ca",
       "jcm_scheduling_email": "Nanaimo.Scheduling@provincialcourt.bc.ca",
-      "court_registry_email": "",
+      "court_registry_email": null,
       "criminal_registry_email": "crimreg.nanaimo@gov.bc.ca",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 35,
       "name": "Nanaimo (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_na@bccourts.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 36,
@@ -397,21 +397,21 @@
       "crown_email": "BCPS.NelsonGen@gov.bc.ca",
       "jcm_scheduling_email": "WKootenays.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "NelsonCourtRegistry@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 37,
       "name": "Nelson (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_ka@bccourts.ca",
       "court_registry_email": "[Fax Filing: 250-354-6133]",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 38,
@@ -419,21 +419,21 @@
       "crown_email": "NewWestminsterProvincial@gov.bc.ca",
       "jcm_scheduling_email": "NewWest.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "JAGCSBNWestminsterCourtScheduling@gov.bc.ca",
-      "criminal_registry_email": "",
+      "criminal_registry_email": null,
       "bail_crown_email": "NewWestProv.VirtualBail@gov.bc.ca",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 39,
       "name": "New Westminster (Supreme)",
-      "crown_email": "CJB.NewWestRegionalCrown@gov.bc.ca",
+      "crown_email": "CJB.NewWestRegionalCrown@gov.bc.ca ",
       "jcm_scheduling_email": "sc.scheduling_nw@BCCourts.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 40,
@@ -441,21 +441,21 @@
       "crown_email": "NorthVanCrown@gov.bc.ca",
       "jcm_scheduling_email": "NVan.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "NorthVancouverRegistry@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 41,
       "name": "Peace District",
-      "crown_email": "",
-      "jcm_scheduling_email": "Peace.District.Scheduling@provincialcourt.bc.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "crown_email": null,
+      "jcm_scheduling_email": "Peace.District.Scheduling@provincialcourt.bc.ca ",
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 42,
@@ -463,21 +463,21 @@
       "crown_email": "BCPS.PentictonGen@gov.bc.ca",
       "jcm_scheduling_email": "Penticton.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "PentictonCourtRegistry@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 43,
       "name": "Penticton (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_ok@bccourts.ca",
       "court_registry_email": "[Fax Filing: 250-492-1290]",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 44,
@@ -485,43 +485,43 @@
       "crown_email": "PtAlberni.CrownSchedule@gov.bc.ca",
       "jcm_scheduling_email": "PortAlberni.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "PortAlberniRegistry@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 45,
       "name": "Port Alberni (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_na@bccourts.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 46,
       "name": "Port Coquitlam (Provincial)",
       "crown_email": "Poco.Crown@gov.bc.ca",
       "jcm_scheduling_email": "PoCo.Scheduling@provincialcourt.bc.ca",
-      "court_registry_email": "",
+      "court_registry_email": null,
       "criminal_registry_email": "csb.portcoquitlamprovcriminal@gov.bc.ca",
       "bail_crown_email": "Poco.VirtualBail@gov.bc.ca",
       "bail_jcm_email": "Poco.VirtualHybridBail@provincialcourt.bc.ca",
-      "interpreter_request_email": ""
+      "interpreter_request_email": null
     },
     {
       "id": 47,
       "name": "Port Coquitlam (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_pc@bccourts.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 48,
@@ -529,10 +529,10 @@
       "crown_email": "PortHardy.CrownSchedule@gov.bc.ca",
       "jcm_scheduling_email": "PortHardy.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "porthardycourtregistry@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 49,
@@ -540,43 +540,43 @@
       "crown_email": "PowellRiver.CrownSchedule@gov.bc.ca",
       "jcm_scheduling_email": "PowellRiver.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "powellriverregistry@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 50,
       "name": "Powell River (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_na@bccourts.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 51,
       "name": "Prince George (Provincial)",
       "crown_email": "PrGeorge.crown@gov.bc.ca",
       "jcm_scheduling_email": "PG.Scheduling@provincialcourt.bc.ca",
-      "court_registry_email": "",
+      "court_registry_email": null,
       "criminal_registry_email": "csbpg.criminalregistry@gov.bc.ca",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 52,
       "name": "Prince George (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_pg@bccourts.ca",
       "court_registry_email": "[Fax Filing: 250-614-7923]",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 53,
@@ -584,21 +584,21 @@
       "crown_email": "PrinceRupert.Crown@gov.bc.ca",
       "jcm_scheduling_email": "PrinceRupert.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "Office15220@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 54,
       "name": "Prince Rupert (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_pg@bccourts.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 55,
@@ -606,32 +606,32 @@
       "crown_email": "Quesnel.Crown@gov.bc.ca",
       "jcm_scheduling_email": "Cariboo.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "Office15230@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 56,
       "name": "Quesnel (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_pg@bccourts.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 57,
       "name": "Revelstoke (Supreme)",
       "crown_email": "BCPS.SalmonArmGen@gov.bc.ca",
       "jcm_scheduling_email": "sc.scheduling_ka@bccourts.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 58,
@@ -639,21 +639,21 @@
       "crown_email": "RichmondCrown@gov.bc.ca",
       "jcm_scheduling_email": "Richmond.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "RichmondCourtRegistry@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
       "interpreter_request_email": "AGCSBRichmondInterpreters@gov.bc.ca"
     },
     {
       "id": 59,
       "name": "Richmond (Federal)",
       "crown_email": "ppscsupportstaff@mtclaw.ca",
-      "jcm_scheduling_email": "",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "jcm_scheduling_email": null,
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 60,
@@ -661,21 +661,21 @@
       "crown_email": "BCPS.NelsonGen@gov.bc.ca",
       "jcm_scheduling_email": "WKootenays.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "VCRosslandCrt@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 61,
       "name": "Rossland (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_ka@bccourts.ca",
       "court_registry_email": "[Fax Filing: 250-362-7321]",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 62,
@@ -684,20 +684,20 @@
       "jcm_scheduling_email": "SalmonArm.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "SalmonArmRegistry@gov.bc.ca",
       "criminal_registry_email": "JAGCSBSalmonArmScheduling@gov.bc.ca",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 63,
       "name": "Salmon Arm (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_ka@bccourts.ca",
       "court_registry_email": "[Fax Filing: 250-833-7401]",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 64,
@@ -705,10 +705,10 @@
       "crown_email": "SecheltCrown@gov.bc.ca",
       "jcm_scheduling_email": "NVan.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "SecheltRegistry@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 65,
@@ -716,28 +716,28 @@
       "crown_email": "Smithers.Crown@gov.bc.ca",
       "jcm_scheduling_email": "Smithers.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "Office15224@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 66,
       "name": "Smithers (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_pg@bccourts.ca",
       "court_registry_email": "[Fax Filing: 250-847-7344]",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 67,
       "name": "Surrey",
       "crown_email": "Surrey.Intake@gov.bc.ca",
       "jcm_scheduling_email": "Surrey.Scheduling@provincialcourt.bc.ca",
-      "court_registry_email": "",
+      "court_registry_email": null,
       "criminal_registry_email": "CSBSurreyProvincialCourt.CriminalRegistry@gov.bc.ca",
       "bail_crown_email": "Surrey.VirtualBail@gov.bc.ca",
       "bail_jcm_email": "Surrey.CriminalScheduling@provincialcourt.bc.ca",
@@ -747,12 +747,12 @@
       "id": 68,
       "name": "Surrey (Federal)",
       "crown_email": "ppsc.surreyincustody-endetentionsurrey.sppc@ppsc-sppc.gc.ca",
-      "jcm_scheduling_email": "",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "PPSC.SurreyInCustody-EnDetentionSurrey.SPPC@ppsc-sppc.gc.ca",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "jcm_scheduling_email": null,
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": "PPSC.SurreyInCustody-EnDetentionSurrey.SPPC@ppsc-sppc.gc.ca \u202f ",
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 69,
@@ -760,21 +760,21 @@
       "crown_email": "Terrace.Crown@gov.bc.ca",
       "jcm_scheduling_email": "Terrace.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "Office15222@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 70,
       "name": "Terrace (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_pg@bccourts.ca",
       "court_registry_email": "[Fax Filing: 250-638-2143]",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 71,
@@ -782,10 +782,10 @@
       "crown_email": "PrGeorge.crown@gov.bc.ca",
       "jcm_scheduling_email": "PG.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "Office15215@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 72,
@@ -793,43 +793,43 @@
       "crown_email": "222MainCrownGeneral@gov.bc.ca",
       "jcm_scheduling_email": "Van.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "222MainCS@gov.bc.ca\n222MainTranscripts@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
       "interpreter_request_email": "CSB222.InterpreterRequests@gov.bc.ca"
     },
     {
       "id": 73,
       "name": "Vancouver Law Courts (Supreme)",
-      "crown_email": "VancouverRegionalCrown@gov.bc.ca",
+      "crown_email": "VancouverRegionalCrown@gov.bc.ca ",
       "jcm_scheduling_email": "sc.criminal_va@BCcourts.ca",
       "court_registry_email": "VancouverLawCourtsRegistry@gov.bc.ca",
       "criminal_registry_email": "Vlc.criminal@gov.bc.ca",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 74,
       "name": "Vancouver Youth (Robson)",
-      "crown_email": "VancouverYouthCrown@gov.bc.ca",
+      "crown_email": "VancouverYouthCrown@gov.bc.ca ",
       "jcm_scheduling_email": "Robson.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "CSBRCS@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 75,
       "name": "Vanderhoof",
       "crown_email": "Vanderhoof.Crown@gov.bc.ca",
       "jcm_scheduling_email": "PG.Scheduling@provincialcourt.bc.ca",
-      "court_registry_email": "",
+      "court_registry_email": null,
       "criminal_registry_email": "csbpg.criminalregistry@gov.bc.ca",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 76,
@@ -838,53 +838,53 @@
       "jcm_scheduling_email": "Vernon.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "VernonRegistry@gov.bc.ca",
       "criminal_registry_email": "JAGCSBVernonScheduling@gov.bc.ca",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 77,
       "name": "Vernon (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_ok@bccourts.ca",
       "court_registry_email": "[Fax Filing: 250-549-5461]",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 78,
       "name": "Victoria (Provincial)",
       "crown_email": "VictoriaCrown.Public@gov.bc.ca",
       "jcm_scheduling_email": "Vic.Scheduling@provincialcourt.bc.ca",
-      "court_registry_email": "",
+      "court_registry_email": null,
       "criminal_registry_email": "vicprovincialreg@gov.bc.ca",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
       "interpreter_request_email": "victoria.finance@gov.bc.ca"
     },
     {
       "id": 79,
       "name": "Victoria (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_vi@bccourts.ca",
-      "court_registry_email": "",
+      "court_registry_email": null,
       "criminal_registry_email": "vicsupremereg@gov.bc.ca",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
       "interpreter_request_email": "victoria.finance@gov.bc.ca"
     },
     {
       "id": 80,
       "name": "West Kootenays",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "WKootenays.Scheduling@provincialcourt.bc.ca",
-      "court_registry_email": "",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "court_registry_email": null,
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 81,
@@ -892,21 +892,21 @@
       "crown_email": "WilliamsLake.Crown@gov.bc.ca",
       "jcm_scheduling_email": "Cariboo.Scheduling@provincialcourt.bc.ca",
       "court_registry_email": "Office15231@gov.bc.ca",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     },
     {
       "id": 82,
       "name": "Williams Lake (Supreme)",
-      "crown_email": "",
+      "crown_email": null,
       "jcm_scheduling_email": "sc.scheduling_pg@bccourts.ca",
       "court_registry_email": "[Fax Filing: 250-398-4264]",
-      "criminal_registry_email": "",
-      "bail_crown_email": "",
-      "bail_jcm_email": "",
-      "interpreter_request_email": ""
+      "criminal_registry_email": null,
+      "bail_crown_email": null,
+      "bail_jcm_email": null,
+      "interpreter_request_email": null
     }
   ],
   "court_contacts": [],
@@ -6128,7 +6128,7 @@
     {
       "id": 1,
       "name": "100 Mile House",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Williams Lake"
     },
     {
@@ -6140,13 +6140,13 @@
     {
       "id": 3,
       "name": "Alexis Creek",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Williams Lake"
     },
     {
       "id": 4,
       "name": "Anahim Lake",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Williams Lake"
     },
     {
@@ -6158,19 +6158,19 @@
     {
       "id": 6,
       "name": "Atlin",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Fort St. John"
     },
     {
       "id": 7,
       "name": "Bella Bella",
-      "region": "",
+      "region": "R2 - Vancouver Coastal",
       "contact_hub": "Vancouver 222"
     },
     {
       "id": 8,
       "name": "Bella Coola",
-      "region": "",
+      "region": "R2 - Vancouver Coastal",
       "contact_hub": "Vancouver 222"
     },
     {
@@ -6188,7 +6188,7 @@
     {
       "id": 11,
       "name": "Chetwynd",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Dawson Creek"
     },
     {
@@ -6206,13 +6206,13 @@
     {
       "id": 14,
       "name": "Daajing Giids/Queen Charlotte",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Prince Rupert"
     },
     {
       "id": 15,
       "name": "Dease Lake",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Terrace"
     },
     {
@@ -6224,13 +6224,13 @@
     {
       "id": 17,
       "name": "Fort St. James",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Prince George"
     },
     {
       "id": 18,
       "name": "Fraser Lake",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Prince George"
     },
     {
@@ -6242,37 +6242,37 @@
     {
       "id": 20,
       "name": "Gold River",
-      "region": "",
+      "region": "R1 - Island",
       "contact_hub": "Campbell River"
     },
     {
       "id": 21,
       "name": "Good Hope Lake",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Fort St. John"
     },
     {
       "id": 22,
       "name": "Grand Forks",
-      "region": "",
+      "region": "R4 - Interior",
       "contact_hub": "Rossland"
     },
     {
       "id": 23,
       "name": "Hazelton",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Smithers"
     },
     {
       "id": 24,
       "name": "Houston",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Smithers"
     },
     {
       "id": 25,
       "name": "Hudson's Hope",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Fort St. John"
     },
     {
@@ -6284,19 +6284,19 @@
     {
       "id": 27,
       "name": "Kitimat",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Terrace"
     },
     {
       "id": 28,
       "name": "Klemtu",
-      "region": "",
+      "region": "R2 - Vancouver Coastal",
       "contact_hub": "Vancouver 222"
     },
     {
       "id": 29,
       "name": "Kwadacha/Fort Ware",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Prince George"
     },
     {
@@ -6308,19 +6308,19 @@
     {
       "id": 31,
       "name": "Lower Post",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Fort St. John"
     },
     {
       "id": 32,
       "name": "Masset",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Prince Rupert"
     },
     {
       "id": 33,
       "name": "McBride",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Valemount"
     },
     {
@@ -6338,13 +6338,13 @@
     {
       "id": 36,
       "name": "New Aiyansh",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Terrace"
     },
     {
       "id": 37,
       "name": "Pemberton",
-      "region": "",
+      "region": "R2 - Vancouver Coastal",
       "contact_hub": "North Vancouver"
     },
     {
@@ -6374,7 +6374,7 @@
     {
       "id": 42,
       "name": "Stewart",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Terrace"
     },
     {
@@ -6392,13 +6392,13 @@
     {
       "id": 45,
       "name": "Tsay Keh Dene (Ingenika)",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Prince George"
     },
     {
       "id": 46,
       "name": "Tumbler Ridge",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Dawson Creek"
     },
     {
@@ -6410,7 +6410,7 @@
     {
       "id": 48,
       "name": "Vanderhoof",
-      "region": "",
+      "region": "R5 - Northern",
       "contact_hub": "Prince George"
     }
   ],
