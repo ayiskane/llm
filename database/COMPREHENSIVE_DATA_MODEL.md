@@ -13,17 +13,20 @@ This database aggregates all legal reference information for BC duty counsel, ex
 | courts | 82 | Courthouse locations with Crown/Registry contacts |
 | police_cells | 106 | RCMP/Police jail cell phone numbers by region |
 | correctional_facilities | 44 | Provincial & Federal corrections contacts |
-| bail_contacts | 7 | Virtual bail team emails by region |
-| bail_coordinators | 4 | Regional Administrative Bail Coordinators (RABCs) |
-| crown_contacts | 10 | Individual Crown counsel contacts |
-| labc_offices | 285 | Legal Aid BC offices, intake, navigators |
-| labc_navigators | 8 | LABC court navigators with phone/email |
-| forensic_clinics | 7 | Forensic Psychiatric Services regional clinics |
-| indigenous_justice_centres | 10 | BC First Nations Justice Council IJCs |
+| duty_counsel_lawyers | 262 | LABC duty counsel lawyers by region |
 | ms_teams_links | 405 | Virtual courtroom MS Teams conference IDs |
+| circuit_courts | 48 | Circuit court locations and contact hubs |
 | programs | 18 | Bail supervision & treatment programs |
 | access_codes | 18 | Courthouse barrister lounge codes |
-| circuit_courts | 48 | Circuit court locations and contact hubs |
+| labc_offices | 11 | Legal Aid BC offices & intake contacts |
+| crown_contacts | 10 | Individual Crown counsel contacts |
+| indigenous_justice_centres | 10 | BC First Nations Justice Council IJCs |
+| labc_navigators | 8 | LABC court navigators |
+| bail_contacts | 7 | Virtual bail team emails by region |
+| forensic_clinics | 7 | Forensic Psychiatric Services regional clinics |
+| bail_coordinators | 4 | Regional Administrative Bail Coordinators (RABCs) |
+
+**Total: 1,040 records**
 
 ## Virtual Bail Regions
 
@@ -34,6 +37,17 @@ This database aggregates all legal reference information for BC duty counsel, ex
 | R3 | Fraser | Abbotsford, Chilliwack, Surrey, PoCo, New West | Daytime Only |
 | R4 | Interior | Kelowna, Penticton, Kamloops, Vernon, Kootenays | Daytime + Evening |
 | R5 | North | Prince George, Quesnel, Williams Lake, Peace, Northwest | All Hours |
+
+## Duty Counsel Lawyers by Region
+
+| Region | Count |
+|--------|-------|
+| Island | 84 |
+| Fraser | 58 |
+| Vancouver Coastal | 51 |
+| Interior | 46 |
+| Interior Evening | 19 |
+| Northern | 4 |
 
 ## Key Contact Information
 
@@ -58,57 +72,16 @@ This database aggregates all legal reference information for BC duty counsel, ex
 ### Corrections Caller ID
 - **BC Corrections**: 1-844-369-7776
 
-## Data Sources Processed
+## Database Schema
 
-### Contact Information Folder (47 files)
-- Crown contact lists by region (R1-R5, daytime/evening)
-- Police jail cell numbers (Regions 1, 4, 5)
-- RCMP detachment phone list
-- Correctional centre details
-- LABC contact lists (all regions)
-- Federal Crown contacts
-- Sheriff/Registry coordinators
+The schema includes:
+- Full-text search indexes on key fields
+- A unified `search_all` view for cross-table searching
+- Proper foreign key relationships where applicable
 
-### Forensic Liaison Program (6 files)
-- FPS Regional Clinic list
-- Notice 33 & 34
-- Referral forms
+## Files
 
-### Indigenous Justice Programs (12 files)
-- BC Indigenous Resources Guide
-- IJC contacts
-- FNHA mental health supports
-- Restorative justice programs
-
-### MS Teams Links (10 files)
-- Virtual bail room links by region
-- Justice Centre evening/weekend links
-- PP Amalgamated live links (all courts)
-
-### Legal Aid (16 files)
-- Duty counsel cheat sheets (all regions)
-- Emergency services for remote communities
-- LABC intake contact information
-- Navigator court location contacts
-
-### Schedules (19 subfolders)
-- Crown counsel schedules
-- Judge schedules
-- LABC duty counsel schedules
-- Sheriff run schedules
-
-## Search Recommendations
-
-For optimal search functionality, implement:
-
-1. **Fuse.js** for fuzzy text search across all tables
-2. **Location-based filtering** using region codes
-3. **Time-aware display** for daytime vs evening contacts
-4. **Category filtering** (courts, police, corrections, etc.)
-
-## Next Steps
-
-1. Run `schema.sql` to create Supabase tables
-2. Import `normalized_data.json` using the import script
-3. Implement Fuse.js search in the frontend
-4. Add PWA capabilities for offline courthouse access
+- `normalized_data.json` - All extracted data (1,040 records)
+- `schema.sql` - PostgreSQL/Supabase schema
+- `types.ts` - TypeScript interfaces
+- `import_data.js` - Supabase import script
