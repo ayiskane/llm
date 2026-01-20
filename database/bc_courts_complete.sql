@@ -3,11 +3,19 @@
 -- Generated from BC Government website and internal documents
 -- ============================================================
 
--- Drop existing tables if they exist
+-- Drop ALL existing tables/views that might conflict
+DROP VIEW IF EXISTS circuit_courts CASCADE;
+DROP VIEW IF EXISTS staffed_courts CASCADE;
+DROP VIEW IF EXISTS courts_full CASCADE;
 DROP TABLE IF EXISTS court_contacts CASCADE;
 DROP TABLE IF EXISTS courts CASCADE;
 DROP TABLE IF EXISTS court_types CASCADE;
 DROP TABLE IF EXISTS regions CASCADE;
+
+-- Also drop old tables from previous schema
+DROP TABLE IF EXISTS court_locations CASCADE;
+DROP TABLE IF EXISTS court_crown_contacts CASCADE;
+DROP TABLE IF EXISTS court_registry_contacts CASCADE;
 
 -- ============================================================
 -- REGIONS TABLE
@@ -662,19 +670,19 @@ ORDER BY r.code, c.name;
 CREATE OR REPLACE VIEW staffed_courts AS
 SELECT * FROM courts_full WHERE is_staffed = TRUE;
 
--- Circuit courts only
-CREATE OR REPLACE VIEW circuit_courts AS
+-- Circuit courts view (renamed to avoid conflict)
+CREATE OR REPLACE VIEW circuit_courts_view AS
 SELECT * FROM courts_full WHERE court_type = 'Circuit';
 
 -- ============================================================
 -- INDEXES FOR PERFORMANCE
 -- ============================================================
-CREATE INDEX idx_courts_name ON courts(name);
-CREATE INDEX idx_courts_region ON courts(region_id);
-CREATE INDEX idx_courts_type ON courts(court_type_id);
-CREATE INDEX idx_courts_staffed ON courts(is_staffed);
-CREATE INDEX idx_court_contacts_court ON court_contacts(court_id);
-CREATE INDEX idx_court_contacts_type ON court_contacts(contact_type);
+CREATE INDEX IF NOT EXISTS idx_courts_name ON courts(name);
+CREATE INDEX IF NOT EXISTS idx_courts_region ON courts(region_id);
+CREATE INDEX IF NOT EXISTS idx_courts_type ON courts(court_type_id);
+CREATE INDEX IF NOT EXISTS idx_courts_staffed ON courts(is_staffed);
+CREATE INDEX IF NOT EXISTS idx_court_contacts_court ON court_contacts(court_id);
+CREATE INDEX IF NOT EXISTS idx_court_contacts_type ON court_contacts(contact_type);
 
 -- ============================================================
 -- VERIFICATION
