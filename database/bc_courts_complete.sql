@@ -80,7 +80,8 @@ CREATE TABLE court_contacts (
 
 -- Contact types:
 -- 'crown' - Crown Counsel
--- 'jcm_scheduling' - JCM Criminal Scheduling
+-- 'jcm_scheduling' - JCM Criminal Scheduling (Provincial)
+-- 'supreme_scheduling' - Supreme Court Scheduling
 -- 'criminal_registry' - Criminal Registry
 -- 'bail_crown' - Virtual Bail Crown
 -- 'bail_jcm' - Virtual Bail JCM
@@ -279,6 +280,8 @@ SELECT id, 'crown', 'VictoriaCrown.Public@gov.bc.ca' FROM courts WHERE name = 'V
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'Vic.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Victoria';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_vi@bccourts.ca' FROM courts WHERE name = 'Victoria';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'criminal_registry', 'vicprovincialreg@gov.bc.ca' FROM courts WHERE name = 'Victoria';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'interpreter', 'victoria.finance@gov.bc.ca' FROM courts WHERE name = 'Victoria';
@@ -287,9 +290,13 @@ SELECT id, 'crown', 'BCPS.Duncan.Reception@gov.bc.ca' FROM courts WHERE name = '
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'Dun.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Duncan';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_na@bccourts.ca' FROM courts WHERE name = 'Duncan';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'Nanaimo.CrownSchedule@gov.bc.ca' FROM courts WHERE name = 'Nanaimo';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'Nanaimo.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Nanaimo';
+INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_na@bccourts.ca' FROM courts WHERE name = 'Nanaimo';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'criminal_registry', 'crimreg.nanaimo@gov.bc.ca' FROM courts WHERE name = 'Nanaimo';
 INSERT INTO court_contacts (court_id, contact_type, email)
@@ -297,13 +304,19 @@ SELECT id, 'crown', 'PtAlberni.CrownSchedule@gov.bc.ca' FROM courts WHERE name =
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'PortAlberni.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Port Alberni';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_na@bccourts.ca' FROM courts WHERE name = 'Port Alberni';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'Courtenay.CrownSchedule@gov.bc.ca' FROM courts WHERE name = 'Courtenay';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'Courtenay.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Courtenay';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_na@bccourts.ca' FROM courts WHERE name = 'Courtenay';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'CampbellRiver.CrownSchedule@gov.bc.ca' FROM courts WHERE name = 'Campbell River';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'CampbellRiver.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Campbell River';
+INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_na@bccourts.ca' FROM courts WHERE name = 'Campbell River';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'PortHardy.CrownSchedule@gov.bc.ca' FROM courts WHERE name = 'Port Hardy';
 INSERT INTO court_contacts (court_id, contact_type, email)
@@ -312,6 +325,8 @@ INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'PowellRiver.CrownSchedule@gov.bc.ca' FROM courts WHERE name = 'Powell River';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'PowellRiver.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Powell River';
+INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_na@bccourts.ca' FROM courts WHERE name = 'Powell River';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'NorthVanCrown@gov.bc.ca' FROM courts WHERE name = 'North Vancouver';
 INSERT INTO court_contacts (court_id, contact_type, email)
@@ -331,6 +346,8 @@ SELECT id, 'crown', 'NewWestminsterProvincial@gov.bc.ca' FROM courts WHERE name 
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'NewWest.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'New Westminster';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_nw@BCCourts.ca' FROM courts WHERE name = 'New Westminster';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'bail_crown', 'NewWestProv.VirtualBail@gov.bc.ca' FROM courts WHERE name = 'New Westminster';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'Surrey.Intake@gov.bc.ca' FROM courts WHERE name = 'Surrey';
@@ -349,6 +366,8 @@ SELECT id, 'crown', 'Poco.Crown@gov.bc.ca' FROM courts WHERE name = 'Port Coquit
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'PoCo.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Port Coquitlam';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_pc@bccourts.ca' FROM courts WHERE name = 'Port Coquitlam';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'criminal_registry', 'csb.portcoquitlamprovcriminal@gov.bc.ca' FROM courts WHERE name = 'Port Coquitlam';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'bail_crown', 'Poco.VirtualBail@gov.bc.ca' FROM courts WHERE name = 'Port Coquitlam';
@@ -358,6 +377,8 @@ INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'BCPS.Abbotsford.Reception@gov.bc.ca' FROM courts WHERE name = 'Abbotsford';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'Abbotsford.CriminalScheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Abbotsford';
+INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_ab@bccourts.ca' FROM courts WHERE name = 'Abbotsford';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'criminal_registry', 'AbbotsfordCriminalRegistry@gov.bc.ca' FROM courts WHERE name = 'Abbotsford';
 INSERT INTO court_contacts (court_id, contact_type, email)
@@ -373,6 +394,8 @@ SELECT id, 'crown', 'BCPS.Chilliwack.Reception@gov.bc.ca' FROM courts WHERE name
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'Chilliwack.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Chilliwack';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_cw@bccourts.ca' FROM courts WHERE name = 'Chilliwack';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'criminal_registry', 'CSBChilliwackCriminalRegistry@gov.bc.ca' FROM courts WHERE name = 'Chilliwack';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'bail_crown', 'Chilliwack.VirtualBail@gov.bc.ca' FROM courts WHERE name = 'Chilliwack';
@@ -383,9 +406,13 @@ SELECT id, 'crown', 'BCPS.KamloopsGen@gov.bc.ca' FROM courts WHERE name = 'Kamlo
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'Kamloops.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Kamloops';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_ka@bccourts.ca' FROM courts WHERE name = 'Kamloops';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'KelownaCrown@gov.bc.ca' FROM courts WHERE name = 'Kelowna';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'Kelowna.CriminalScheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Kelowna';
+INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_ok@bccourts.ca' FROM courts WHERE name = 'Kelowna';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'criminal_registry', 'CSB.KelownaCriminal@gov.bc.ca' FROM courts WHERE name = 'Kelowna';
 INSERT INTO court_contacts (court_id, contact_type, email)
@@ -393,15 +420,21 @@ SELECT id, 'crown', 'BCPS.VernonGen@gov.bc.ca' FROM courts WHERE name = 'Vernon'
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'Vernon.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Vernon';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_ok@bccourts.ca' FROM courts WHERE name = 'Vernon';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'criminal_registry', 'JAGCSBVernonScheduling@gov.bc.ca' FROM courts WHERE name = 'Vernon';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'BCPS.PentictonGen@gov.bc.ca' FROM courts WHERE name = 'Penticton';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'Penticton.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Penticton';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_ok@bccourts.ca' FROM courts WHERE name = 'Penticton';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'BCPS.SalmonArmGen@gov.bc.ca' FROM courts WHERE name = 'Salmon Arm';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'SalmonArm.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Salmon Arm';
+INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_ka@bccourts.ca' FROM courts WHERE name = 'Salmon Arm';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'criminal_registry', 'JAGCSBSalmonArmScheduling@gov.bc.ca' FROM courts WHERE name = 'Salmon Arm';
 INSERT INTO court_contacts (court_id, contact_type, email)
@@ -409,21 +442,31 @@ SELECT id, 'crown', 'BCPS.NelsonGen@gov.bc.ca' FROM courts WHERE name = 'Nelson'
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'WKootenays.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Nelson';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_ka@bccourts.ca' FROM courts WHERE name = 'Nelson';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'BCPS.NelsonGen@gov.bc.ca' FROM courts WHERE name = 'Rossland';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'WKootenays.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Rossland';
+INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_ka@bccourts.ca' FROM courts WHERE name = 'Rossland';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'BCPS.CranbrookGen@gov.bc.ca' FROM courts WHERE name = 'Cranbrook';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'EKootenays.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Cranbrook';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_ka@bccourts.ca' FROM courts WHERE name = 'Cranbrook';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'BCPS.CranbrookGen@gov.bc.ca' FROM courts WHERE name = 'Golden';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'EKootenays.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Golden';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_ka@bccourts.ca' FROM courts WHERE name = 'Golden';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'PrGeorge.crown@gov.bc.ca' FROM courts WHERE name = 'Prince George';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'PG.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Prince George';
+INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_pg@bccourts.ca' FROM courts WHERE name = 'Prince George';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'criminal_registry', 'csbpg.criminalregistry@gov.bc.ca' FROM courts WHERE name = 'Prince George';
 INSERT INTO court_contacts (court_id, contact_type, email)
@@ -431,21 +474,31 @@ SELECT id, 'crown', 'Quesnel.Crown@gov.bc.ca' FROM courts WHERE name = 'Quesnel'
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'Cariboo.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Quesnel';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_pg@bccourts.ca' FROM courts WHERE name = 'Quesnel';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'WilliamsLake.Crown@gov.bc.ca' FROM courts WHERE name = 'Williams Lake';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'Cariboo.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Williams Lake';
+INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_pg@bccourts.ca' FROM courts WHERE name = 'Williams Lake';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'Smithers.Crown@gov.bc.ca' FROM courts WHERE name = 'Smithers';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'Smithers.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Smithers';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_pg@bccourts.ca' FROM courts WHERE name = 'Smithers';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'Terrace.Crown@gov.bc.ca' FROM courts WHERE name = 'Terrace';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'Terrace.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Terrace';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_pg@bccourts.ca' FROM courts WHERE name = 'Terrace';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'PrinceRupert.Crown@gov.bc.ca' FROM courts WHERE name = 'Prince Rupert';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'PrinceRupert.Scheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Prince Rupert';
+INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_pg@bccourts.ca' FROM courts WHERE name = 'Prince Rupert';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'Smithers.Crown@gov.bc.ca' FROM courts WHERE name = 'Burns Lake';
 INSERT INTO court_contacts (court_id, contact_type, email)
@@ -459,9 +512,13 @@ SELECT id, 'crown', 'FtStJohn.Crown@gov.bc.ca' FROM courts WHERE name = 'Fort St
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'PeaceDistrict.CriminalScheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Fort St. John';
 INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_pg@BCCourts.ca' FROM courts WHERE name = 'Fort St. John';
+INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'DawsonCreek.CrownCounsel@gov.bc.ca' FROM courts WHERE name = 'Dawson Creek';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'jcm_scheduling', 'PeaceDistrict.CriminalScheduling@provincialcourt.bc.ca' FROM courts WHERE name = 'Dawson Creek';
+INSERT INTO court_contacts (court_id, contact_type, email)
+SELECT id, 'supreme_scheduling', 'sc.scheduling_pg@bccourts.ca' FROM courts WHERE name = 'Dawson Creek';
 INSERT INTO court_contacts (court_id, contact_type, email)
 SELECT id, 'crown', 'PrGeorge.crown@gov.bc.ca' FROM courts WHERE name = 'Valemount';
 INSERT INTO court_contacts (court_id, contact_type, email)
@@ -497,6 +554,7 @@ SELECT
     c.access_code, c.access_code_notes, c.notes,
     (SELECT email FROM court_contacts WHERE court_id = c.id AND contact_type = 'crown') as crown_email,
     (SELECT email FROM court_contacts WHERE court_id = c.id AND contact_type = 'jcm_scheduling') as jcm_scheduling_email,
+    (SELECT email FROM court_contacts WHERE court_id = c.id AND contact_type = 'supreme_scheduling') as supreme_scheduling_email,
     (SELECT email FROM court_contacts WHERE court_id = c.id AND contact_type = 'criminal_registry') as criminal_registry_email,
     (SELECT email FROM court_contacts WHERE court_id = c.id AND contact_type = 'bail_crown') as bail_crown_email,
     (SELECT email FROM court_contacts WHERE court_id = c.id AND contact_type = 'bail_jcm') as bail_jcm_email,
@@ -522,5 +580,7 @@ SELECT 'Total Courts' as metric, COUNT(*) as count FROM courts
 UNION ALL SELECT 'Staffed', COUNT(*) FROM courts WHERE is_staffed = TRUE
 UNION ALL SELECT 'Circuit', COUNT(*) FROM courts WHERE is_circuit = TRUE
 UNION ALL SELECT 'With Crown Email', COUNT(*) FROM court_contacts WHERE contact_type = 'crown'
+UNION ALL SELECT 'With JCM Scheduling', COUNT(*) FROM court_contacts WHERE contact_type = 'jcm_scheduling'
+UNION ALL SELECT 'With Supreme Scheduling Email', COUNT(*) FROM court_contacts WHERE contact_type = 'supreme_scheduling'
 UNION ALL SELECT 'With Criminal Registry', COUNT(*) FROM court_contacts WHERE contact_type = 'criminal_registry'
 UNION ALL SELECT 'With Bail Crown', COUNT(*) FROM court_contacts WHERE contact_type = 'bail_crown';
