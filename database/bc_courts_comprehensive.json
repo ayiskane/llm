@@ -7,10 +7,10 @@
     "region_name": "Vancouver Island",
     "contact_hub": null,
     "address": "850 Burdett Avenue, Victoria, BC V8W 9J2",
-    "phone": "250-356-1478",
-    "fax": null,
-    "civil_fax": "250-387-3061",
-    "criminal_fax": "250-356-6279",
+    "phone": "250.356.1478",
+    "fax": "250.356.6669",
+    "civil_fax": "250.387.3061",
+    "criminal_fax": "250.356.6279",
     "sheriff_phone": "250-387-6811",
     "notes": null,
     "crown_email": "VictoriaCrown.Public@gov.bc.ca",
@@ -22,7 +22,9 @@
     "bail_jcm_email": null,
     "interpreter_request_email": "victoria.finance@gov.bc.ca",
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_scheduling_phone": "250.356.1450",
+    "supreme_scheduling_fax": "250.952.6824"
   },
   {
     "name": "Western Communities",
@@ -57,8 +59,8 @@
     "region_name": "Vancouver Island",
     "contact_hub": null,
     "address": "238 Government Street, Duncan, BC V9L 1A5",
-    "phone": "250-746-1258",
-    "fax": "250-746-1244",
+    "phone": "250.746.1258",
+    "fax": "250.746.1244",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-746-1233",
@@ -72,7 +74,10 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "toll_free": "1.877.288.0889",
+    "supreme_scheduling_phone": "250.741.5851",
+    "supreme_scheduling_fax": "250.952.6824"
   },
   {
     "name": "Nanaimo",
@@ -82,8 +87,8 @@
     "region_name": "Vancouver Island",
     "contact_hub": null,
     "address": "35 Front Street, Nanaimo, BC V9R 5J1",
-    "phone": "250-716-5918",
-    "fax": "250-716-5911",
+    "phone": "250.746.1227",
+    "fax": "250.741.3809",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-716-5926",
@@ -97,7 +102,9 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": "3179#",
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_scheduling_phone": "250.741.5860",
+    "supreme_scheduling_fax": "250.741.5872"
   },
   {
     "name": "Port Alberni",
@@ -107,8 +114,8 @@
     "region_name": "Vancouver Island",
     "contact_hub": null,
     "address": "2999 - 4th Avenue, Port Alberni, BC V9Y 8A5",
-    "phone": "250-720-2424",
-    "fax": "250-720-2419",
+    "phone": "250.720.2424",
+    "fax": "250.720.2426",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-720-2415",
@@ -122,7 +129,10 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_scheduling_phone": "250.741.5860",
+    "supreme_scheduling_fax": "250.741.5872",
+    "supreme_toll_free": "1.877.741.3820"
   },
   {
     "name": "Courtenay",
@@ -131,9 +141,9 @@
     "region_code": "R1",
     "region_name": "Vancouver Island",
     "contact_hub": null,
-    "address": "Rm. 100, 420 Cumberland Road, Courtenay, BC V9N 2C4",
-    "phone": "250-334-1115",
-    "fax": "250-334-1191",
+    "address": "Room 100, 420 Cumberland Road, Courtenay, BC V9N 2C4",
+    "phone": "250.334.1115",
+    "fax": "250.334.1191",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-334-1135",
@@ -147,7 +157,10 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_scheduling_phone": "250.741.5860",
+    "supreme_scheduling_fax": "250.741.5872",
+    "supreme_toll_free": "1.877.741.3820"
   },
   {
     "name": "Campbell River",
@@ -157,8 +170,8 @@
     "region_name": "Vancouver Island",
     "contact_hub": null,
     "address": "500 - 13th Avenue, Campbell River, BC V9W 6P1",
-    "phone": "250-286-7510",
-    "fax": "250-286-7512",
+    "phone": "250.286.7510",
+    "fax": "250.286.7512",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-286-7518",
@@ -172,7 +185,10 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_scheduling_phone": "250.741.5860",
+    "supreme_scheduling_fax": "250.741.5872",
+    "supreme_toll_free": "1.877.741.3820"
   },
   {
     "name": "Port Hardy",
@@ -206,9 +222,9 @@
     "region_code": "R1",
     "region_name": "Vancouver Island",
     "contact_hub": null,
-    "address": "Rm. 103, 6953 Alberni Street, Powell River, BC V8A 2B8",
-    "phone": "604-485-3630",
-    "fax": "604-485-3637",
+    "address": "103 - 6953 Alberni Street, Powell River, BC V8A 2B8",
+    "phone": "604.485.3630",
+    "fax": "604.485.3637",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "604-485-3641",
@@ -222,7 +238,10 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_scheduling_phone": "250.741.5860",
+    "supreme_scheduling_fax": "250.741.5872",
+    "supreme_toll_free": "1.877.741.3820"
   },
   {
     "name": "Vancouver Supreme Court",
@@ -231,13 +250,13 @@
     "region_code": "R2",
     "region_name": "Vancouver Coastal",
     "contact_hub": null,
-    "address": "Law Courts, 800 Smithe Street, Vancouver, BC V6Z 2E1",
-    "phone": "604-660-2847",
-    "fax": "604-660-2420",
+    "address": "800 Smithe Street, Vancouver, BC V6Z 2E1",
+    "phone": "604.660.2847",
+    "fax": "604.660.2420",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "604-660-2601",
-    "notes": null,
+    "notes": "Accounting: 604.660.2866, Chambers: 604.660.2849, Criminal: 604.660.2874, Civil: 604.660.2845, Family: 604.660.2486, Probate: 604.660.2876",
     "crown_email": null,
     "jcm_scheduling_email": null,
     "supreme_scheduling_email": null,
@@ -247,7 +266,8 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_scheduling_phone": "604.660.2853"
   },
   {
     "name": "Vancouver Provincial Court",
@@ -406,11 +426,11 @@
     "region_code": "R3",
     "region_name": "Fraser",
     "contact_hub": null,
-    "address": "Law Courts, Begbie Square, 651 Carnarvon Street, New Westminster, BC V3M 1C9",
-    "phone": "604-660-8522",
-    "fax": null,
-    "civil_fax": "604-515-4280",
-    "criminal_fax": "604-660-8512",
+    "address": "Begbie Square, 651 Carnarvon Street, New Westminster, BC V3M 1C9",
+    "phone": "604.660.8522",
+    "fax": "604.660.6196",
+    "civil_fax": "604.660.2072",
+    "criminal_fax": "604.660.8512",
     "sheriff_phone": "604-660-8538",
     "notes": null,
     "crown_email": "NewWestminsterProvincial@gov.bc.ca",
@@ -422,7 +442,8 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_scheduling_phone": "604.660.8551"
   },
   {
     "name": "Surrey",
@@ -456,9 +477,9 @@
     "region_code": "R3",
     "region_name": "Fraser",
     "contact_hub": null,
-    "address": "Unit A, 2620 Mary Hill Road, Port Coquitlam, BC V3C 3B2",
-    "phone": "604-927-2100",
-    "fax": "604-927-2222",
+    "address": "2620 Mary Hill Road, Port Coquitlam, BC V3C 3B2",
+    "phone": "604.927.2100",
+    "fax": "604.927.2222",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "604-927-2120",
@@ -472,7 +493,8 @@
     "bail_jcm_email": "Poco.VirtualHybridBail@provincialcourt.bc.ca",
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_scheduling_phone": "604.927.2255"
   },
   {
     "name": "Abbotsford",
@@ -481,9 +503,9 @@
     "region_code": "R3",
     "region_name": "Fraser",
     "contact_hub": null,
-    "address": "32375 Veteran's Way, Abbotsford, BC V2T 0K1",
-    "phone": "604-855-3200",
-    "fax": "604-855-3232",
+    "address": "32375 Veterans Way, Abbotsford, BC V2T 0K1",
+    "phone": "604.855.3200",
+    "fax": "604.855.3232",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "604-855-3222",
@@ -497,7 +519,8 @@
     "bail_jcm_email": "Abbotsford.VirtualHybridBail@provincialcourt.bc.ca",
     "interpreter_request_email": "Tina.Nguyen@gov.bc.ca\nSheila.Hedd@gov.bc.ca\nDamaris.Stanciu@gov.bc.ca",
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_scheduling_phone": "604.425.3711"
   },
   {
     "name": "Chilliwack",
@@ -507,10 +530,10 @@
     "region_name": "Fraser",
     "contact_hub": null,
     "address": "46085 Yale Road, Chilliwack, BC V2P 2L8",
-    "phone": "604-795-8350",
+    "phone": "604.795.8350",
     "fax": null,
-    "civil_fax": "604-795-8345",
-    "criminal_fax": "604-795-8393",
+    "civil_fax": "604.795.8345",
+    "criminal_fax": "604.795.8393",
     "sheriff_phone": "604-795-8207",
     "notes": null,
     "crown_email": "BCPS.Chilliwack.Reception@gov.bc.ca",
@@ -522,7 +545,9 @@
     "bail_jcm_email": "Abbotsford.VirtualHybridBail@provincialcourt.bc.ca",
     "interpreter_request_email": null,
     "access_code": "512",
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_fax_filing": "604.795.8397",
+    "supreme_scheduling_phone": "604.795.8349"
   },
   {
     "name": "Kamloops",
@@ -531,9 +556,9 @@
     "region_code": "R4",
     "region_name": "Interior",
     "contact_hub": null,
-    "address": "Rm. 223, 455 Columbia Street, Kamloops, BC V2C 6K4",
-    "phone": "250-828-4344",
-    "fax": "250-828-4332",
+    "address": "223 - 455 Columbia Street, Kamloops, BC V2C 6K4",
+    "phone": "250.828.4344",
+    "fax": "250.828.4332",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-828-4328",
@@ -547,7 +572,10 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_fax_filing": "250.828.4345",
+    "supreme_scheduling_phone": "250.828.4351",
+    "supreme_scheduling_fax": "250.828.4332"
   },
   {
     "name": "Kelowna",
@@ -556,9 +584,9 @@
     "region_code": "R4",
     "region_name": "Interior",
     "contact_hub": null,
-    "address": "1 - 1355 Water Street, Kelowna, BC V1Y 9R3",
-    "phone": "250-470-6900",
-    "fax": "250-470-6939",
+    "address": "1355 Water Street, Kelowna, BC V1Y 9R3",
+    "phone": "250.470.6900",
+    "fax": "250.470.6939",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-470-6846",
@@ -572,7 +600,10 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_fax_filing": "250.979.6768",
+    "supreme_scheduling_phone": "250.470.6935",
+    "supreme_scheduling_fax": "250.979.6783"
   },
   {
     "name": "Vernon",
@@ -581,9 +612,9 @@
     "region_code": "R4",
     "region_name": "Interior",
     "contact_hub": null,
-    "address": "3001 - 27 Street, Vernon, BC V1T 4W5",
-    "phone": "250-549-5422",
-    "fax": "250-549-5621",
+    "address": "3001 - 27th Street, Vernon, BC V1T 4W5",
+    "phone": "250.549.5422",
+    "fax": "250.549.5621",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-549-5410",
@@ -597,7 +628,11 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_fax_filing": "250.549.5461",
+    "supreme_scheduling_phone": "250.470.6935",
+    "supreme_scheduling_fax": "250.979.6783",
+    "supreme_toll_free": "1.888.526.8555"
   },
   {
     "name": "Penticton",
@@ -607,8 +642,8 @@
     "region_name": "Interior",
     "contact_hub": null,
     "address": "100 Main Street, Penticton, BC V2A 5A5",
-    "phone": "250-492-1231",
-    "fax": "250-492-1378",
+    "phone": "250.492.1231",
+    "fax": "250.492.1378",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-492-1234",
@@ -622,7 +657,11 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_fax_filing": "250.492.1290",
+    "supreme_scheduling_phone": "250.470.6935",
+    "supreme_scheduling_fax": "250.979.6783",
+    "supreme_toll_free": "1.888.526.8555"
   },
   {
     "name": "Salmon Arm",
@@ -631,9 +670,9 @@
     "region_code": "R4",
     "region_name": "Interior",
     "contact_hub": null,
-    "address": "PO Box 100 Station Main, #550 - 2nd Avenue NE, Salmon Arm, BC V1E 4S4",
-    "phone": "250-832-1610",
-    "fax": "250-832-1749",
+    "address": "550 - 2nd Avenue NE, PO Box 100, Station Main, Salmon Arm, BC V1E 1H1",
+    "phone": "250.832.1610",
+    "fax": "250.832.1749",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-832-1615",
@@ -647,7 +686,11 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_fax_filing": "250.833.7401",
+    "supreme_scheduling_phone": "250.828.4351",
+    "supreme_scheduling_fax": "250.828.4332",
+    "supreme_toll_free": "1.888.828.4351"
   },
   {
     "name": "Nelson",
@@ -657,8 +700,8 @@
     "region_name": "Interior",
     "contact_hub": null,
     "address": "320 Ward Street, Nelson, BC V1L 1S6",
-    "phone": "250-354-6165",
-    "fax": "250-354-6539",
+    "phone": "250.354.6165",
+    "fax": "250.354.6539",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-354-6155",
@@ -672,7 +715,11 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_fax_filing": "250.354.6133",
+    "supreme_scheduling_phone": "250.828.4351",
+    "supreme_scheduling_fax": "250.828.4332",
+    "supreme_toll_free": "1.888.828.4351"
   },
   {
     "name": "Rossland",
@@ -681,9 +728,9 @@
     "region_code": "R4",
     "region_name": "Interior",
     "contact_hub": null,
-    "address": "Box 639, 2288 Columbia Avenue, Rossland, BC V0G 1Y0",
-    "phone": "250-362-7368",
-    "fax": "250-362-9632",
+    "address": "P.O. Box 639, 2288 Columbia Avenue, Rossland, BC V0G 1Y0",
+    "phone": "250.362.7368",
+    "fax": "250.362.9632",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-362-7368",
@@ -697,7 +744,11 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_fax_filing": "250.362.7321",
+    "supreme_scheduling_phone": "250.828.4351",
+    "supreme_scheduling_fax": "250.828.4332",
+    "supreme_toll_free": "1.888.828.4351"
   },
   {
     "name": "Cranbrook",
@@ -706,9 +757,9 @@
     "region_code": "R4",
     "region_name": "Interior",
     "contact_hub": null,
-    "address": "Rm. 147, 102 - 11 Avenue South, Cranbrook, BC V1C 2P3",
-    "phone": "250-426-1234",
-    "fax": "250-426-1352",
+    "address": "Room 147, 102 - 11th Avenue South, Cranbrook, BC V1C 2P3",
+    "phone": "250.426.1234",
+    "fax": "250.426.1352",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-426-1212",
@@ -722,7 +773,10 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_fax_filing": "250.426.1498",
+    "supreme_scheduling_phone": "250.828.4351",
+    "supreme_scheduling_fax": "250.828.4332"
   },
   {
     "name": "Golden",
@@ -731,9 +785,9 @@
     "region_code": "R4",
     "region_name": "Interior",
     "contact_hub": null,
-    "address": "Box 1500, 837 Park Drive, Golden, BC V0A 1H0 (Temp: 1104 9th St. South)",
-    "phone": "250-344-7581",
-    "fax": "250-344-7715",
+    "address": "837 Park Drive, Golden, BC V0A 1H0",
+    "phone": "250.344.7581",
+    "fax": "250.344.7715",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": null,
@@ -747,7 +801,8 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_scheduling_phone": "250.828.4351"
   },
   {
     "name": "Prince George",
@@ -757,8 +812,8 @@
     "region_name": "Northern",
     "contact_hub": null,
     "address": "J.O. Wilson Square, 250 George Street, Prince George, BC V2L 5S2",
-    "phone": "250-614-2700",
-    "fax": "250-614-2717",
+    "phone": "250.614.2700",
+    "fax": "250.614.2737",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-614-2741",
@@ -772,7 +827,10 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_fax_filing": "250.614.7923",
+    "supreme_scheduling_phone": "250.614.2750",
+    "supreme_scheduling_fax": "250.614.2791"
   },
   {
     "name": "Quesnel",
@@ -781,9 +839,9 @@
     "region_code": "R5",
     "region_name": "Northern",
     "contact_hub": null,
-    "address": "350 Barlow Avenue, Quesnel, BC V2J 2C2",
-    "phone": "250-992-4256",
-    "fax": "250-992-4171",
+    "address": "305 - 350 Barlow Avenue, Quesnel, BC V2J 2C1",
+    "phone": "250.992.4256",
+    "fax": "250.992.4171",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-992-4236",
@@ -797,7 +855,10 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_scheduling_phone": "250.614.2750",
+    "supreme_scheduling_fax": "250.614.2791",
+    "supreme_toll_free": "1.866.614.2750"
   },
   {
     "name": "Williams Lake",
@@ -807,8 +868,8 @@
     "region_name": "Northern",
     "contact_hub": null,
     "address": "540 Borland Street, Williams Lake, BC V2G 1R8",
-    "phone": "250-398-4301",
-    "fax": "250-398-4459",
+    "phone": "250.398.4301",
+    "fax": "250.398.4459",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-398-4292",
@@ -822,7 +883,11 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_fax_filing": "250.398.4264",
+    "supreme_scheduling_phone": "250.614.2750",
+    "supreme_scheduling_fax": "250.614.2791",
+    "supreme_toll_free": "1.866.614.2750"
   },
   {
     "name": "Smithers",
@@ -831,9 +896,9 @@
     "region_code": "R5",
     "region_name": "Northern",
     "contact_hub": null,
-    "address": "#40 Bag 5000, 3793 Alfred Street, Smithers, BC V0J 2N0",
-    "phone": "250-847-7376",
-    "fax": "250-847-7710",
+    "address": "No. 40, Bag 5000, 3793 Alfred Avenue, Smithers, BC V0J 2N0",
+    "phone": "250.847.7376",
+    "fax": "250.847.7710",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-847-7372",
@@ -847,7 +912,10 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_fax_filing": "250.847.7344",
+    "supreme_scheduling_phone": "250.614.2644",
+    "supreme_scheduling_fax": "250.847.7483"
   },
   {
     "name": "Terrace",
@@ -857,8 +925,8 @@
     "region_name": "Northern",
     "contact_hub": null,
     "address": "3408 Kalum Street, Terrace, BC V8G 2N6",
-    "phone": "250-638-2111",
-    "fax": "250-638-2123",
+    "phone": "250.638.2111",
+    "fax": "250.638.2123",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-638-2121",
@@ -872,7 +940,10 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_fax_filing": "250.638.2143",
+    "supreme_scheduling_phone": "250.614.2750",
+    "supreme_scheduling_fax": "250.624.7538"
   },
   {
     "name": "Prince Rupert",
@@ -882,8 +953,8 @@
     "region_name": "Northern",
     "contact_hub": null,
     "address": "100 Market Place, Prince Rupert, BC V8J 1B8",
-    "phone": "250-624-7525",
-    "fax": "250-624-7538",
+    "phone": "250.624.7525",
+    "fax": "250.624.7538",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-624-7528",
@@ -897,7 +968,9 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": "266266",
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_scheduling_phone": "250.614.2750",
+    "supreme_scheduling_fax": "250.614.2791"
   },
   {
     "name": "Burns Lake",
@@ -931,9 +1004,9 @@
     "region_code": "R5",
     "region_name": "Northern",
     "contact_hub": null,
-    "address": "Bag 1000, 5431 Airport Drive, Fort Nelson, BC V0C 1R0",
-    "phone": "250-774-5999",
-    "fax": "250-774-6904",
+    "address": "Bag 1000, 4604 Sunset Drive, Fort Nelson, BC V0C 1R0",
+    "phone": "250.774.5999",
+    "fax": "250.774.6904",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": null,
@@ -947,7 +1020,10 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_scheduling_phone": "250.614.2750",
+    "supreme_scheduling_fax": "250.614.2791",
+    "supreme_toll_free": "1.866.614.2750"
   },
   {
     "name": "Fort St. John",
@@ -957,8 +1033,8 @@
     "region_name": "Northern",
     "contact_hub": null,
     "address": "10600 - 100 Street, Fort St. John, BC V1J 4L6",
-    "phone": "250-787-3231",
-    "fax": "250-787-3518",
+    "phone": "250.787.3231",
+    "fax": "250.787.2419",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-787-3272",
@@ -972,7 +1048,10 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": "2&4, 3",
-    "access_code_notes": "2 & 4 together\ud83e\udd18then 3 \ud83d\udd95"
+    "access_code_notes": "2 & 4 together\ud83e\udd18then 3 \ud83d\udd95",
+    "supreme_scheduling_phone": "250.614.2750",
+    "supreme_scheduling_fax": "250.614.2791",
+    "supreme_toll_free": "1.866.614.2750"
   },
   {
     "name": "Dawson Creek",
@@ -981,9 +1060,9 @@
     "region_code": "R5",
     "region_name": "Northern",
     "contact_hub": null,
-    "address": "1201 - 103 Avenue, Dawson Creek, BC V1G 4J2",
-    "phone": "250-784-2278",
-    "fax": "250-784-2339",
+    "address": "1201 - 103rd Avenue, Dawson Creek, BC V1G 4J2",
+    "phone": "250.784.2278",
+    "fax": "250.784.2339",
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": "250-784-2266",
@@ -997,7 +1076,11 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_fax_filing": "250.784.2218",
+    "supreme_scheduling_phone": "250.614.2750",
+    "supreme_scheduling_fax": "250.614.2791",
+    "supreme_toll_free": "1.866.614.2750"
   },
   {
     "name": "Mackenzie",
@@ -1631,13 +1714,13 @@
     "region_code": "R4",
     "region_name": "Interior",
     "contact_hub": "Salmon Arm",
-    "address": null,
+    "address": "1123 West 2nd Street, Revelstoke, BC V0E 2S0",
     "phone": null,
     "fax": null,
     "civil_fax": null,
     "criminal_fax": null,
     "sheriff_phone": null,
-    "notes": null,
+    "notes": "For scheduling, contact Supreme Court Scheduling in Kamloops. For filing, contact Salmon Arm Courthouse.",
     "crown_email": "BCPS.SalmonArmGen@gov.bc.ca",
     "jcm_scheduling_email": "sc.scheduling_ka@bccourts.ca",
     "supreme_scheduling_email": null,
@@ -1647,7 +1730,10 @@
     "bail_jcm_email": null,
     "interpreter_request_email": null,
     "access_code": null,
-    "access_code_notes": null
+    "access_code_notes": null,
+    "supreme_scheduling_phone": "250.828.4351",
+    "supreme_scheduling_fax": "250.828.4332",
+    "supreme_toll_free": "1.888.828.4351"
   },
   {
     "name": "Sparwood",
