@@ -4,6 +4,64 @@ import { useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { Court, Contact, ShellCell, TeamsLink, BailCourt, BailContact, SearchResults } from '@/types';
 
+// Parse search query to extract court term and optional courtroom number
+function parseSearchQuery(query: string): { courtTerm: string; courtroomFilter: string | null } {
+  const parts = query.trim().toLowerCase().split(/\s+/);
+  
+  let courtroomFilter: string | null = null;
+  const courtTermParts: string[] = [];
+  
+  for (const part of parts) {
+    // Check if this part is a courtroom number (1-3 digits)
+    const numMatch = part.match(/^(\d{1,3})$/);
+    if (numMatch) {
+      courtroomFilter = numMatch[1];
+      continue;
+    }
+    
+    // Check for "cr204" pattern
+    const crMatch = part.match(/^cr(\d{1,3})$/i);
+    if (crMatch) {
+      courtroomFilter = crMatch[1];
+      continue;
+    }
+    
+    // Check for "room204" pattern
+    const roomMatch = part.match(/^room(\d{1,3})$/i);
+    if (roomMatch) {
+      courtroomFilter = roomMatch[1];
+      continue;
+    }
+    
+    // Otherwise it's part of the court search term
+    courtTermParts.push(part);
+  }
+  
+  return {
+    courtTerm: courtTermParts.join(' ') || query,
+    courtroomFilter
+  };
+}
+
+// Filter teams links by courtroom number
+function filterTeamsLinksByCourtroom(links: TeamsLink[], courtroomNum: string): TeamsLink[] {
+  return links.filter(link => {
+    const courtroom = (link.courtroom || link.name || '').toLowerCase();
+    // Normalize the courtroom number (remove leading zeros for comparison)
+    const normalizedNum = parseInt(courtroomNum, 10).toString();
+    
+    // Match patterns like "CR 204", "CR204", "Courtroom 204", "Room 204", or just "204"
+    const patterns = [
+      new RegExp(`\\bcr\\s*0*${normalizedNum}\\b`, 'i'),
+      new RegExp(`\\broom\\s*0*${normalizedNum}\\b`, 'i'),
+      new RegExp(`\\bcourtroom\\s*0*${normalizedNum}\\b`, 'i'),
+      new RegExp(`^0*${normalizedNum}$`),
+    ];
+    
+    return patterns.some(pattern => pattern.test(courtroom));
+  });
+}
+
 export function useSearch() {
   const [results, setResults] = useState<SearchResults | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,21 +79,27 @@ export function useSearch() {
     setError(null);
 
     try {
+      // Parse query to extract court term and courtroom filter
+      const { courtTerm, courtroomFilter } = parseSearchQuery(query);
+      
+      // Use court term for searching (fall back to original query if court term is empty)
+      const searchTerm = courtTerm.length >= 2 ? courtTerm : query;
+
       // Search courts using RPC function
       const { data: courts, error: courtsError } = await supabase
-        .rpc('search_courts', { search_term: query });
+        .rpc('search_courts', { search_term: searchTerm });
       
       if (courtsError) throw courtsError;
 
       // Search sheriff cells using RPC function
       const { data: cells, error: cellsError } = await supabase
-        .rpc('search_cells', { search_term: query });
+        .rpc('search_cells', { search_term: searchTerm });
       
       if (cellsError) throw cellsError;
 
       // Search bail courts using RPC function
       const { data: bailCourts, error: bailError } = await supabase
-        .rpc('search_bail_courts', { search_term: query });
+        .rpc('search_bail_courts', { search_term: searchTerm });
       
       if (bailError) throw bailError;
 
@@ -76,7 +140,10 @@ export function useSearch() {
           .in('court_id', courtIds);
 
         if (teamsData) {
-          teamsLinks = teamsData;
+          // Apply courtroom filter if provided
+          teamsLinks = courtroomFilter 
+            ? filterTeamsLinksByCourtroom(teamsData, courtroomFilter)
+            : teamsData;
         }
 
         // Check if any court has a bail hub
@@ -111,7 +178,9 @@ export function useSearch() {
               .eq('bail_court_id', bailData.id);
             
             if (bailTeamsData) {
-              bailTeamsLinks = bailTeamsData;
+              bailTeamsLinks = courtroomFilter
+                ? filterTeamsLinksByCourtroom(bailTeamsData, courtroomFilter)
+                : bailTeamsData;
             }
           }
         }
@@ -140,7 +209,9 @@ export function useSearch() {
           .eq('bail_court_id', bailCourt!.id);
         
         if (bailTeamsData) {
-          bailTeamsLinks = bailTeamsData;
+          bailTeamsLinks = courtroomFilter
+            ? filterTeamsLinksByCourtroom(bailTeamsData, courtroomFilter)
+            : bailTeamsData;
         }
       }
 
@@ -179,7 +250,8 @@ export function useSearch() {
         teamsLinks,
         bailCourt,
         bailContacts,
-        bailTeamsLinks
+        bailTeamsLinks,
+        courtroomFilter // Include the courtroom filter in results
       });
     } catch (err) {
       console.error('Search error:', err);
@@ -358,4 +430,3 @@ export function useCourtDetails() {
     fetchCourtDetails
   };
 }
-
