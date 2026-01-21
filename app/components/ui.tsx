@@ -1,350 +1,474 @@
 'use client';
 
-import { memo } from 'react';
-import { Check, Clipboard, ChevronRight } from 'react-bootstrap-icons';
-import { Court, CourtContacts } from '@/types/database';
+import { ReactNode, forwardRef } from 'react';
+import { Clipboard, Check, ChevronDown } from 'react-bootstrap-icons';
+import { motion, AnimatePresence } from 'framer-motion';
+import { theme, SectionColor } from './theme';
 
-// Navigation Button Component
-interface NavButtonProps {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}
+// =============================================================================
+// BACKGROUND
+// =============================================================================
 
-export const NavButton = memo(function NavButton({ icon: Icon, label, active, onClick }: NavButtonProps) {
+export function CyberOceanBackground() {
   return (
-    <button
-      onClick={onClick}
-      className={`flex-1 flex flex-col items-center py-2 ${active ? 'text-white' : 'text-zinc-500'}`}
-    >
-      <Icon className="w-5 h-5" />
-      <span className="text-xs mt-1">{label}</span>
-    </button>
+    <>
+      {/* Grid */}
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          backgroundImage: theme.effects.grid.image,
+          backgroundSize: theme.effects.grid.size,
+          opacity: theme.effects.grid.opacity,
+        }}
+      />
+      {/* Orb 1 */}
+      <div 
+        className="fixed pointer-events-none"
+        style={{
+          ...theme.effects.orb1.position,
+          ...theme.effects.orb1.size,
+          borderRadius: '50%',
+          filter: `blur(${theme.effects.orb1.blur})`,
+          background: theme.effects.orb1.gradient,
+        }}
+      />
+      {/* Orb 2 */}
+      <div 
+        className="fixed pointer-events-none"
+        style={{
+          ...theme.effects.orb2.position,
+          ...theme.effects.orb2.size,
+          borderRadius: '50%',
+          filter: `blur(${theme.effects.orb2.blur})`,
+          background: theme.effects.orb2.gradient,
+        }}
+      />
+    </>
   );
-});
-
-// Court Card Component
-interface CourtCardProps {
-  court: Court;
-  onClick: () => void;
 }
 
-export const CourtCard = memo(function CourtCard({ court, onClick }: CourtCardProps) {
+// =============================================================================
+// PAGE LAYOUT
+// =============================================================================
+
+interface PageLayoutProps {
+  children: ReactNode;
+}
+
+export function PageLayout({ children }: PageLayoutProps) {
   return (
-    <button
-      onClick={onClick}
-      className="w-full text-left p-3 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-colors"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-white truncate">{court.name}</h3>
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
-            {court.access_code && (
-              <span className="text-xs px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded">
-                {court.access_code}
-              </span>
-            )}
-            <span className="text-xs text-zinc-500">{court.region}</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-1 flex-shrink-0">
-          {court.has_provincial && (
-            <span className="text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded">
-              Prov
-            </span>
-          )}
-          {court.has_supreme && (
-            <span className="text-[10px] px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded">
-              Sup
-            </span>
-          )}
-          <ChevronRight className="w-4 h-4 text-zinc-600 ml-1" />
-        </div>
+    <div className="min-h-screen text-white" style={{ background: theme.colors.bg.primary }}>
+      <CyberOceanBackground />
+      <div className="relative z-10">
+        {children}
       </div>
-      {court.is_circuit && court.hub_court_name && (
-        <p className="text-xs text-zinc-500 mt-1">
-          Contact: {court.hub_court_name}
-        </p>
-      )}
-    </button>
+    </div>
   );
-});
-
-// Copy Button Component
-interface CopyButtonProps {
-  value: string;
-  field: string;
-  copiedField: string | null;
-  onCopy: (text: string, field: string) => void;
-  size?: 'sm' | 'md';
 }
 
-export const CopyButton = memo(function CopyButton({ 
-  value, 
-  field, 
-  copiedField, 
-  onCopy,
-  size = 'md'
-}: CopyButtonProps) {
-  const isCopied = copiedField === field;
-  const sizeClass = size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4';
+// =============================================================================
+// HEADER
+// =============================================================================
+
+interface StickyHeaderProps {
+  children: ReactNode;
+  className?: string;
+}
+
+export function StickyHeader({ children, className = '' }: StickyHeaderProps) {
+  return (
+    <div 
+      className={`sticky top-0 z-10 backdrop-blur-md ${className}`}
+      style={{ 
+        background: theme.colors.bg.header, 
+        borderBottom: `1px solid ${theme.colors.border.primary}` 
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// =============================================================================
+// CARDS
+// =============================================================================
+
+interface CardProps {
+  children: ReactNode;
+  className?: string;
+  onClick?: () => void;
+}
+
+export function Card({ children, className = '', onClick }: CardProps) {
+  return (
+    <div 
+      className={`rounded-lg overflow-hidden ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      style={{ 
+        background: theme.colors.bg.card, 
+        border: `1px solid ${theme.colors.border.primary}` 
+      }}
+      onClick={onClick}
+    >
+      {children}
+    </div>
+  );
+}
+
+// =============================================================================
+// SECTION (Accordion)
+// =============================================================================
+
+interface SectionProps {
+  color: SectionColor;
+  title: string;
+  count?: number | string;
+  isExpanded: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+  ref?: React.Ref<HTMLDivElement>;
+}
+
+export const Section = forwardRef<HTMLDivElement, SectionProps>(
+  ({ color, title, count, isExpanded, onToggle, children }, ref) => {
+    const sectionColors = theme.colors.section[color];
+    
+    return (
+      <div ref={ref} className="rounded-lg overflow-hidden" style={{ 
+        background: theme.colors.bg.card, 
+        border: `1px solid ${theme.colors.border.primary}` 
+      }}>
+        <button
+          onClick={onToggle}
+          className="w-full flex items-center gap-2.5 p-3 transition-colors"
+          style={{ 
+            background: isExpanded ? theme.colors.bg.cardHover : 'transparent', 
+            borderBottom: `1px solid ${theme.colors.border.subtle}` 
+          }}
+        >
+          <SectionDot color={color} />
+          <span 
+            className="flex-1 text-left"
+            style={{
+              fontFamily: 'monospace',
+              fontSize: '10px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              color: theme.colors.text.muted,
+            }}
+          >
+            {title}
+          </span>
+          {count !== undefined && (
+            <span 
+              className="px-1.5 py-0.5 rounded text-[10px]"
+              style={{ 
+                fontFamily: 'monospace',
+                background: sectionColors.bg, 
+                color: sectionColors.text 
+              }}
+            >
+              {count}
+            </span>
+          )}
+          <ChevronDown 
+            className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+            style={{ color: theme.colors.text.subtle }}
+          />
+        </button>
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div 
+              initial={{ height: 0 }} 
+              animate={{ height: 'auto' }} 
+              exit={{ height: 0 }} 
+              transition={{ duration: 0.2 }} 
+              className="overflow-hidden"
+            >
+              <div style={{ background: theme.colors.bg.subtle }}>
+                {children}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+);
+
+Section.displayName = 'Section';
+
+// =============================================================================
+// SECTION DOT
+// =============================================================================
+
+interface SectionDotProps {
+  color: SectionColor;
+}
+
+export function SectionDot({ color }: SectionDotProps) {
+  return (
+    <span className="text-[6px]" style={{ color: theme.colors.section[color].dot }}>
+      ●
+    </span>
+  );
+}
+
+// =============================================================================
+// ENTRY ROW
+// =============================================================================
+
+interface EntryRowProps {
+  label: string;
+  value: string;
+  subtext?: string;
+  copyField?: string;
+  copiedField?: string | null;
+  onCopy?: (value: string, field: string) => void;
+}
+
+export function EntryRow({ label, value, subtext, copyField, copiedField, onCopy }: EntryRowProps) {
+  const showCopy = copyField && onCopy;
   
   return (
-    <button
-      onClick={() => onCopy(value, field)}
-      className="flex items-center justify-center"
+    <div 
+      className="py-2 px-3"
+      style={{ borderBottom: `1px solid ${theme.colors.border.light}` }}
     >
-      {isCopied ? (
-        <Check className={`${sizeClass} text-emerald-500`} />
-      ) : (
-        <Clipboard className={`${sizeClass} text-zinc-500`} />
-      )}
-    </button>
-  );
-});
-
-// Contact Section Component
-interface ContactSectionProps {
-  title: string;
-  color: 'emerald' | 'blue' | 'amber' | 'purple';
-  contacts: CourtContacts;
-  fields: string[];
-  faxFiling?: string;
-  copiedField: string | null;
-  onCopy: (text: string, field: string) => void;
-}
-
-const COLOR_CLASSES = {
-  emerald: { border: 'border-emerald-500/30', bg: 'bg-emerald-500/5', text: 'text-emerald-500' },
-  blue: { border: 'border-blue-500/30', bg: 'bg-blue-500/5', text: 'text-blue-500' },
-  amber: { border: 'border-amber-500/30', bg: 'bg-amber-500/5', text: 'text-amber-500' },
-  purple: { border: 'border-purple-500/30', bg: 'bg-purple-500/5', text: 'text-purple-500' }
-};
-
-const FIELD_LABELS: Record<string, string> = {
-  registry_email: 'Registry',
-  criminal_registry_email: 'Criminal Registry',
-  jcm_scheduling_email: 'JCM Scheduling',
-  scheduling_email: 'Scheduling',
-  crown_email: 'Crown Counsel',
-  bail_crown_email: 'Bail Crown',
-  bail_jcm_email: 'Bail JCM',
-  transcripts_email: 'Transcripts',
-  interpreter_email: 'Interpreter Request',
-  fax_filing: 'Fax Filing'
-};
-
-export const ContactSection = memo(function ContactSection({
-  title,
-  color,
-  contacts,
-  fields,
-  faxFiling,
-  copiedField,
-  onCopy
-}: ContactSectionProps) {
-  const colorClasses = COLOR_CLASSES[color];
-  const activeFields = fields.filter(f => contacts[f as keyof CourtContacts]);
-
-  if (activeFields.length === 0 && !faxFiling) return null;
-
-  return (
-    <div className={`rounded-xl border ${colorClasses.border} ${colorClasses.bg}`}>
-      <div className="px-3 py-2 border-b border-zinc-800/50">
-        <h3 className={`text-xs uppercase tracking-wider ${colorClasses.text}`}>
-          {title}
-        </h3>
+      <div 
+        className="mb-1"
+        style={{
+          fontFamily: 'monospace',
+          fontSize: '9px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.04em',
+          color: theme.colors.text.subtle,
+        }}
+      >
+        {label}
       </div>
-      <div className="divide-y divide-zinc-800/50">
-        {activeFields.map(field => {
-          const value = contacts[field as keyof CourtContacts] as string;
-          const fieldKey = `${field}-${value}`;
-          return (
-            <button
-              key={field}
-              onClick={() => onCopy(value, fieldKey)}
-              className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-zinc-800/50 active:bg-zinc-800 transition-colors text-left"
-            >
-              <div className="flex-1 min-w-0 pr-2">
-                <p className="text-xs text-zinc-500">{FIELD_LABELS[field]}</p>
-                <p className="text-sm text-white truncate">{value}</p>
-              </div>
-              <CopyButton
-                value={value}
-                field={fieldKey}
-                copiedField={copiedField}
-                onCopy={onCopy}
-              />
-            </button>
-          );
-        })}
-        {faxFiling && (
-          <button
-            onClick={() => onCopy(faxFiling, 'fax_filing')}
-            className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-zinc-800/50 active:bg-zinc-800 transition-colors text-left border-t border-zinc-800/50"
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span 
+            className="break-all"
+            style={{ fontSize: '13px', color: theme.colors.text.secondary }}
           >
-            <div className="flex-1 min-w-0 pr-2">
-              <p className="text-xs text-zinc-500">Fax Filing</p>
-              <p className="text-sm text-white">{faxFiling}</p>
-            </div>
-            <CopyButton
-              value={faxFiling}
-              field="fax_filing"
-              copiedField={copiedField}
-              onCopy={onCopy}
-            />
-          </button>
+            {value}
+          </span>
+          {subtext && (
+            <span 
+              className="flex-shrink-0"
+              style={{ fontSize: '11px', color: theme.colors.text.subtle }}
+            >
+              {subtext}
+            </span>
+          )}
+        </div>
+        {showCopy && (
+          <CopyButton 
+            value={value} 
+            field={copyField} 
+            copiedField={copiedField!} 
+            onCopy={onCopy} 
+          />
         )}
       </div>
     </div>
   );
-});
-
-// Toast Notification Component
-interface ToastProps {
-  message: string;
-  visible: boolean;
-  position?: 'bottom' | 'bottom-nav';
 }
 
-export const Toast = memo(function Toast({ message, visible, position = 'bottom' }: ToastProps) {
-  if (!visible) return null;
-  
-  const positionClass = position === 'bottom-nav' ? 'bottom-24' : 'bottom-8';
-  
-  return (
-    <div className={`fixed ${positionClass} left-1/2 -translate-x-1/2 px-4 py-2 bg-emerald-600 text-white rounded-full text-sm shadow-lg z-50`}>
-      {message}
-    </div>
-  );
-});
+// =============================================================================
+// INFO ROW (no copy)
+// =============================================================================
 
-// Search Input Component
-interface SearchInputProps {
+interface InfoRowProps {
+  label: string;
   value: string;
-  onChange: (value: string) => void;
-  onClear: () => void;
-  placeholder?: string;
-  onSubmit?: () => void;
-  rightElement?: React.ReactNode;
 }
 
-export const SearchInput = memo(function SearchInput({
-  value,
-  onChange,
-  onClear,
-  placeholder = 'Search...',
-  onSubmit,
-  rightElement
-}: SearchInputProps) {
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && onSubmit) {
-      onSubmit();
-    }
-  };
-
+export function InfoRow({ label, value }: InfoRowProps) {
   return (
-    <div className="relative">
-      <svg
-        className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+    <div 
+      className="py-2 px-3"
+      style={{ borderBottom: `1px solid ${theme.colors.border.light}` }}
+    >
+      <div 
+        className="mb-1"
+        style={{
+          fontFamily: 'monospace',
+          fontSize: '9px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.04em',
+          color: theme.colors.text.subtle,
+        }}
       >
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
-      </svg>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        className={`w-full pl-10 ${rightElement ? 'pr-20' : 'pr-10'} py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-700`}
-      />
-      {value && (
-        <button
-          onClick={onClear}
-          className={`absolute ${rightElement ? 'right-16' : 'right-3'} top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white`}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 6 6 18M6 6l12 12" />
-          </svg>
-        </button>
-      )}
-      {rightElement && (
-        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-          {rightElement}
-        </div>
-      )}
+        {label}
+      </div>
+      <span style={{ fontSize: '13px', color: theme.colors.text.secondary }}>
+        {value}
+      </span>
     </div>
   );
-});
-
-// Region Filter Pills Component
-interface RegionFilterProps {
-  regions: readonly string[];
-  selectedRegion: string;
-  onSelect: (region: string) => void;
-  hideCircuit?: boolean;
-  onToggleCircuit?: () => void;
 }
 
-export const RegionFilter = memo(function RegionFilter({
-  regions,
-  selectedRegion,
-  onSelect,
-  hideCircuit,
-  onToggleCircuit
-}: RegionFilterProps) {
-  return (
-    <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-      <button
-        onClick={() => onSelect('All')}
-        className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
-          selectedRegion === 'All'
-            ? 'bg-white text-black'
-            : 'bg-zinc-800 text-zinc-400'
-        }`}
-      >
-        All
-      </button>
-      {regions.map(region => (
-        <button
-          key={region}
-          onClick={() => onSelect(region)}
-          className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
-            selectedRegion === region
-              ? 'bg-white text-black'
-              : 'bg-zinc-800 text-zinc-400'
-          }`}
-        >
-          {region}
-        </button>
-      ))}
-      {onToggleCircuit !== undefined && (
-        <button
-          onClick={onToggleCircuit}
-          className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors flex items-center gap-1.5 ${
-            hideCircuit
-              ? 'bg-amber-500 text-black'
-              : 'bg-zinc-800 text-zinc-400'
-          }`}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
-          {hideCircuit ? 'Circuit Hidden' : 'Hide Circuit'}
-        </button>
-      )}
-    </div>
-  );
-});
+// =============================================================================
+// COPY BUTTON
+// =============================================================================
 
+interface CopyButtonProps {
+  value: string;
+  field: string;
+  copiedField: string | null;
+  onCopy: (value: string, field: string) => void;
+  size?: 'sm' | 'md';
+}
+
+export function CopyButton({ value, field, copiedField, onCopy, size = 'sm' }: CopyButtonProps) {
+  const isCopied = copiedField === field;
+  const sizeClasses = size === 'sm' ? 'w-7 h-7' : 'w-8 h-8';
+  const iconSize = size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4';
+  
+  return (
+    <button 
+      onClick={(e) => { e.stopPropagation(); onCopy(value, field); }}
+      className={`${sizeClasses} flex items-center justify-center rounded-md transition-colors`}
+      style={{ 
+        background: theme.colors.bg.item, 
+        border: `1px solid ${theme.colors.border.accent}` 
+      }}
+    >
+      {isCopied ? (
+        <Check className={`${iconSize} text-emerald-400`} />
+      ) : (
+        <Clipboard className={`${iconSize} text-blue-400`} />
+      )}
+    </button>
+  );
+}
+
+// =============================================================================
+// TAG
+// =============================================================================
+
+interface TagProps {
+  children: ReactNode;
+  color: SectionColor;
+  size?: 'sm' | 'md';
+}
+
+export function Tag({ children, color, size = 'sm' }: TagProps) {
+  const sectionColors = theme.colors.section[color];
+  const padding = size === 'sm' ? 'px-2 py-0.5' : 'px-2.5 py-1';
+  const fontSize = size === 'sm' ? 'text-[9px]' : 'text-[10px]';
+  
+  return (
+    <span 
+      className={`${padding} ${fontSize} rounded font-mono`}
+      style={{ background: sectionColors.bg, color: sectionColors.text }}
+    >
+      {children}
+    </span>
+  );
+}
+
+// =============================================================================
+// PILL BUTTON (for filters/nav)
+// =============================================================================
+
+interface PillButtonProps {
+  children: ReactNode;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+export function PillButton({ children, isActive, onClick }: PillButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors"
+      style={isActive 
+        ? { background: theme.colors.accent.gradient, color: 'white' }
+        : { 
+            background: theme.colors.bg.item, 
+            border: `1px solid ${theme.colors.border.accent}`, 
+            color: theme.colors.text.muted 
+          }
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
+// =============================================================================
+// TOAST
+// =============================================================================
+
+interface ToastProps {
+  show: boolean;
+  message?: string;
+}
+
+export function Toast({ show, message = 'Copied to clipboard' }: ToastProps) {
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 text-white text-sm rounded-lg shadow-lg z-50"
+          style={{ background: theme.colors.accent.gradient }}
+        >
+          {message}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// =============================================================================
+// BACK BUTTON
+// =============================================================================
+
+interface BackButtonProps {
+  onClick?: () => void;
+  href?: string;
+  label?: string;
+}
+
+export function BackButton({ onClick, href, label = 'BACK' }: BackButtonProps) {
+  const content = (
+    <>
+      <span className="text-lg">←</span>
+      <span>{label}</span>
+    </>
+  );
+  
+  const className = "p-2 -ml-2 text-zinc-400 hover:text-blue-400 transition-colors font-mono text-xs flex items-center gap-1";
+  
+  if (href) {
+    const Link = require('next/link').default;
+    return <Link href={href} className={className}>{content}</Link>;
+  }
+  
+  return <button onClick={onClick} className={className}>{content}</button>;
+}
+
+// =============================================================================
+// PAGE LABEL
+// =============================================================================
+
+interface PageLabelProps {
+  children: ReactNode;
+}
+
+export function PageLabel({ children }: PageLabelProps) {
+  return (
+    <span 
+      className="font-mono tracking-widest"
+      style={{ fontSize: '9px', color: theme.colors.text.disabled }}
+    >
+      {children}
+    </span>
+  );
+}
