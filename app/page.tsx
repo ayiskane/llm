@@ -9,7 +9,7 @@ import { SearchBar, QuickSuggestions } from '@/app/components/SearchBar';
 import { CourtCard, CourtCardMini, CourtHeader } from '@/app/components/CourtCard';
 import { CourtContactsStack, CrownContactsStack, TopContactsPreview } from '@/app/components/ContactStack';
 import { CellsList, CellsPreview } from '@/app/components/CellCard';
-import { TeamsList, TeamsLinkCountCard } from '@/app/components/TeamsCard';
+import { TeamsList } from '@/app/components/TeamsCard';
 import { CircuitWarning } from '@/app/components/CircuitWarning';
 
 import { useSearch, useCourtDetails } from '@/hooks/useSearch';
@@ -279,6 +279,8 @@ export default function Home() {
                           <CourtCard 
                             court={court} 
                             onClick={() => handleSelectCourt(court)}
+                            teamsLinkCount={activeFilter === 'all' ? results.teamsLinks.length : undefined}
+                            onTeamsClick={() => handleSelectCourt(court, 'teams')}
                           />
                           
                           {/* Circuit court warning */}
@@ -350,26 +352,15 @@ export default function Home() {
                     )
                   )}
 
-                  {/* Teams Links */}
-                  {(activeFilter === 'all' || activeFilter === 'teams') && results.teamsLinks.length > 0 && (
-                    activeFilter === 'teams' ? (
-                      <div>
-                        <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide px-1 mb-2">MS Teams Links</h3>
-                        <TeamsList 
-                          links={results.teamsLinks}
-                          onCopyAll={() => setCopiedField('teams')}
-                        />
-                      </div>
-                    ) : (
-                      <TeamsLinkCountCard
-                        count={results.teamsLinks.length}
-                        onClick={() => {
-                          if (results.courts.length > 0) {
-                            handleSelectCourt(results.courts[0], 'teams');
-                          }
-                        }}
+                  {/* Teams Links - only show full list when teams filter is active */}
+                  {activeFilter === 'teams' && results.teamsLinks.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide px-1 mb-2">MS Teams Links</h3>
+                      <TeamsList 
+                        links={results.teamsLinks}
+                        onCopyAll={() => setCopiedField('teams')}
                       />
-                    )
+                    </div>
                   )}
                 </>
               )}
@@ -591,5 +582,6 @@ export default function Home() {
     </div>
   );
 }
+
 
 
