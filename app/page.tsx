@@ -1,32 +1,141 @@
 'use client';
 
-import { useState, useCallback, memo, useEffect } from 'react';
-import { Search, ChevronLeft, ChevronRight, Phone, MapPin, Check, Scale, Shield, Building2 } from 'lucide-react';
+import { useState, useCallback, useEffect } from 'react';
+import { Search, Phone, MapPin, Check, Mail, Clock, Video, Building2, Shield, Scale, Users, ChevronDown, ChevronUp, Copy, ExternalLink } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 // Types
-interface CellResult {
+interface Court {
   id: number;
   name: string;
-  cell_type: 'police' | 'courthouse' | 'youth' | 'justice_centre' | 'federal';
-  phones: string[];
-  catchment: string | null;
-}
-
-interface CourtResult {
-  id: number;
-  name: string;
+  region_id: number;
   region_name?: string;
+  has_provincial: boolean;
+  has_supreme: boolean;
+  is_circuit: boolean;
+  is_staffed: boolean;
+  contact_hub: string | null;
   address: string | null;
   phone: string | null;
-  is_circuit: boolean;
+  fax: string | null;
+  sheriff_phone: string | null;
+  supreme_scheduling_phone: string | null;
+  access_code: string | null;
+  bail_hub_id: number | null;
+}
+
+interface Contact {
+  id: number;
+  email: string | null;
+  emails: string[] | null;
+  contact_role_id: number;
+  role_name?: string;
+}
+
+interface ShellCell {
+  id: number;
+  name: string;
+  cell_type: string;
+  phones: string[];
+  catchment: string | null;
+  court_id: number | null;
+}
+
+interface TeamsLink {
+  id: number;
+  name: string | null;
+  courtroom: string | null;
+  conference_id: string | null;
+  phone: string | null;
+  phone_toll_free: string | null;
+  teams_link: string | null;
+  teams_link_type_id: number | null;
+  type_name?: string;
+}
+
+interface BailCourt {
+  id: number;
+  name: string;
+  region_id: number;
+  is_hybrid: boolean;
+  is_daytime: boolean;
+  triage_time_am: string | null;
+  triage_time_pm: string | null;
+  court_start_am: string | null;
+  court_start_pm: string | null;
+  court_end: string | null;
+  cutoff_new_arrests: string | null;
+}
+
+interface BailContact {
+  id: number;
+  email: string | null;
+  role_id: number;
+  availability_id: number | null;
+  role_name?: string;
+  availability_name?: string;
 }
 
 interface SearchResults {
-  cells: CellResult[];
-  courts: CourtResult[];
-  relatedCourts: CourtResult[];
-  relatedCells: CellResult[];
+  courts: Court[];
+  contacts: Contact[];
+  sheriffCells: ShellCell[];
+  teamsLinks: TeamsLink[];
+  bailCourt: BailCourt | null;
+  bailContacts: BailContact[];
+  bailTeamsLinks: TeamsLink[];
+}
+
+// Collapsible Section Component
+function Section({ title, icon: Icon, count, children, defaultOpen = true }: {
+  title: string;
+  icon: any;
+  count: number;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  
+  if (count === 0) return null;
+  
+  return (
+    <div className="mb-4">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <Icon className="w-5 h-5 text-blue-600" />
+          <span className="font-medium text-gray-800">{title}</span>
+          <span className="text-sm text-gray-500">({count})</span>
+        </div>
+        {isOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+      </button>
+      {isOpen && <div className="mt-2 space-y-2">{children}</div>}
+    </div>
+  );
+}
+
+// Copy Button Component
+function CopyButton({ text, label }: { text: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+  
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  
+  return (
+    <button 
+      onClick={handleCopy}
+      className="flex items-center gap-1 px-2 py-1 text-sm bg-white border rounded hover:bg-gray-50 transition-colors"
+      title={`Copy ${label}`}
+    >
+      {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-gray-500" />}
+      <span className="text-gray-700">{text}</span>
+    </button>
+  );
 }
 
 // Main App
@@ -34,14 +143,6 @@ export default function App() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResults | null>(null);
   const [loading, setLoading] = useState(false);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
-
-  // Copy to clipboard
-  const copyToClipboard = useCallback((text: string, field: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 1500);
-  }, []);
 
   // Search function
   const handleSearch = useCallback(async (searchQuery: string) => {
@@ -56,93 +157,143 @@ export default function App() {
     const searchTerm = `%${q}%`;
 
     try {
-      // 1. Search cells by name or catchment
-      const { data: cellsData } = await supabase
-        .from('cells')
-        .select('id, name, cell_type, phones, catchment')
-        .or(`name.ilike.${searchTerm},catchment.ilike.${searchTerm}`)
-        .order('name');
-
-      // 2. Search courts by name
+      // 1. Search courts
       const { data: courtsData } = await supabase
         .from('courts')
-        .select('id, name, address, phone, is_circuit, region_id')
-        .ilike('name', searchTerm)
-        .order('name');
+        .select('*, regions(name)')
+        .or(`name.ilike.${searchTerm},address.ilike.${searchTerm}`)
+        .order('name')
+        .limit(10);
 
-      // 3. Get related courts for cells (via cell_courts junction)
-      const cellIds = (cellsData || []).map(c => c.id);
-      let relatedCourts: CourtResult[] = [];
-      
-      if (cellIds.length > 0) {
-        const { data: cellCourtsData } = await supabase
-          .from('cell_courts')
-          .select('cell_id, courts:court_id (id, name, address, phone, is_circuit, region_id)')
-          .in('cell_id', cellIds);
+      const courts: Court[] = (courtsData || []).map((c: any) => ({
+        ...c,
+        region_name: c.regions?.name
+      }));
 
-        if (cellCourtsData) {
-          const courtMap = new Map<number, CourtResult>();
-          for (const cc of cellCourtsData) {
-            const court = cc.courts as unknown as CourtResult;
-            if (court && !courtMap.has(court.id)) {
-              courtMap.set(court.id, court);
-            }
-          }
-          relatedCourts = Array.from(courtMap.values());
-        }
-      }
-
-      // 4. Get related cells for courts
-      const courtIds = (courtsData || []).map(c => c.id);
-      let relatedCells: CellResult[] = [];
-
-      if (courtIds.length > 0) {
-        const { data: courtCellsData } = await supabase
-          .from('cell_courts')
-          .select('court_id, cells:cell_id (id, name, cell_type, phones, catchment)')
+      // 2. Get contacts for found courts
+      let contacts: Contact[] = [];
+      if (courts.length > 0) {
+        const courtIds = courts.map(c => c.id);
+        const { data: contactsData } = await supabase
+          .from('contacts_courts')
+          .select('contacts(*, contact_roles(name))')
           .in('court_id', courtIds);
-
-        if (courtCellsData) {
-          const cellMap = new Map<number, CellResult>();
-          for (const cc of courtCellsData) {
-            const cell = cc.cells as unknown as CellResult;
-            if (cell && !cellMap.has(cell.id)) {
-              cellMap.set(cell.id, cell);
+        
+        if (contactsData) {
+          const contactMap = new Map<number, Contact>();
+          contactsData.forEach((cc: any) => {
+            if (cc.contacts && !contactMap.has(cc.contacts.id)) {
+              contactMap.set(cc.contacts.id, {
+                ...cc.contacts,
+                role_name: cc.contacts.contact_roles?.name
+              });
             }
-          }
-          relatedCells = Array.from(cellMap.values());
+          });
+          contacts = Array.from(contactMap.values());
         }
       }
 
-      // 5. Get region names
-      const allRegionIds = new Set<number>();
-      [...(courtsData || []), ...relatedCourts].forEach((c: any) => {
-        if (c.region_id) allRegionIds.add(c.region_id);
-      });
+      // 3. Search sheriff cells by name or catchment
+      const { data: cellsData } = await supabase
+        .from('sheriff_cells')
+        .select('*')
+        .or(`name.ilike.${searchTerm},catchment.ilike.${searchTerm}`)
+        .order('name')
+        .limit(20);
 
-      let regionMap = new Map<number, string>();
-      if (allRegionIds.size > 0) {
-        const { data: regionsData } = await supabase
-          .from('regions')
-          .select('id, name')
-          .in('id', Array.from(allRegionIds));
-
-        if (regionsData) {
-          regionsData.forEach(r => regionMap.set(r.id, r.name));
-        }
+      // Also get cells linked to found courts
+      if (courts.length > 0) {
+        const courtIds = courts.map(c => c.id);
+        const { data: linkedCells } = await supabase
+          .from('sheriff_cells')
+          .select('*')
+          .in('court_id', courtIds);
+        
+        // Merge and dedupe
+        const cellMap = new Map<number, ShellCell>();
+        (cellsData || []).forEach((c: any) => cellMap.set(c.id, c));
+        (linkedCells || []).forEach((c: any) => cellMap.set(c.id, c));
+        
+        // Also get via junction table
+        const { data: junctionCells } = await supabase
+          .from('sheriff_cells_courts')
+          .select('sheriff_cells(*)')
+          .in('court_id', courtIds);
+        
+        (junctionCells || []).forEach((jc: any) => {
+          if (jc.sheriff_cells) cellMap.set(jc.sheriff_cells.id, jc.sheriff_cells);
+        });
       }
 
-      // Enrich courts with region names
-      const enrichCourt = (court: any): CourtResult => ({
-        ...court,
-        region_name: regionMap.get(court.region_id),
-      });
+      const sheriffCells: ShellCell[] = cellsData || [];
+
+      // 4. Get teams links for found courts
+      let teamsLinks: TeamsLink[] = [];
+      if (courts.length > 0) {
+        const courtIds = courts.map(c => c.id);
+        const { data: linksData } = await supabase
+          .from('teams_links')
+          .select('*, teams_link_types(name)')
+          .in('court_id', courtIds)
+          .order('courtroom');
+        
+        teamsLinks = (linksData || []).map((l: any) => ({
+          ...l,
+          type_name: l.teams_link_types?.name
+        }));
+      }
+
+      // 5. Get bail court info
+      let bailCourt: BailCourt | null = null;
+      let bailContacts: BailContact[] = [];
+      let bailTeamsLinks: TeamsLink[] = [];
+
+      if (courts.length > 0) {
+        const bailHubIds = courts.map(c => c.bail_hub_id).filter(Boolean);
+        
+        // First try direct match on bail_courts name
+        const { data: bailData } = await supabase
+          .from('bail_courts')
+          .select('*')
+          .or(`name.ilike.${searchTerm},id.in.(${bailHubIds.join(',')})`)
+          .limit(1)
+          .single();
+        
+        if (bailData) {
+          bailCourt = bailData;
+          
+          // Get bail contacts
+          const { data: bailContactsData } = await supabase
+            .from('bail_contacts')
+            .select('*, contact_roles(name)')
+            .eq('bail_court_id', bailData.id);
+          
+          bailContacts = (bailContactsData || []).map((bc: any) => ({
+            ...bc,
+            role_name: bc.contact_roles?.name
+          }));
+          
+          // Get bail teams links
+          const { data: bailLinksData } = await supabase
+            .from('bail_courts_teams_links')
+            .select('teams_links(*, teams_link_types(name))')
+            .eq('bail_court_id', bailData.id);
+          
+          bailTeamsLinks = (bailLinksData || []).map((bl: any) => ({
+            ...bl.teams_links,
+            type_name: bl.teams_links?.teams_link_types?.name
+          })).filter(Boolean);
+        }
+      }
 
       setResults({
-        cells: cellsData || [],
-        courts: (courtsData || []).map(enrichCourt),
-        relatedCourts: relatedCourts.map(enrichCourt),
-        relatedCells: relatedCells,
+        courts,
+        contacts,
+        sheriffCells,
+        teamsLinks,
+        bailCourt,
+        bailContacts,
+        bailTeamsLinks
       });
     } catch (err) {
       console.error('Search error:', err);
@@ -151,7 +302,7 @@ export default function App() {
     }
   }, []);
 
-  // Handle input change with debounce
+  // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => {
       handleSearch(query);
@@ -159,307 +310,271 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [query, handleSearch]);
 
-  const goHome = useCallback(() => {
-    setQuery('');
-    setResults(null);
-  }, []);
+  const hasResults = results && (
+    results.courts.length > 0 || 
+    results.sheriffCells.length > 0 ||
+    results.bailCourt
+  );
 
-  // Show results view
-  if (results) {
-    return (
-      <ResultsView
-        query={query}
-        setQuery={setQuery}
-        results={results}
-        loading={loading}
-        copiedField={copiedField}
-        onCopy={copyToClipboard}
-        onBack={goHome}
-      />
-    );
-  }
-
-  // Home view
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20">
-        {/* Logo */}
-        <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/20">
-          <Scale className="w-10 h-10 text-white" />
-        </div>
-        
-        {/* Title */}
-        <h1 className="text-3xl font-bold text-white mb-2">BC Legal Directory</h1>
-        <p className="text-zinc-400 text-center mb-8 max-w-xs">
-          Find courts, RCMP cells, bail contacts, and more across British Columbia
-        </p>
-        
-        {/* Search Bar */}
-        <div className="w-full max-w-md">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="w-5 h-5 text-zinc-500" />
-            </div>
-            <input 
-              type="text" 
-              placeholder="Search city, court, or RCMP..."
-              className="w-full pl-12 pr-4 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all text-lg"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              autoFocus
-            />
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      {/* Header */}
+      <header className="bg-white border-b sticky top-0 z-10 shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3 mb-4">
+            <Scale className="w-8 h-8 text-blue-600" />
+            <h1 className="text-xl font-bold text-gray-800">BC Legal Reference</h1>
           </div>
           
-          {/* Quick search suggestions */}
-          <div className="flex flex-wrap gap-2 mt-4 justify-center">
-            {['Hope', 'Surrey', 'Kelowna', 'Victoria', 'Prince George'].map(term => (
-              <button
-                key={term}
-                onClick={() => setQuery(term)}
-                className="px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-zinc-400 hover:border-zinc-700 hover:text-white transition-colors"
-              >
-                {term}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-      
-      {/* Bottom hint */}
-      <div className="pb-8 text-center">
-        <p className="text-zinc-600 text-sm">
-          Try searching "Hope" to see RCMP → Court connections
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// Results View Component
-interface ResultsViewProps {
-  query: string;
-  setQuery: (q: string) => void;
-  results: SearchResults;
-  loading: boolean;
-  copiedField: string | null;
-  onCopy: (text: string, field: string) => void;
-  onBack: () => void;
-}
-
-const ResultsView = memo(function ResultsView({
-  query,
-  setQuery,
-  results,
-  loading,
-  copiedField,
-  onCopy,
-  onBack,
-}: ResultsViewProps) {
-  const { cells, courts, relatedCourts, relatedCells } = results;
-  const totalResults = cells.length + courts.length;
-
-  return (
-    <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur-sm border-b border-zinc-800 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <button onClick={onBack} className="p-2 -ml-2 text-zinc-400 hover:text-white transition-colors">
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <div className="flex-1 relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="w-4 h-4 text-zinc-500" />
-            </div>
-            <input 
-              type="text" 
-              placeholder="Search..."
-              className="w-full pl-10 pr-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 transition-all"
+          {/* Search Input */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search courts, cells, contacts... (e.g., 'Abby', 'Surrey', 'Victoria')"
+              className="w-full pl-10 pr-4 py-3 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               autoFocus
             />
+            {loading && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
           </div>
         </div>
       </header>
 
       {/* Results */}
-      <main className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-6 h-6 border-2 border-zinc-700 border-t-emerald-500 rounded-full animate-spin" />
-            <span className="ml-2 text-zinc-500">Searching...</span>
+      <main className="max-w-4xl mx-auto px-4 py-6">
+        {!query && (
+          <div className="text-center py-12">
+            <Scale className="w-16 h-16 text-blue-200 mx-auto mb-4" />
+            <h2 className="text-2xl font-medium text-gray-600 mb-2">Search BC Courts & Contacts</h2>
+            <p className="text-gray-500 mb-6">Enter a court name, city, or search term to find related information</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {['Abby', 'Surrey', 'Victoria', 'Kelowna', 'Prince George'].map(term => (
+                <button
+                  key={term}
+                  onClick={() => setQuery(term)}
+                  className="px-4 py-2 bg-white border rounded-full text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                >
+                  {term}
+                </button>
+              ))}
+            </div>
           </div>
-        ) : (
-          <>
-            {/* Results count */}
-            <p className="text-sm text-zinc-500">
-              Found {totalResults} result{totalResults !== 1 ? 's' : ''} for "{query}"
-            </p>
+        )}
 
-            {/* Cells Section */}
-            {cells.length > 0 && (
-              <div className="rounded-2xl border border-blue-500/30 overflow-hidden">
-                <div className="px-4 py-3 bg-blue-500/10 border-b border-blue-500/30">
-                  <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-blue-400" />
-                    <span className="font-medium text-white">Police & RCMP</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400">
-                      {cells.length}
-                    </span>
+        {query && !loading && !hasResults && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No results found for "{query}"</p>
+          </div>
+        )}
+
+        {hasResults && (
+          <div className="space-y-6">
+            {/* Courts Section */}
+            <Section title="Courts" icon={Building2} count={results.courts.length}>
+              {results.courts.map(court => (
+                <div key={court.id} className="bg-white rounded-lg border p-4 shadow-sm">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="font-semibold text-lg text-gray-800">{court.name}</h3>
+                      <p className="text-sm text-gray-500">{court.region_name} Region</p>
+                    </div>
+                    <div className="flex gap-1">
+                      {court.has_provincial && <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">Provincial</span>}
+                      {court.has_supreme && <span className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded">Supreme</span>}
+                      {court.is_circuit && <span className="px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded">Circuit</span>}
+                    </div>
                   </div>
-                </div>
-                <div className="p-3 space-y-2">
-                  {cells.map(cell => (
-                    <CellCard key={cell.id} cell={cell} copiedField={copiedField} onCopy={onCopy} />
-                  ))}
                   
-                  {relatedCourts.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-zinc-800">
-                      <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3 flex items-center gap-2">
-                        <ChevronRight className="w-4 h-4" />
-                        Arrests go to this court
-                      </p>
-                      {relatedCourts.map(court => (
-                        <CourtCard key={court.id} court={court} />
-                      ))}
+                  {court.address && (
+                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                      <MapPin className="w-4 h-4" />
+                      <span>{court.address}</span>
                     </div>
                   )}
-                </div>
-              </div>
-            )}
-
-            {/* Courts Section */}
-            {courts.length > 0 && (
-              <div className="rounded-2xl border border-emerald-500/30 overflow-hidden">
-                <div className="px-4 py-3 bg-emerald-500/10 border-b border-emerald-500/30">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-emerald-400" />
-                    <span className="font-medium text-white">Courts</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">
-                      {courts.length}
-                    </span>
+                  
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {court.phone && <CopyButton text={court.phone} label="phone" />}
+                    {court.fax && <CopyButton text={court.fax} label="fax" />}
+                    {court.sheriff_phone && <CopyButton text={court.sheriff_phone} label="sheriff" />}
+                    {court.access_code && (
+                      <span className="px-2 py-1 text-sm bg-yellow-50 border border-yellow-200 rounded">
+                        🔑 {court.access_code}
+                      </span>
+                    )}
                   </div>
                 </div>
-                <div className="p-3 space-y-2">
-                  {courts.map(court => (
-                    <CourtCard key={court.id} court={court} />
-                  ))}
+              ))}
+            </Section>
+
+            {/* Contacts Section */}
+            <Section title="Contacts" icon={Mail} count={results.contacts.length}>
+              <div className="bg-white rounded-lg border divide-y">
+                {results.contacts.filter(c => c.email).map(contact => (
+                  <div key={contact.id} className="p-3 flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">{contact.role_name}</span>
+                    </div>
+                    <CopyButton text={contact.email!} label="email" />
+                  </div>
+                ))}
+              </div>
+            </Section>
+
+            {/* Sheriff Cells Section */}
+            <Section title="Sheriff & Police Cells" icon={Shield} count={results.sheriffCells.length}>
+              {results.sheriffCells.map(cell => (
+                <div key={cell.id} className="bg-white rounded-lg border p-4 shadow-sm">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <h4 className="font-medium text-gray-800">{cell.name}</h4>
+                      {cell.catchment && (
+                        <p className="text-sm text-gray-500">Serves: {cell.catchment}</p>
+                      )}
+                    </div>
+                    <span className={`px-2 py-1 text-xs rounded ${
+                      cell.cell_type === 'courthouse' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+                    }`}>
+                      {cell.cell_type === 'courthouse' ? 'Courthouse' : 'Police'}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {cell.phones.map((phone, i) => (
+                      <CopyButton key={i} text={phone} label="phone" />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </Section>
+
+            {/* MS Teams Links Section */}
+            <Section title="MS Teams Courtrooms" icon={Video} count={results.teamsLinks.length} defaultOpen={false}>
+              <div className="bg-white rounded-lg border divide-y max-h-64 overflow-y-auto">
+                {results.teamsLinks.map(link => (
+                  <div key={link.id} className="p-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium text-gray-800">
+                        {link.courtroom || link.name || 'Courtroom'}
+                      </span>
+                      {link.type_name && (
+                        <span className="text-xs text-gray-500">{link.type_name}</span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-sm">
+                      {link.conference_id && (
+                        <CopyButton text={link.conference_id} label="conference ID" />
+                      )}
+                      {link.teams_link && (
+                        <a 
+                          href={link.teams_link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 px-2 py-1 text-sm bg-blue-50 text-blue-700 border border-blue-200 rounded hover:bg-blue-100"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          Join
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Section>
+
+            {/* Bail Information Section */}
+            {results.bailCourt && (
+              <Section title="Virtual Bail" icon={Users} count={1}>
+                <div className="bg-white rounded-lg border p-4 shadow-sm">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h4 className="font-semibold text-gray-800">{results.bailCourt.name} Bail Hub</h4>
+                      {results.bailCourt.is_hybrid && (
+                        <span className="text-xs text-purple-600">Hybrid Courtroom</span>
+                      )}
+                    </div>
+                    <span className={`px-2 py-1 text-xs rounded ${
+                      results.bailCourt.is_daytime ? 'bg-yellow-100 text-yellow-700' : 'bg-indigo-100 text-indigo-700'
+                    }`}>
+                      {results.bailCourt.is_daytime ? '☀️ Daytime' : '🌙 Evening'}
+                    </span>
+                  </div>
                   
-                  {relatedCells.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-zinc-800">
-                      <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3 flex items-center gap-2">
-                        <ChevronRight className="w-4 h-4" />
-                        RCMP detachments serving this court
-                      </p>
+                  {/* Triage Times */}
+                  {(results.bailCourt.triage_time_am || results.bailCourt.triage_time_pm) && (
+                    <div className="mb-3 p-2 bg-gray-50 rounded">
+                      <div className="text-sm text-gray-700">
+                        <Clock className="w-4 h-4 inline mr-1" />
+                        <strong>Triage:</strong> {results.bailCourt.triage_time_am} / {results.bailCourt.triage_time_pm}
+                      </div>
+                      <div className="text-sm text-gray-700">
+                        <strong>Court:</strong> {results.bailCourt.court_start_am} - {results.bailCourt.court_end}
+                      </div>
+                      {results.bailCourt.cutoff_new_arrests && (
+                        <div className="text-sm text-red-600">
+                          <strong>Cutoff:</strong> {results.bailCourt.cutoff_new_arrests}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Bail Contacts */}
+                  {results.bailContacts.length > 0 && (
+                    <div className="mb-3">
+                      <h5 className="text-sm font-medium text-gray-600 mb-2">Bail Contacts:</h5>
+                      <div className="space-y-1">
+                        {results.bailContacts.map(bc => (
+                          <div key={bc.id} className="flex items-center justify-between text-sm">
+                            <span className="text-gray-600">{bc.role_name}</span>
+                            {bc.email && <CopyButton text={bc.email} label="email" />}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Bail Teams Links */}
+                  {results.bailTeamsLinks.length > 0 && (
+                    <div>
+                      <h5 className="text-sm font-medium text-gray-600 mb-2">Bail MS Teams:</h5>
                       <div className="space-y-2">
-                        {relatedCells.map(cell => (
-                          <CellCard key={cell.id} cell={cell} copiedField={copiedField} onCopy={onCopy} compact />
+                        {results.bailTeamsLinks.map(link => (
+                          <div key={link.id} className="flex items-center justify-between text-sm p-2 bg-blue-50 rounded">
+                            <span className="text-gray-700">{link.courtroom || link.name}</span>
+                            <div className="flex gap-2">
+                              {link.conference_id && <CopyButton text={link.conference_id} label="ID" />}
+                              {link.teams_link && (
+                                <a 
+                                  href={link.teams_link} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                >
+                                  <Video className="w-3 h-3" />
+                                  Join
+                                </a>
+                              )}
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </div>
                   )}
                 </div>
-              </div>
-            )}
-
-            {/* No results */}
-            {totalResults === 0 && (
-              <div className="text-center py-12 text-zinc-500">
-                <Scale className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No results found for "{query}"</p>
-                <p className="text-sm mt-2">Try searching for a city, court name, or RCMP detachment</p>
-              </div>
-            )}
-          </>
-        )}
-      </main>
-    </div>
-  );
-});
-
-// Cell Card Component
-interface CellCardProps {
-  cell: CellResult;
-  copiedField: string | null;
-  onCopy: (text: string, field: string) => void;
-  compact?: boolean;
-}
-
-const CellCard = memo(function CellCard({ cell, copiedField, onCopy, compact }: CellCardProps) {
-  const phones = cell.phones || [];
-
-  return (
-    <div className={`bg-zinc-900 rounded-xl border border-zinc-800 ${compact ? 'p-3' : 'p-4'}`}>
-      <div className="flex items-start gap-3">
-        <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-          <Shield className="w-5 h-5 text-blue-400" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-white">{cell.name}</h3>
-          {cell.catchment && (
-            <p className="text-xs text-zinc-500 mt-0.5">Serves: {cell.catchment}</p>
-          )}
-          {phones.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {phones.map((phone, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => onCopy(phone, `cell-${cell.id}-phone-${idx}`)}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
-                    copiedField === `cell-${cell.id}-phone-${idx}`
-                      ? 'bg-emerald-500/20 text-emerald-400'
-                      : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                  }`}
-                >
-                  {copiedField === `cell-${cell.id}-phone-${idx}` ? (
-                    <Check className="w-3 h-3" />
-                  ) : (
-                    <Phone className="w-3 h-3" />
-                  )}
-                  {phone}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-});
-
-// Court Card Component
-interface CourtCardProps {
-  court: CourtResult;
-}
-
-const CourtCard = memo(function CourtCard({ court }: CourtCardProps) {
-  return (
-    <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-4 hover:border-zinc-700 transition-colors">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-          <Building2 className="w-5 h-5 text-emerald-400" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-white">{court.name}</h3>
-          <div className="flex items-center gap-2 mt-0.5">
-            {court.region_name && (
-              <span className="text-xs text-zinc-500">{court.region_name}</span>
-            )}
-            {court.is_circuit && (
-              <span className="text-xs px-1.5 py-0.5 bg-amber-500/20 text-amber-400 rounded">
-                Circuit
-              </span>
+              </Section>
             )}
           </div>
-          {court.address && (
-            <p className="text-xs text-zinc-500 mt-1 flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              {court.address}
-            </p>
-          )}
-        </div>
-        <ChevronRight className="w-5 h-5 text-zinc-500" />
-      </div>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="text-center py-4 text-sm text-gray-500">
+        BC Legal Reference Database
+      </footer>
     </div>
   );
-});
+}
