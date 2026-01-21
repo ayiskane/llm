@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, MapPin, Phone, ChevronRight, Video } from 'lucide-react';
+import { Building, GeoAlt, Telephone, ChevronRight, CameraVideo } from 'react-bootstrap-icons';
 import { Badge } from '@/components/ui/badge';
 import type { Court } from '@/types';
 
@@ -31,7 +31,7 @@ export function CourtCard({ court, onClick, showArrow = true, teamsLinkCount, on
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
-              <Building2 className="w-5 h-5 text-slate-400 flex-shrink-0" />
+              <Building className="w-5 h-5 text-slate-400 flex-shrink-0" />
               <h3 className="font-semibold text-white truncate">{formatCourtName(court)}</h3>
             </div>
             
@@ -71,7 +71,7 @@ export function CourtCard({ court, onClick, showArrow = true, teamsLinkCount, on
           className="w-full flex items-center justify-between px-4 py-3 border-t border-slate-700/50 text-sm text-slate-300 hover:bg-slate-800/50 transition-colors"
         >
           <div className="flex items-center gap-2">
-            <Video className="w-4 h-4 text-indigo-400" />
+            <CameraVideo className="w-4 h-4 text-indigo-400" />
             <span>{teamsLinkCount} MS Teams Links</span>
           </div>
           <ChevronRight className="w-4 h-4 text-slate-500" />
@@ -109,7 +109,7 @@ export function CourtCardMini({ court, onClick, teamsLinkCount }: CourtCardMiniP
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <Building2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
+          <Building className="w-4 h-4 text-slate-400 flex-shrink-0" />
           <span className="font-medium text-white truncate">{court.name}</span>
         </div>
         
@@ -180,7 +180,7 @@ export function CourtHeader({ court, onBack, onLocationClick }: CourtHeaderProps
               onClick={onLocationClick}
               className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors ml-2"
             >
-              <MapPin className="w-5 h-5 text-slate-300" />
+              <GeoAlt className="w-5 h-5 text-slate-300" />
             </button>
           )}
         </div>
@@ -193,7 +193,7 @@ export function CourtHeader({ court, onBack, onLocationClick }: CourtHeaderProps
                 href={`tel:${court.phone}`}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 rounded-lg text-sm text-slate-300 hover:bg-slate-600 transition-colors"
               >
-                <Phone className="w-3.5 h-3.5" />
+                <Telephone className="w-3.5 h-3.5" />
                 <span>Call</span>
               </a>
             )}
@@ -203,5 +203,6 @@ export function CourtHeader({ court, onBack, onLocationClick }: CourtHeaderProps
     </div>
   );
 }
+
 
 
