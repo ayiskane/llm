@@ -343,49 +343,55 @@ export default function Home() {
                     </div>
                   )}
 
-                  {/* Contacts Card (only for non-circuit courts) */}
-                  {(activeFilter === 'all' || activeFilter === 'contacts') && results.courts.length > 0 && !results.courts[0].is_circuit && results.contacts.length > 0 && (
+                  {/* Contacts Cards - Grouped by Court */}
+                  {(activeFilter === 'all' || activeFilter === 'contacts') && results.courts.length > 0 && results.contacts.length > 0 && (
                     <div className="space-y-2">
                       <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide px-1">
-                        Top Contacts
+                        {activeFilter === 'contacts' ? 'Contacts' : 'Top Contacts'}
                       </h3>
-                      <div className="bg-slate-800/30 rounded-lg border border-slate-700/50 overflow-hidden">
-                        {/* Card Header with Full Court Name */}
-                        <div className="px-4 py-3 border-b border-slate-700/50">
-                          <div className="flex items-center gap-2">
-                            <People className="w-4 h-4 text-slate-400" />
-                            <span className="text-sm font-medium text-slate-200">
-                              {results.courts[0].name.toLowerCase().includes('court') 
-                                ? results.courts[0].name 
-                                : `${results.courts[0].name} Law Courts`}
-                            </span>
+                      
+                      {/* Show contacts grouped by court */}
+                      {results.courts.filter(court => !court.is_circuit).map((court) => {
+                        // Get contacts for this specific court
+                        const courtContacts = results.contacts.filter(c => c.court_id === court.id);
+                        if (courtContacts.length === 0) return null;
+                        
+                        return (
+                          <div key={court.id} className="bg-slate-800/30 rounded-lg border border-slate-700/50 overflow-hidden">
+                            {/* Card Header with Court Name */}
+                            <div className="px-4 py-3 border-b border-slate-700/50">
+                              <div className="flex items-center gap-2">
+                                <People className="w-4 h-4 text-slate-400" />
+                                <span className="text-sm font-medium text-slate-200">
+                                  {court.name.toLowerCase().includes('court') 
+                                    ? court.name 
+                                    : `${court.name} Law Courts`}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {/* Contacts List */}
+                            <div className="p-3">
+                              <TopContactsPreview 
+                                contacts={courtContacts}
+                                onCopy={() => setCopiedField('contact')}
+                                showAll={activeFilter === 'contacts'}
+                              />
+                            </div>
+                            
+                            {/* View Court Details button */}
+                            {activeFilter === 'all' && courtContacts.length > 3 && (
+                              <button
+                                onClick={() => handleSelectCourt(court, 'contacts')}
+                                className="w-full flex items-center justify-between px-4 py-3 border-t border-slate-700/50 text-sm text-indigo-400 hover:text-indigo-300 hover:bg-slate-800/50 transition-colors"
+                              >
+                                <span>View All Contacts</span>
+                                <ChevronRight className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
-                        </div>
-                        
-                        {/* Contacts List */}
-                        <div className="p-3">
-                          <TopContactsPreview 
-                            contacts={results.contacts}
-                            onCopy={() => setCopiedField('contact')}
-                            showAll={activeFilter === 'contacts'}
-                          />
-                        </div>
-                        
-                        {/* View All Contacts button - only show in 'all' filter mode when there are more contacts */}
-                        {activeFilter === 'all' && results.contacts.length > 3 && (
-                          <button
-                            onClick={() => {
-                              if (results.courts.length > 0) {
-                                handleSelectCourt(results.courts[0], 'contacts');
-                              }
-                            }}
-                            className="w-full flex items-center justify-between px-4 py-3 border-t border-slate-700/50 text-sm text-indigo-400 hover:text-indigo-300 hover:bg-slate-800/50 transition-colors"
-                          >
-                            <span>View All Contacts</span>
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
+                        );
+                      })}
                     </div>
                   )}
 
@@ -628,6 +634,7 @@ export default function Home() {
     </div>
   );
 }
+
 
 
 
