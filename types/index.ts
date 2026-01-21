@@ -21,6 +21,7 @@ export interface Court {
 }
 
 export interface Contact {
+  court_id?: number;  // Which court this contact belongs to
   id: number;
   email: string | null;
   emails: string[] | null;
@@ -161,3 +162,4 @@ export const REGION_NAMES: Record<number, string> = {
   5: 'Northern',
   6: 'Federal',
 };
+
