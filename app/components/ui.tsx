@@ -78,7 +78,7 @@ interface StickyHeaderProps {
 export function StickyHeader({ children, className = '' }: StickyHeaderProps) {
   return (
     <div 
-      className={`sticky top-0 z-10 backdrop-blur-md ${className}`}
+      className={`flex-shrink-0 backdrop-blur-md ${className}`}
       style={{ 
         background: theme.colors.bg.header, 
         borderBottom: `1px solid ${theme.colors.border.primary}` 
