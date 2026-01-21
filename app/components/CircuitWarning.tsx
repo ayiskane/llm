@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle } from 'lucide-react';
+import { ExclamationTriangle } from 'react-bootstrap-icons';
 
 interface CircuitWarningProps {
   courtName: string;
@@ -12,7 +12,7 @@ export function CircuitWarning({ courtName, hubCourtName, onHubClick }: CircuitW
   return (
     <div className="rounded-lg bg-amber-900/20 border border-amber-800/50 p-3">
       <div className="flex items-start gap-2">
-        <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+        <ExclamationTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
           <p className="text-sm text-amber-200">
             <span className="font-medium">{courtName}</span> is a circuit court.
@@ -36,3 +36,4 @@ export function CircuitWarning({ courtName, hubCourtName, onHubClick }: CircuitW
     </div>
   );
 }
+
