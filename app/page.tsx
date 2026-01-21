@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { ArrowLeft, Scale, MapPin, Phone, Copy, Check, Building2, Users, ShieldCheck, Video, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Scale3, GeoAlt, Telephone, Clipboard, Check, Building, People, ShieldCheck, CameraVideo, ChevronRight } from 'react-bootstrap-icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import copy from 'copy-to-clipboard';
 
@@ -140,10 +140,10 @@ export default function Home() {
   // Filter chips config
   const filterChips: { key: ResultFilter; label: string; icon: React.ReactNode; count: number }[] = [
     { key: 'all', label: 'All', icon: null, count: 0 },
-    { key: 'courts', label: 'Courts', icon: <Building2 className="w-3.5 h-3.5" />, count: results?.courts.length || 0 },
-    { key: 'contacts', label: 'Contacts', icon: <Users className="w-3.5 h-3.5" />, count: results?.contacts.length || 0 },
+    { key: 'courts', label: 'Courts', icon: <Building className="w-3.5 h-3.5" />, count: results?.courts.length || 0 },
+    { key: 'contacts', label: 'Contacts', icon: <People className="w-3.5 h-3.5" />, count: results?.contacts.length || 0 },
     { key: 'cells', label: 'Cells', icon: <ShieldCheck className="w-3.5 h-3.5" />, count: results?.sheriffCells.length || 0 },
-    { key: 'teams', label: 'Teams', icon: <Video className="w-3.5 h-3.5" />, count: results?.teamsLinks.length || 0 },
+    { key: 'teams', label: 'Teams', icon: <CameraVideo className="w-3.5 h-3.5" />, count: results?.teamsLinks.length || 0 },
   ];
 
   return (
@@ -161,7 +161,7 @@ export default function Home() {
             <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20">
               {/* Logo/Title */}
               <div className="mb-8 text-center">
-                <Scale className="w-12 h-12 text-indigo-400 mx-auto mb-4" />
+                <Scale3 className="w-12 h-12 text-indigo-400 mx-auto mb-4" />
                 <h1 className="text-2xl font-bold text-white mb-2">BC Legal Reference</h1>
                 <p className="text-slate-400 text-sm">Search courts, contacts, and cells</p>
               </div>
@@ -229,13 +229,13 @@ export default function Home() {
                 <div className="flex flex-wrap items-center gap-2 px-3 pb-2">
                   {results.courtroomFilter && (
                     <span className="px-2.5 py-1 bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 text-xs rounded-full flex items-center gap-1.5">
-                      <Video className="w-3 h-3" />
+                      <CameraVideo className="w-3 h-3" />
                       CR {results.courtroomFilter}
                     </span>
                   )}
                   {results.contactTypeLabel && (
                     <span className="px-2.5 py-1 bg-emerald-600/30 border border-emerald-500/50 text-emerald-300 text-xs rounded-full flex items-center gap-1.5">
-                      <Users className="w-3 h-3" />
+                      <People className="w-3 h-3" />
                       {results.contactTypeLabel}
                     </span>
                   )}
@@ -247,7 +247,7 @@ export default function Home() {
                   )}
                   {results.regionFilter && (
                     <span className="px-2.5 py-1 bg-purple-600/30 border border-purple-500/50 text-purple-300 text-xs rounded-full flex items-center gap-1.5">
-                      <Building2 className="w-3 h-3" />
+                      <Building className="w-3 h-3" />
                       R{results.regionFilter}
                     </span>
                   )}
@@ -331,7 +331,7 @@ export default function Home() {
                   {(activeFilter === 'all' || activeFilter === 'teams') && results.courtroomFilter && results.teamsLinks.length > 0 && (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 px-1">
-                        <Video className="w-4 h-4 text-indigo-400" />
+                        <CameraVideo className="w-4 h-4 text-indigo-400" />
                         <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide">
                           CR {results.courtroomFilter} MS Teams
                         </h3>
@@ -353,7 +353,7 @@ export default function Home() {
                         {/* Card Header with Full Court Name */}
                         <div className="px-4 py-3 border-b border-slate-700/50">
                           <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4 text-slate-400" />
+                            <People className="w-4 h-4 text-slate-400" />
                             <span className="text-sm font-medium text-slate-200">
                               {results.courts[0].name.toLowerCase().includes('court') 
                                 ? results.courts[0].name 
@@ -444,7 +444,7 @@ export default function Home() {
                     onClick={() => handleOpenMap(detailCourt.address!)}
                     className="p-2 text-slate-400 hover:text-white transition-colors"
                   >
-                    <MapPin className="w-5 h-5" />
+                    <GeoAlt className="w-5 h-5" />
                   </button>
                 )}
               </div>
@@ -492,7 +492,7 @@ export default function Home() {
                       href={`tel:${detailCourt.phone}`}
                       className="flex items-center gap-2 p-3 bg-slate-800/50 rounded-lg"
                     >
-                      <Phone className="w-4 h-4 text-slate-400" />
+                      <Telephone className="w-4 h-4 text-slate-400" />
                       <div>
                         <div className="text-xs text-slate-400">Phone</div>
                         <div className="text-sm text-slate-200">{detailCourt.phone}</div>
@@ -511,7 +511,7 @@ export default function Home() {
                       {copiedField === 'fax' ? (
                         <Check className="w-4 h-4 text-green-400" />
                       ) : (
-                        <Copy className="w-4 h-4 text-slate-500" />
+                        <Clipboard className="w-4 h-4 text-slate-500" />
                       )}
                     </div>
                   )}
@@ -527,7 +527,7 @@ export default function Home() {
                       {copiedField === 'access' ? (
                         <Check className="w-4 h-4 text-green-400" />
                       ) : (
-                        <Copy className="w-4 h-4 text-slate-500" />
+                        <Clipboard className="w-4 h-4 text-slate-500" />
                       )}
                     </div>
                   )}
@@ -562,7 +562,7 @@ export default function Home() {
               {detailBailCourt && (
                 <div className="space-y-3 p-4 bg-emerald-900/10 rounded-lg border border-emerald-800/30">
                   <div className="flex items-center gap-2">
-                    <Scale className="w-4 h-4 text-emerald-400" />
+                    <Scale3 className="w-4 h-4 text-emerald-400" />
                     <span className="text-sm font-medium text-emerald-300">
                       Virtual Bail - {detailBailCourt.name}
                     </span>
