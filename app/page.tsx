@@ -64,34 +64,61 @@ export default function Home() {
 
   // Scroll handling for collapsing header
   useEffect(() => {
+    if (view !== 'detail') return;
+    
     const scrollContainer = detailScrollRef.current;
-    if (!scrollContainer || view !== 'detail') return;
-    const handleScroll = () => setIsHeaderCollapsed(scrollContainer.scrollTop > 50);
-    scrollContainer.addEventListener('scroll', handleScroll);
+    if (!scrollContainer) return;
+    
+    const handleScroll = () => {
+      setIsHeaderCollapsed(scrollContainer.scrollTop > 50);
+    };
+    
+    // Initial check
+    handleScroll();
+    
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
     return () => scrollContainer.removeEventListener('scroll', handleScroll);
-  }, [view]);
+  }, [view, detailCourt]);
 
   // Reset state on detail view entry
   useEffect(() => {
     if (view === 'detail') {
       setIsHeaderCollapsed(false);
       setExpandedSection('contacts');
+      // Reset scroll position
+      if (detailScrollRef.current) {
+        detailScrollRef.current.scrollTop = 0;
+      }
     }
   }, [view, selectedCourtId]);
 
-  // Scroll to target section
+  // Scroll to target section with offset for sticky header
   useEffect(() => {
     if (scrollTarget && view === 'detail') {
       const refs: Record<string, React.RefObject<HTMLDivElement | null>> = {
         teams: teamsRef, contacts: contactsRef, cells: cellsRef, bail: bailRef,
       };
       const ref = refs[scrollTarget];
-      if (ref?.current) {
+      const scrollContainer = detailScrollRef.current;
+      
+      if (ref?.current && scrollContainer) {
         setExpandedSection(scrollTarget as AccordionSection);
         setTimeout(() => {
-          ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          const element = ref.current;
+          if (element) {
+            // Get element position relative to scroll container
+            const containerRect = scrollContainer.getBoundingClientRect();
+            const elementRect = element.getBoundingClientRect();
+            const offsetTop = elementRect.top - containerRect.top + scrollContainer.scrollTop;
+            
+            // Scroll with offset (no extra padding needed, element should be at top of scrollable area)
+            scrollContainer.scrollTo({
+              top: Math.max(0, offsetTop - 10), // 10px padding from top
+              behavior: 'smooth'
+            });
+          }
           setScrollTarget(null);
-        }, 150);
+        }, 200);
       }
     }
   }, [scrollTarget, view, detailTeams, detailContacts]);
@@ -386,7 +413,7 @@ export default function Home() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
-            className="min-h-screen flex flex-col"
+            className="h-screen flex flex-col overflow-hidden"
           >
             <StickyHeader>
               <div className="flex items-center p-3">
@@ -555,4 +582,5 @@ function FilterBadge({ color, icon, children }: { color: 'indigo' | 'emerald' | 
     </span>
   );
 }
+
 
