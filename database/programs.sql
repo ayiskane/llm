@@ -26,8 +26,6 @@ INSERT INTO program_types (code, name, description) VALUES
 ('FPS', 'Forensic Psychiatric Services', 'FPS Regional Clinics for court-ordered assessments'),
 ('IJC', 'Indigenous Justice Centre', 'BCFNJC legal representation and wrap-around services'),
 ('IJP', 'Indigenous Justice Program', 'Community-based Indigenous justice and restorative programs'),
-('PRE_TREATMENT', 'Pre-Treatment', 'Stabilization and preparation for treatment'),
-('POST_TREATMENT', 'Post-Treatment', 'Aftercare and continuing support'),
 ('CORRECTIONAL', 'Correctional Program', 'Programs within correctional facilities');
 
 -- =============================================
@@ -174,16 +172,6 @@ INSERT INTO programs (name, type_id, location, region_id, phone, indigenous_only
 VALUES ('Ann Elmore House', (SELECT id FROM program_types WHERE code = 'RECOVERY'),
         'Campbell River', 1, '250-286-3666', FALSE, TRUE, 'phone');
 
--- STAR Program
-INSERT INTO programs (name, type_id, location, region_id, indigenous_only, is_residential, application_method)
-VALUES ('STAR Program', (SELECT id FROM program_types WHERE code = 'PRE_TREATMENT'),
-        'Pre-Treatment', NULL, FALSE, FALSE, 'written');
-
--- Riceblock
-INSERT INTO programs (name, type_id, location, region_id, phone, indigenous_only, is_residential, application_method)
-VALUES ('Riceblock', (SELECT id FROM program_types WHERE code = 'POST_TREATMENT'),
-        'Post Treatment', NULL, '604-253-2553', FALSE, FALSE, 'phone');
-
 -- Phoenix
 INSERT INTO programs (name, type_id, indigenous_only, is_residential, accepts_sa_records, notes)
 VALUES ('Phoenix', (SELECT id FROM program_types WHERE code = 'RECOVERY'),
@@ -313,7 +301,7 @@ WHERE p.is_active = TRUE;
 -- View: Recovery programs only
 CREATE OR REPLACE VIEW recovery_programs AS
 SELECT * FROM programs_full 
-WHERE type_code IN ('RECOVERY', 'TREATMENT', 'DETOX', 'PRE_TREATMENT', 'POST_TREATMENT');
+WHERE type_code IN ('RECOVERY', 'TREATMENT', 'DETOX');
 
 -- View: Forensic clinics only
 CREATE OR REPLACE VIEW forensic_clinics AS
