@@ -186,8 +186,8 @@ export default function Home() {
   const detailNavButtons = [
     { key: 'contacts', label: 'Contacts', icon: <EnvelopeAt className="w-4 h-4" />, count: detailContacts.length, show: !detailCourt?.is_circuit && detailContacts.length > 0 },
     { key: 'cells', label: 'Cells', icon: <ShieldCheck className="w-4 h-4" />, count: detailCells.length, show: detailCells.length > 0 },
-    { key: 'teams', label: 'Teams', icon: <CameraVideo className="w-4 h-4" />, count: detailTeams.length, show: detailTeams.length > 0 },
     { key: 'bail', label: 'Bail', icon: <Bank2 className="w-4 h-4" />, count: detailBailCourt ? 1 : 0, show: !!detailBailCourt },
+    { key: 'teams', label: 'Teams', icon: <CameraVideo className="w-4 h-4" />, count: detailTeams.length, show: detailTeams.length > 0 },
   ];
 
   return (
@@ -543,32 +543,6 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Teams Accordion */}
-                {detailTeams.length > 0 && (
-                  <div ref={teamsRef} className="rounded-xl border border-slate-700 overflow-hidden">
-                    <button
-                      onClick={() => toggleSection('teams')}
-                      className={`w-full flex items-center gap-3 p-4 transition-colors ${expandedSection === 'teams' ? 'bg-slate-800' : 'bg-slate-800/30 hover:bg-slate-800/50'}`}
-                    >
-                      <div className="w-9 h-9 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">
-                        <CameraVideo className="w-4 h-4" />
-                      </div>
-                      <span className="font-medium text-white flex-1 text-left">MS Teams Links</span>
-                      <span className="px-2 py-0.5 rounded-full text-xs bg-indigo-500/20 text-indigo-300">{detailTeams.length}</span>
-                      <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${expandedSection === 'teams' ? 'rotate-180' : ''}`} />
-                    </button>
-                    <AnimatePresence>
-                      {expandedSection === 'teams' && (
-                        <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                          <div className="p-4 bg-slate-900/50 border-t border-slate-700">
-                            <TeamsList links={detailTeams} onCopyAll={() => setCopiedField('teams')} />
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                )}
-
                 {/* Bail Accordion */}
                 {detailBailCourt && (
                   <div ref={bailRef} className="rounded-xl border border-slate-700 overflow-hidden">
@@ -616,6 +590,32 @@ export default function Home() {
                   </div>
                 )}
 
+                {/* Teams Accordion */}
+                {detailTeams.length > 0 && (
+                  <div ref={teamsRef} className="rounded-xl border border-slate-700 overflow-hidden">
+                    <button
+                      onClick={() => toggleSection('teams')}
+                      className={`w-full flex items-center gap-3 p-4 transition-colors ${expandedSection === 'teams' ? 'bg-slate-800' : 'bg-slate-800/30 hover:bg-slate-800/50'}`}
+                    >
+                      <div className="w-9 h-9 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                        <CameraVideo className="w-4 h-4" />
+                      </div>
+                      <span className="font-medium text-white flex-1 text-left">MS Teams Links</span>
+                      <span className="px-2 py-0.5 rounded-full text-xs bg-indigo-500/20 text-indigo-300">{detailTeams.length}</span>
+                      <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${expandedSection === 'teams' ? 'rotate-180' : ''}`} />
+                    </button>
+                    <AnimatePresence>
+                      {expandedSection === 'teams' && (
+                        <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                          <div className="p-4 bg-slate-900/50 border-t border-slate-700">
+                            <TeamsList links={detailTeams} onCopyAll={() => setCopiedField('teams')} />
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
+
                 {/* Access Code Card */}
                 {detailCourt.access_code && (
                   <div 
@@ -651,3 +651,4 @@ export default function Home() {
     </div>
   );
 }
+
