@@ -66,27 +66,32 @@ export default function Home() {
   useEffect(() => {
     if (view !== 'detail') return;
     
-    // Small delay to ensure ref is attached
+    let scrollContainer: HTMLDivElement | null = null;
+    let handleScroll: (() => void) | null = null;
+    
+    // Small delay to ensure ref is attached after render
     const timer = setTimeout(() => {
-      const scrollContainer = detailScrollRef.current;
-      if (!scrollContainer) {
-        console.log('No scroll container found');
-        return;
-      }
+      scrollContainer = detailScrollRef.current;
+      if (!scrollContainer) return;
       
-      const handleScroll = () => {
-        const scrollTop = scrollContainer.scrollTop;
-        setIsHeaderCollapsed(scrollTop > 60);
+      handleScroll = () => {
+        if (scrollContainer) {
+          setIsHeaderCollapsed(scrollContainer.scrollTop > 60);
+        }
       };
       
       // Initial check
       handleScroll();
       
       scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
-      return () => scrollContainer.removeEventListener('scroll', handleScroll);
-    }, 100);
+    }, 50);
     
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (scrollContainer && handleScroll) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    };
   }, [view, detailCourt, selectedCourtId]);
 
   // Reset state on detail view entry
