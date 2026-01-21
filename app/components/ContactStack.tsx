@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Copy } from 'lucide-react';
+import { Check, Clipboard } from 'react-bootstrap-icons';
 import { Badge } from '@/components/ui/badge';
 import copy from 'copy-to-clipboard';
 import type { Contact, BailContact } from '@/types';
@@ -34,7 +34,7 @@ function ContactItem({ label, email, onCopy }: { label: string; email: string; o
         {copied ? (
           <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
         ) : (
-          <Copy className="w-4 h-4 text-slate-500 flex-shrink-0" />
+          <Clipboard className="w-4 h-4 text-slate-500 flex-shrink-0" />
         )}
       </div>
     </div>
@@ -208,7 +208,7 @@ function CrownContactItem({
         {copied ? (
           <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-1" />
         ) : (
-          <Copy className="w-4 h-4 text-slate-500 flex-shrink-0 mt-1" />
+          <Clipboard className="w-4 h-4 text-slate-500 flex-shrink-0 mt-1" />
         )}
       </div>
     </div>
@@ -286,3 +286,4 @@ export function TopContactsPreview({
     </div>
   );
 }
+
