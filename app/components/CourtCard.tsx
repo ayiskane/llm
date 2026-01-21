@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, MapPin, Phone, ChevronRight } from 'lucide-react';
+import { Building2, MapPin, Phone, ChevronRight, Video } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { Court } from '@/types';
 
@@ -8,6 +8,8 @@ interface CourtCardProps {
   court: Court;
   onClick?: () => void;
   showArrow?: boolean;
+  teamsLinkCount?: number;
+  onTeamsClick?: () => void;
 }
 
 // Helper to format court name with "Law Courts" suffix for non-circuit courts
@@ -18,51 +20,74 @@ function formatCourtName(court: Court): string {
   return `${court.name} Law Courts`;
 }
 
-export function CourtCard({ court, onClick, showArrow = true }: CourtCardProps) {
+export function CourtCard({ court, onClick, showArrow = true, teamsLinkCount, onTeamsClick }: CourtCardProps) {
   return (
-    <div 
-      className={`bg-slate-800/50 rounded-lg p-4 border border-slate-700/50 ${onClick ? 'cursor-pointer hover:bg-slate-800 transition-colors active:bg-slate-700' : ''}`}
-      onClick={onClick}
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
-            <Building2 className="w-5 h-5 text-slate-400 flex-shrink-0" />
-            <h3 className="font-semibold text-white truncate">{formatCourtName(court)}</h3>
-          </div>
-          
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {court.region_code && (
-              <Badge variant="secondary" className="bg-slate-700 text-slate-300 text-xs">
-                {court.region_code}
-              </Badge>
-            )}
-            {court.has_provincial && (
-              <Badge variant="secondary" className="bg-blue-900/50 text-blue-300 text-xs">
-                PC
-              </Badge>
-            )}
-            {court.has_supreme && (
-              <Badge variant="secondary" className="bg-purple-900/50 text-purple-300 text-xs">
-                SC
-              </Badge>
-            )}
-            {court.is_circuit && (
-              <Badge variant="secondary" className="bg-amber-900/50 text-amber-300 text-xs">
-                Circuit
-              </Badge>
-            )}
-          </div>
-          
-          {/* View Court Page link */}
-          {showArrow && onClick && (
-            <div className="flex items-center gap-1 mt-3 text-sm text-indigo-400">
-              <span>View Court Page</span>
-              <ChevronRight className="w-4 h-4" />
+    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
+      {/* Main court info - clickable area */}
+      <div 
+        className={`p-4 ${onClick ? 'cursor-pointer hover:bg-slate-800 transition-colors active:bg-slate-700' : ''}`}
+        onClick={onClick}
+      >
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <Building2 className="w-5 h-5 text-slate-400 flex-shrink-0" />
+              <h3 className="font-semibold text-white truncate">{formatCourtName(court)}</h3>
             </div>
-          )}
+            
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {court.region_code && (
+                <Badge variant="secondary" className="bg-slate-700 text-slate-300 text-xs">
+                  {court.region_code}
+                </Badge>
+              )}
+              {court.has_provincial && (
+                <Badge variant="secondary" className="bg-blue-900/50 text-blue-300 text-xs">
+                  PC
+                </Badge>
+              )}
+              {court.has_supreme && (
+                <Badge variant="secondary" className="bg-purple-900/50 text-purple-300 text-xs">
+                  SC
+                </Badge>
+              )}
+              {court.is_circuit && (
+                <Badge variant="secondary" className="bg-amber-900/50 text-amber-300 text-xs">
+                  Circuit
+                </Badge>
+              )}
+            </div>
+          </div>
         </div>
       </div>
+      
+      {/* MS Teams Links button - only show if there are teams links */}
+      {teamsLinkCount && teamsLinkCount > 0 && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onTeamsClick?.();
+          }}
+          className="w-full flex items-center justify-between px-4 py-3 border-t border-slate-700/50 text-sm text-slate-300 hover:bg-slate-800/50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Video className="w-4 h-4 text-indigo-400" />
+            <span>{teamsLinkCount} MS Teams Links</span>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-500" />
+        </button>
+      )}
+      
+      {/* View Court Details link */}
+      {showArrow && onClick && (
+        <button
+          onClick={onClick}
+          className="w-full flex items-center justify-between px-4 py-3 border-t border-slate-700/50 text-sm text-indigo-400 hover:text-indigo-300 hover:bg-slate-800/50 transition-colors"
+        >
+          <span>View Court Details</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 }
@@ -178,4 +203,5 @@ export function CourtHeader({ court, onBack, onLocationClick }: CourtHeaderProps
     </div>
   );
 }
+
 
