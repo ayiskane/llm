@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { ArrowLeft, Scale, MapPin, Phone, Copy, Check } from 'lucide-react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { ArrowLeft, Scale, MapPin, Phone, Copy, Check, Building2, Users, ShieldCheck, Video } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import copy from 'copy-to-clipboard';
 
@@ -18,11 +18,18 @@ import type { Court } from '@/types';
 // Views
 type View = 'search' | 'results' | 'detail';
 
+// Filter types for results
+type ResultFilter = 'all' | 'courts' | 'contacts' | 'cells' | 'teams';
+
 export default function Home() {
   const [view, setView] = useState<View>('search');
   const [query, setQuery] = useState('');
   const [selectedCourtId, setSelectedCourtId] = useState<number | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<ResultFilter>('all');
+  const [scrollToTeams, setScrollToTeams] = useState(false);
+  
+  const teamsRef = useRef<HTMLDivElement>(null);
   
   const { results, isLoading, error, search, clearResults } = useSearch();
   const { 
@@ -36,6 +43,16 @@ export default function Home() {
     fetchCourtDetails 
   } = useCourtDetails();
 
+  // Scroll to teams section when flag is set
+  useEffect(() => {
+    if (scrollToTeams && view === 'detail' && teamsRef.current) {
+      setTimeout(() => {
+        teamsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setScrollToTeams(false);
+      }, 100);
+    }
+  }, [scrollToTeams, view, detailTeams]);
+
   // Handle input change (just updates the query, doesn't search)
   const handleInputChange = useCallback((value: string) => {
     setQuery(value);
@@ -43,6 +60,7 @@ export default function Home() {
     if (value.trim().length === 0 && view === 'results') {
       clearResults();
       setView('search');
+      setActiveFilter('all');
     }
   }, [view, clearResults]);
 
@@ -55,14 +73,18 @@ export default function Home() {
       }
       search(queryToSearch);
       setView('results');
+      setActiveFilter('all');
     }
   }, [query, search]);
 
   // Handle court selection
-  const handleSelectCourt = useCallback((court: Court) => {
+  const handleSelectCourt = useCallback((court: Court, goToTeams: boolean = false) => {
     setSelectedCourtId(court.id);
     fetchCourtDetails(court.id);
     setView('detail');
+    if (goToTeams) {
+      setScrollToTeams(true);
+    }
   }, [fetchCourtDetails]);
 
   // Handle back navigation
@@ -70,10 +92,12 @@ export default function Home() {
     if (view === 'detail') {
       setView('results');
       setSelectedCourtId(null);
+      setScrollToTeams(false);
     } else if (view === 'results') {
       setQuery('');
       clearResults();
       setView('search');
+      setActiveFilter('all');
     }
   }, [view, clearResults]);
 
@@ -105,6 +129,15 @@ export default function Home() {
 
   // Quick suggestions
   const suggestions = ['Abbotsford', 'Surrey', 'Victoria', 'Kelowna', 'Prince George'];
+
+  // Filter chips config
+  const filterChips: { key: ResultFilter; label: string; icon: React.ReactNode; count: number }[] = [
+    { key: 'all', label: 'All', icon: null, count: 0 },
+    { key: 'courts', label: 'Courts', icon: <Building2 className="w-3.5 h-3.5" />, count: results?.courts.length || 0 },
+    { key: 'contacts', label: 'Contacts', icon: <Users className="w-3.5 h-3.5" />, count: results?.contacts.length || 0 },
+    { key: 'cells', label: 'Cells', icon: <ShieldCheck className="w-3.5 h-3.5" />, count: results?.sheriffCells.length || 0 },
+    { key: 'teams', label: 'Teams', icon: <Video className="w-3.5 h-3.5" />, count: results?.teamsLinks.length || 0 },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
@@ -178,10 +211,42 @@ export default function Home() {
                       setQuery('');
                       clearResults();
                       setView('search');
+                      setActiveFilter('all');
                     }}
                   />
                 </div>
               </div>
+
+              {/* Filter Chips */}
+              {results && (results.courts.length > 0 || results.contacts.length > 0 || results.sheriffCells.length > 0 || results.teamsLinks.length > 0) && (
+                <div className="flex gap-2 px-3 pb-3 overflow-x-auto scrollbar-hide">
+                  {filterChips.map((chip) => {
+                    // Don't show chips with 0 count (except "All")
+                    if (chip.key !== 'all' && chip.count === 0) return null;
+                    
+                    const isActive = activeFilter === chip.key;
+                    return (
+                      <button
+                        key={chip.key}
+                        onClick={() => setActiveFilter(chip.key)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                          isActive 
+                            ? 'bg-indigo-600 text-white' 
+                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300'
+                        }`}
+                      >
+                        {chip.icon}
+                        <span>{chip.label}</span>
+                        {chip.key !== 'all' && (
+                          <span className={`ml-0.5 ${isActive ? 'text-indigo-200' : 'text-slate-500'}`}>
+                            {chip.count}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Results */}
@@ -200,7 +265,7 @@ export default function Home() {
                   )}
 
                   {/* Court Card */}
-                  {results.courts.length > 0 && (
+                  {(activeFilter === 'all' || activeFilter === 'courts') && results.courts.length > 0 && (
                     <div className="space-y-2">
                       {results.courts.map((court) => (
                         <div key={court.id}>
@@ -224,31 +289,48 @@ export default function Home() {
                   )}
 
                   {/* Top Contacts Preview (only for non-circuit courts) */}
-                  {results.courts.length > 0 && !results.courts[0].is_circuit && results.contacts.length > 0 && (
+                  {(activeFilter === 'all' || activeFilter === 'contacts') && results.courts.length > 0 && !results.courts[0].is_circuit && results.contacts.length > 0 && (
                     <div className="space-y-2">
-                      <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide px-1">Top Contacts</h3>
+                      <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide px-1">
+                        {activeFilter === 'contacts' ? 'Contacts' : 'Top Contacts'}
+                      </h3>
                       <TopContactsPreview 
-                        contacts={results.contacts}
+                        contacts={activeFilter === 'contacts' ? results.contacts : results.contacts}
                         onCopy={() => setCopiedField('contact')}
+                        showAll={activeFilter === 'contacts'}
                       />
                     </div>
                   )}
 
                   {/* Cells Preview */}
-                  {results.sheriffCells.length > 0 && (
-                    <CellsPreview cells={results.sheriffCells} />
+                  {(activeFilter === 'all' || activeFilter === 'cells') && results.sheriffCells.length > 0 && (
+                    activeFilter === 'cells' ? (
+                      <CellsList cells={results.sheriffCells} />
+                    ) : (
+                      <CellsPreview cells={results.sheriffCells} />
+                    )
                   )}
 
-                  {/* Teams Links Count Card */}
-                  {results.teamsLinks.length > 0 && (
-                    <TeamsLinkCountCard
-                      count={results.teamsLinks.length}
-                      onClick={() => {
-                        if (results.courts.length > 0) {
-                          handleSelectCourt(results.courts[0]);
-                        }
-                      }}
-                    />
+                  {/* Teams Links */}
+                  {(activeFilter === 'all' || activeFilter === 'teams') && results.teamsLinks.length > 0 && (
+                    activeFilter === 'teams' ? (
+                      <div>
+                        <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide px-1 mb-2">MS Teams Links</h3>
+                        <TeamsList 
+                          links={results.teamsLinks}
+                          onCopyAll={() => setCopiedField('teams')}
+                        />
+                      </div>
+                    ) : (
+                      <TeamsLinkCountCard
+                        count={results.teamsLinks.length}
+                        onClick={() => {
+                          if (results.courts.length > 0) {
+                            handleSelectCourt(results.courts[0], true);
+                          }
+                        }}
+                      />
+                    )
                   )}
                 </>
               )}
@@ -429,7 +511,7 @@ export default function Home() {
 
               {/* MS Teams Links */}
               {detailTeams.length > 0 && (
-                <div id="teams">
+                <div ref={teamsRef} id="teams">
                   <TeamsList 
                     links={detailTeams}
                     onCopyAll={() => setCopiedField('teams')}
