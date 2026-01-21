@@ -137,9 +137,11 @@ export function useSearch() {
         const courtIds = courts.map((c: Court) => c.id);
         
         // Fetch contacts for these courts
+        // Fetch contacts WITH court_id for grouping
         const { data: contactsData } = await supabase
           .from('contacts_courts')
           .select(`
+            court_id,
             contact_id,
             contacts (
               id,
@@ -153,7 +155,10 @@ export function useSearch() {
         if (contactsData) {
           contacts = contactsData
             .filter((cc: any) => cc.contacts)
-            .map((cc: any) => cc.contacts);
+            .map((cc: any) => ({
+              ...cc.contacts,
+              court_id: cc.court_id  // Include court_id for grouping
+            }));
           
           // Apply contact type filter
           const roleIds = getContactRoleIds(parsed.filters.contactType);
@@ -386,7 +391,8 @@ export function useCourtDetails() {
       setCourt(enrichedCourt);
 
       // Fetch contacts
-      const { data: contactsData } = await supabase
+      // Fetch contacts WITH court_id for grouping
+        const { data: contactsData } = await supabase
         .from('contacts_courts')
         .select(`
           contacts (
@@ -504,3 +510,4 @@ export function useCourtDetails() {
     fetchCourtDetails
   };
 }
+
