@@ -279,8 +279,6 @@ export const PROGRAM_TYPE_CODES = {
   FPS: 'FPS',
   IJC: 'IJC',
   IJP: 'IJP',
-  PRE_TREATMENT: 'PRE_TREATMENT',
-  POST_TREATMENT: 'POST_TREATMENT',
   CORRECTIONAL: 'CORRECTIONAL',
 } as const;
 
@@ -291,8 +289,6 @@ export const PROGRAM_TYPE_NAMES: Record<string, string> = {
   FPS: 'Forensic Psychiatric Services',
   IJC: 'Indigenous Justice Centre',
   IJP: 'Indigenous Justice Program',
-  PRE_TREATMENT: 'Pre-Treatment',
-  POST_TREATMENT: 'Post-Treatment',
   CORRECTIONAL: 'Correctional Program',
 };
 
@@ -301,3 +297,4 @@ export const APPLICATION_METHODS = {
   written: 'Written Application',
   referral: 'Referral Required',
 } as const;
+
