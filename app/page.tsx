@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { ArrowLeft, Scale, GeoAlt, Telephone, Clipboard, Check, Building, People, ShieldCheck, CameraVideo, ChevronRight } from 'react-bootstrap-icons';
+import { ArrowLeft, Bank2, GeoAlt, Telephone, Clipboard, Check, Building, People, ShieldCheck, CameraVideo, ChevronRight } from 'react-bootstrap-icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import copy from 'copy-to-clipboard';
 
@@ -161,7 +161,7 @@ export default function Home() {
             <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20">
               {/* Logo/Title */}
               <div className="mb-8 text-center">
-                <Scale className="w-12 h-12 text-indigo-400 mx-auto mb-4" />
+                <Bank2 className="w-12 h-12 text-indigo-400 mx-auto mb-4" />
                 <h1 className="text-2xl font-bold text-white mb-2">BC Legal Reference</h1>
                 <p className="text-slate-400 text-sm">Search courts, contacts, and cells</p>
               </div>
@@ -562,7 +562,7 @@ export default function Home() {
               {detailBailCourt && (
                 <div className="space-y-3 p-4 bg-emerald-900/10 rounded-lg border border-emerald-800/30">
                   <div className="flex items-center gap-2">
-                    <Scale className="w-4 h-4 text-emerald-400" />
+                    <Bank2 className="w-4 h-4 text-emerald-400" />
                     <span className="text-sm font-medium text-emerald-300">
                       Virtual Bail - {detailBailCourt.name}
                     </span>
