@@ -10,6 +10,14 @@ interface CourtCardProps {
   showArrow?: boolean;
 }
 
+// Helper to format court name with "Law Courts" suffix for non-circuit courts
+function formatCourtName(court: Court): string {
+  // Don't add "Law Courts" if it's a circuit court or already has special naming
+  if (court.is_circuit) return court.name;
+  if (court.name.toLowerCase().includes('court')) return court.name;
+  return `${court.name} Law Courts`;
+}
+
 export function CourtCard({ court, onClick, showArrow = true }: CourtCardProps) {
   return (
     <div 
@@ -20,7 +28,7 @@ export function CourtCard({ court, onClick, showArrow = true }: CourtCardProps) 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <Building2 className="w-5 h-5 text-slate-400 flex-shrink-0" />
-            <h3 className="font-semibold text-white truncate">{court.name}</h3>
+            <h3 className="font-semibold text-white truncate">{formatCourtName(court)}</h3>
           </div>
           
           <div className="flex flex-wrap gap-1.5 mt-2">
@@ -45,15 +53,21 @@ export function CourtCard({ court, onClick, showArrow = true }: CourtCardProps) 
               </Badge>
             )}
           </div>
+          
+          {/* View Court Page link */}
+          {showArrow && onClick && (
+            <div className="flex items-center gap-1 mt-3 text-sm text-indigo-400">
+              <span>View Court Page</span>
+              <ChevronRight className="w-4 h-4" />
+            </div>
+          )}
         </div>
-        
-        {showArrow && onClick && (
-          <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0 ml-2" />
-        )}
       </div>
     </div>
   );
 }
+
+export { formatCourtName };
 
 // Compact version for search results with preview info
 interface CourtCardMiniProps {
@@ -164,3 +178,4 @@ export function CourtHeader({ court, onBack, onLocationClick }: CourtHeaderProps
     </div>
   );
 }
+
