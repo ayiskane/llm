@@ -39,15 +39,15 @@ function CellRow({ cell }: CellRowProps) {
     <div className="py-3 border-b border-slate-700/30 last:border-b-0">
       <div className="text-sm text-slate-200 mb-1.5">{displayName}</div>
       {phones.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="space-y-1">
           {phones.map((phone, idx) => (
             <a 
               key={idx}
               href={`tel:${phone}`}
-              className="flex items-center gap-1 px-2 py-1 bg-slate-700/50 rounded text-xs text-slate-300 hover:bg-slate-700 transition-colors"
+              className="flex items-center gap-2 text-slate-400 hover:text-indigo-400 transition-colors"
             >
-              <Phone className="w-3 h-3" />
-              <span>{phone}</span>
+              <Phone className="w-3.5 h-3.5" />
+              <span className="text-sm">{phone}</span>
             </a>
           ))}
         </div>
