@@ -59,7 +59,7 @@ export function PageLayout({ children }: PageLayoutProps) {
   return (
     <div className="min-h-screen text-white" style={{ background: theme.colors.bg.primary }}>
       <CyberOceanBackground />
-      <div className="relative z-10">
+      <div className="relative z-10 min-h-screen">
         {children}
       </div>
     </div>
@@ -476,4 +476,5 @@ export function PageLabel({ children }: PageLabelProps) {
     </span>
   );
 }
+
 
