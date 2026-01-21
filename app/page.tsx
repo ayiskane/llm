@@ -36,17 +36,27 @@ export default function Home() {
     fetchCourtDetails 
   } = useCourtDetails();
 
-  // Handle search
-  const handleSearch = useCallback((value: string) => {
+  // Handle input change (just updates the query, doesn't search)
+  const handleInputChange = useCallback((value: string) => {
     setQuery(value);
-    if (value.trim().length >= 2) {
-      search(value);
-      setView('results');
-    } else if (value.trim().length === 0) {
+    // If cleared, go back to search view
+    if (value.trim().length === 0 && view === 'results') {
       clearResults();
       setView('search');
     }
-  }, [search, clearResults]);
+  }, [view, clearResults]);
+
+  // Handle search submit (triggered on Enter key or quick suggestion click)
+  const handleSearchSubmit = useCallback((searchQuery?: string) => {
+    const queryToSearch = searchQuery ?? query;
+    if (queryToSearch.trim().length >= 2) {
+      if (searchQuery) {
+        setQuery(searchQuery);
+      }
+      search(queryToSearch);
+      setView('results');
+    }
+  }, [query, search]);
 
   // Handle court selection
   const handleSelectCourt = useCallback((court: Court) => {
@@ -120,7 +130,8 @@ export default function Home() {
               <div className="w-full max-w-md">
                 <SearchBar
                   value={query}
-                  onChange={handleSearch}
+                  onChange={handleInputChange}
+                  onSubmit={() => handleSearchSubmit()}
                   isLoading={isLoading}
                   autoFocus
                 />
@@ -130,7 +141,7 @@ export default function Home() {
               <div className="mt-6">
                 <QuickSuggestions 
                   suggestions={suggestions}
-                  onSelect={handleSearch}
+                  onSelect={handleSearchSubmit}
                 />
               </div>
             </div>
@@ -160,9 +171,11 @@ export default function Home() {
                 <div className="flex-1">
                   <SearchBar
                     value={query}
-                    onChange={handleSearch}
+                    onChange={handleInputChange}
+                    onSubmit={() => handleSearchSubmit()}
                     isLoading={isLoading}
                     onClear={() => {
+                      setQuery('');
                       clearResults();
                       setView('search');
                     }}
