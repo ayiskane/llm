@@ -416,60 +416,55 @@ export default function Home() {
             className="h-screen flex flex-col overflow-hidden"
           >
             <StickyHeader>
-              {/* Collapsed Header */}
-              {isHeaderCollapsed ? (
-                <>
-                  <div className="flex items-center p-3 pb-2">
-                    <BackButton onClick={handleBack} />
-                  </div>
-                  <div className="flex items-center gap-2 px-4 pb-2" style={{ borderBottom: `1px solid ${theme.colors.border.subtle}` }}>
-                    <h1 className="text-sm font-semibold text-white truncate flex-1 min-w-0">
-                      {getCourtDisplayName(detailCourt)}
-                    </h1>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      {detailCourt.has_provincial && <Tag color="emerald">PC</Tag>}
-                      {detailCourt.has_supreme && <Tag color="purple">SC</Tag>}
-                      {detailCourt.is_circuit && <Tag color="amber">CIR</Tag>}
-                    </div>
-                    {detailCourt.address && (
-                      <button 
-                        onClick={() => handleOpenMap(detailCourt.address!)}
-                        className="p-1.5 rounded-md transition-colors flex-shrink-0"
-                        style={{ background: theme.colors.bg.item }}
-                      >
-                        <GeoAlt className="w-4 h-4 text-blue-400" />
-                      </button>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center p-3">
-                    <BackButton onClick={handleBack} />
-                  </div>
+              {/* Back Button Row */}
+              <div className="flex items-center p-3 pb-2">
+                <BackButton onClick={handleBack} />
+              </div>
 
-                  {/* Title Block - Expanded */}
-                  <div className="px-4 pb-3" style={{ borderBottom: `1px solid ${theme.colors.border.subtle}` }}>
-                    <h1 className="text-lg font-semibold text-white">
-                      {getCourtDisplayName(detailCourt)}
-                    </h1>
-                    {detailCourt.address && (
-                      <button 
-                        onClick={() => handleOpenMap(detailCourt.address!)}
-                        className="flex items-center gap-1 text-xs mt-1 hover:text-blue-400 transition-colors"
-                        style={{ color: theme.colors.text.subtle }}
-                      >
-                        <GeoAlt className="w-3 h-3" />
-                        <span>{detailCourt.address} {detailCourt.region_code && `· ${detailCourt.region_code} ${detailCourt.region_name}`}</span>
-                      </button>
-                    )}
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {detailCourt.has_provincial && <Tag color="emerald">PROVINCIAL</Tag>}
-                      {detailCourt.has_supreme && <Tag color="purple">SUPREME</Tag>}
-                      {detailCourt.is_circuit && <Tag color="amber">CIRCUIT</Tag>}
-                    </div>
+              {/* Title Block */}
+              {isHeaderCollapsed ? (
+                /* Collapsed: Name + Tags + Address Icon in one row */
+                <div className="flex items-center gap-2 px-4 pb-2" style={{ borderBottom: `1px solid ${theme.colors.border.subtle}` }}>
+                  <h1 className="text-sm font-semibold text-white flex-1">
+                    {getCourtDisplayName(detailCourt)}
+                  </h1>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {detailCourt.has_provincial && <Tag color="emerald">PC</Tag>}
+                    {detailCourt.has_supreme && <Tag color="purple">SC</Tag>}
+                    {detailCourt.is_circuit && <Tag color="amber">CIR</Tag>}
                   </div>
-                </>
+                  {detailCourt.address && (
+                    <button 
+                      onClick={() => handleOpenMap(detailCourt.address!)}
+                      className="p-1.5 rounded-md transition-colors flex-shrink-0"
+                      style={{ background: theme.colors.bg.item }}
+                    >
+                      <GeoAlt className="w-4 h-4 text-blue-400" />
+                    </button>
+                  )}
+                </div>
+              ) : (
+                /* Expanded: Full layout */
+                <div className="px-4 pb-3" style={{ borderBottom: `1px solid ${theme.colors.border.subtle}` }}>
+                  <h1 className="text-lg font-semibold text-white">
+                    {getCourtDisplayName(detailCourt)}
+                  </h1>
+                  {detailCourt.address && (
+                    <button 
+                      onClick={() => handleOpenMap(detailCourt.address!)}
+                      className="flex items-center gap-1 text-xs mt-1 hover:text-blue-400 transition-colors"
+                      style={{ color: theme.colors.text.subtle }}
+                    >
+                      <GeoAlt className="w-3 h-3" />
+                      <span>{detailCourt.address} {detailCourt.region_code && `· ${detailCourt.region_code} ${detailCourt.region_name}`}</span>
+                    </button>
+                  )}
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {detailCourt.has_provincial && <Tag color="emerald">PROVINCIAL</Tag>}
+                    {detailCourt.has_supreme && <Tag color="purple">SUPREME</Tag>}
+                    {detailCourt.is_circuit && <Tag color="amber">CIRCUIT</Tag>}
+                  </div>
+                </div>
               )}
 
               {/* Quick Nav */}
