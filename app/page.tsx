@@ -224,6 +224,16 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* Courtroom Filter Badge */}
+              {results?.courtroomFilter && (
+                <div className="flex items-center gap-2 px-3 pb-2">
+                  <span className="px-2.5 py-1 bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 text-xs rounded-full flex items-center gap-1.5">
+                    <Video className="w-3 h-3" />
+                    Courtroom {results.courtroomFilter}
+                  </span>
+                </div>
+              )}
+
               {/* Filter Chips */}
               {results && (results.courts.length > 0 || results.contacts.length > 0 || results.sheriffCells.length > 0 || results.teamsLinks.length > 0) && (
                 <div className="flex gap-2 px-3 pb-3 overflow-x-auto scrollbar-hide">
@@ -297,6 +307,22 @@ export default function Home() {
                     </div>
                   )}
 
+                  {/* Filtered MS Teams Links - shown when courtroom filter is applied */}
+                  {(activeFilter === 'all' || activeFilter === 'teams') && results.courtroomFilter && results.teamsLinks.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 px-1">
+                        <Video className="w-4 h-4 text-indigo-400" />
+                        <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+                          Courtroom {results.courtroomFilter} Teams Link
+                        </h3>
+                      </div>
+                      <TeamsList 
+                        links={results.teamsLinks}
+                        onCopyAll={() => setCopiedField('teams')}
+                      />
+                    </div>
+                  )}
+
                   {/* Contacts Card (only for non-circuit courts) */}
                   {(activeFilter === 'all' || activeFilter === 'contacts') && results.courts.length > 0 && !results.courts[0].is_circuit && results.contacts.length > 0 && (
                     <div className="space-y-2">
@@ -352,8 +378,8 @@ export default function Home() {
                     )
                   )}
 
-                  {/* Teams Links - only show full list when teams filter is active */}
-                  {activeFilter === 'teams' && results.teamsLinks.length > 0 && (
+                  {/* Teams Links - only show full list when teams filter is active AND no courtroom filter */}
+                  {activeFilter === 'teams' && !results.courtroomFilter && results.teamsLinks.length > 0 && (
                     <div>
                       <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide px-1 mb-2">MS Teams Links</h3>
                       <TeamsList 
@@ -582,6 +608,7 @@ export default function Home() {
     </div>
   );
 }
+
 
 
 
