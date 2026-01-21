@@ -1,6 +1,6 @@
 'use client';
 
-import { Phone } from 'lucide-react';
+import { Telephone } from 'react-bootstrap-icons';
 import type { ShellCell } from '@/types';
 
 // Format cell name for display
@@ -46,7 +46,7 @@ function CellRow({ cell }: CellRowProps) {
               href={`tel:${phone}`}
               className="flex items-center gap-2 text-slate-400 hover:text-indigo-400 transition-colors"
             >
-              <Phone className="w-3.5 h-3.5" />
+              <Telephone className="w-3.5 h-3.5" />
               <span className="text-sm">{phone}</span>
             </a>
           ))}
@@ -123,3 +123,4 @@ export function CellsPreview({ cells }: { cells: ShellCell[] }) {
 export function CellCard({ cell }: { cell: ShellCell }) {
   return <CellRow cell={cell} />;
 }
+
