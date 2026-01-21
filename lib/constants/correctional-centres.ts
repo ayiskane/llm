@@ -46,6 +46,9 @@ export interface CorrectionalCentre {
   disclosureNotes?: string;
   
   notes?: string;
+  
+  // Support organization (Community Integration Worker provider)
+  ciwOrganization?: string;
 }
 
 // System-wide constants
@@ -198,6 +201,7 @@ export const PROVINCIAL_CENTRES: CorrectionalCentre[] = [
     name: 'Surrey Pretrial Services Centre',
     shortName: 'SPSC',
     location: 'Surrey',
+    ciwOrganization: 'Pacific Women\'s Society',
     regionId: 3,
     regionName: 'Fraser',
     isFederal: false,
@@ -227,6 +231,7 @@ export const PROVINCIAL_CENTRES: CorrectionalCentre[] = [
     name: 'North Fraser Pretrial Centre',
     shortName: 'NFPC',
     location: 'Port Coquitlam',
+    ciwOrganization: 'Connective Society',
     regionId: 3,
     regionName: 'Fraser',
     isFederal: false,
@@ -254,6 +259,7 @@ export const PROVINCIAL_CENTRES: CorrectionalCentre[] = [
     name: 'Fraser Regional Correctional Centre',
     shortName: 'FRCC',
     location: 'Maple Ridge',
+    ciwOrganization: 'Connective Society',
     regionId: 3,
     regionName: 'Fraser',
     isFederal: false,
@@ -283,6 +289,7 @@ export const PROVINCIAL_CENTRES: CorrectionalCentre[] = [
     name: 'Alouette Correctional Centre for Women',
     shortName: 'ACCW',
     location: 'Maple Ridge',
+    ciwOrganization: 'Elizabeth Fry Society',
     regionId: 3,
     regionName: 'Fraser',
     isFederal: false,
