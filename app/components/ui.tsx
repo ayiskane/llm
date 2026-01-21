@@ -357,17 +357,14 @@ interface TagProps {
 
 export function Tag({ children, color, size = 'sm' }: TagProps) {
   const sectionColors = theme.colors.section[color];
+  const sizeClasses = size === 'sm' 
+    ? 'px-2 py-1.5 text-[9px]' 
+    : 'px-2.5 py-1.5 text-[10px]';
   
   return (
     <span 
-      className={`rounded font-mono inline-flex items-center justify-center ${size === 'sm' ? 'text-[9px]' : 'text-[10px]'}`}
-      style={{ 
-        background: sectionColors.bg, 
-        color: sectionColors.text, 
-        letterSpacing: '2px',
-        padding: size === 'sm' ? '6px 8px' : '6px 10px',
-        lineHeight: 1,
-      }}
+      className={`${sizeClasses} rounded font-mono inline-flex items-center justify-center leading-none`}
+      style={{ background: sectionColors.bg, color: sectionColors.text, letterSpacing: '2px' }}
     >
       {children}
     </span>
