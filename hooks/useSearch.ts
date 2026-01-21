@@ -316,10 +316,22 @@ export function useSearch() {
         })
       );
 
+      // Enrich cells with court names for CH cells display
+      const courtNameMap = new Map(enrichedCourts.map(c => [c.id, c.name]));
+      const enrichedCells = cells.map(cell => {
+        if ((cell.cell_type === 'CH' || cell.cell_type === 'courthouse') && cell.court_id) {
+          return {
+            ...cell,
+            court_name: courtNameMap.get(cell.court_id) || undefined
+          };
+        }
+        return cell;
+      });
+
       setResults({
         courts: enrichedCourts,
         contacts,
-        sheriffCells: cells,
+        sheriffCells: enrichedCells,
         teamsLinks,
         bailCourt,
         bailContacts,
@@ -439,7 +451,12 @@ export function useCourtDetails() {
       if (chCellData && chCellData.length > 0) {
         setSheriffCells(prev => {
           const existingIds = prev.map(c => c.id);
-          const newCells = chCellData.filter((c: ShellCell) => !existingIds.includes(c.id));
+          const newCells = chCellData
+            .filter((c: ShellCell) => !existingIds.includes(c.id))
+            .map((c: ShellCell) => ({
+              ...c,
+              court_name: enrichedCourt.name  // Add court name for CH cells display
+            }));
           return [...prev, ...newCells];
         });
       }
