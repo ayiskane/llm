@@ -1,589 +1,457 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { Search, Phone, MapPin, Check, Mail, Clock, Video, Building2, Shield, Scale, Users, ChevronDown, ChevronUp, Copy, ExternalLink } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
+import { ArrowLeft, Scale, MapPin, Phone, Copy, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import copy from 'copy-to-clipboard';
 
-// Types
-interface Court {
-  id: number;
-  name: string;
-  region_id: number;
-  region_name?: string;
-  has_provincial: boolean;
-  has_supreme: boolean;
-  is_circuit: boolean;
-  is_staffed: boolean;
-  contact_hub: string | null;
-  address: string | null;
-  phone: string | null;
-  fax: string | null;
-  sheriff_phone: string | null;
-  supreme_scheduling_phone: string | null;
-  access_code: string | null;
-  bail_hub_id: number | null;
-}
+import { SearchBar, QuickSuggestions } from '@/app/components/SearchBar';
+import { CourtCard, CourtCardMini, CourtHeader } from '@/app/components/CourtCard';
+import { CourtContactsStack, CrownContactsStack, TopContactsPreview } from '@/app/components/ContactStack';
+import { CellsList, CellsPreview } from '@/app/components/CellCard';
+import { TeamsList, TeamsLinkCountCard } from '@/app/components/TeamsCard';
+import { CircuitWarning } from '@/app/components/CircuitWarning';
 
-interface Contact {
-  id: number;
-  email: string | null;
-  emails: string[] | null;
-  contact_role_id: number;
-  role_name?: string;
-}
+import { useSearch, useCourtDetails } from '@/hooks/useSearch';
+import type { Court } from '@/types';
 
-interface ShellCell {
-  id: number;
-  name: string;
-  cell_type: string;
-  phones: string[];
-  catchment: string | null;
-  court_id: number | null;
-}
+// Views
+type View = 'search' | 'results' | 'detail';
 
-interface TeamsLink {
-  id: number;
-  name: string | null;
-  courtroom: string | null;
-  conference_id: string | null;
-  phone: string | null;
-  phone_toll_free: string | null;
-  teams_link: string | null;
-  teams_link_type_id: number | null;
-  type_name?: string;
-}
-
-interface BailCourt {
-  id: number;
-  name: string;
-  region_id: number;
-  is_hybrid: boolean;
-  is_daytime: boolean;
-  triage_time_am: string | null;
-  triage_time_pm: string | null;
-  court_start_am: string | null;
-  court_start_pm: string | null;
-  court_end: string | null;
-  cutoff_new_arrests: string | null;
-}
-
-interface BailContact {
-  id: number;
-  email: string | null;
-  role_id: number;
-  availability_id: number | null;
-  role_name?: string;
-  availability_name?: string;
-}
-
-interface SearchResults {
-  courts: Court[];
-  contacts: Contact[];
-  sheriffCells: ShellCell[];
-  teamsLinks: TeamsLink[];
-  bailCourt: BailCourt | null;
-  bailContacts: BailContact[];
-  bailTeamsLinks: TeamsLink[];
-}
-
-// Collapsible Section Component
-function Section({ title, icon: Icon, count, children, defaultOpen = true }: {
-  title: string;
-  icon: any;
-  count: number;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
-}) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-  
-  if (count === 0) return null;
-  
-  return (
-    <div className="mb-4">
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-      >
-        <div className="flex items-center gap-2">
-          <Icon className="w-5 h-5 text-blue-600" />
-          <span className="font-medium text-gray-800">{title}</span>
-          <span className="text-sm text-gray-500">({count})</span>
-        </div>
-        {isOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-      </button>
-      {isOpen && <div className="mt-2 space-y-2">{children}</div>}
-    </div>
-  );
-}
-
-// Copy Button Component
-function CopyButton({ text, label }: { text: string; label: string }) {
-  const [copied, setCopied] = useState(false);
-  
-  const handleCopy = () => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
-  
-  return (
-    <button 
-      onClick={handleCopy}
-      className="flex items-center gap-1 px-2 py-1 text-sm bg-white border rounded hover:bg-gray-50 transition-colors"
-      title={`Copy ${label}`}
-    >
-      {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-gray-500" />}
-      <span className="text-gray-700">{text}</span>
-    </button>
-  );
-}
-
-// Main App
-export default function App() {
+export default function Home() {
+  const [view, setView] = useState<View>('search');
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResults | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [selectedCourtId, setSelectedCourtId] = useState<number | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  
+  const { results, isLoading, error, search, clearResults } = useSearch();
+  const { 
+    court: detailCourt, 
+    contacts: detailContacts, 
+    sheriffCells: detailCells,
+    teamsLinks: detailTeams,
+    bailCourt: detailBailCourt,
+    bailContacts: detailBailContacts,
+    bailTeamsLinks: detailBailTeams,
+    fetchCourtDetails 
+  } = useCourtDetails();
 
-  // Search function
-  const handleSearch = useCallback(async (searchQuery: string) => {
-    const q = searchQuery.trim();
-    if (!q) {
-      setResults(null);
-      return;
+  // Handle search
+  const handleSearch = useCallback((value: string) => {
+    setQuery(value);
+    if (value.trim().length >= 2) {
+      search(value);
+      setView('results');
+    } else if (value.trim().length === 0) {
+      clearResults();
+      setView('search');
     }
+  }, [search, clearResults]);
 
-    setLoading(true);
-    const supabase = createClient();
+  // Handle court selection
+  const handleSelectCourt = useCallback((court: Court) => {
+    setSelectedCourtId(court.id);
+    fetchCourtDetails(court.id);
+    setView('detail');
+  }, [fetchCourtDetails]);
 
-    try {
-      // 1. Search courts using smart search (handles aliases like "Abby" -> "Abbotsford")
-      const { data: courtsData } = await supabase.rpc('search_courts', { search_term: q });
+  // Handle back navigation
+  const handleBack = useCallback(() => {
+    if (view === 'detail') {
+      setView('results');
+      setSelectedCourtId(null);
+    } else if (view === 'results') {
+      setQuery('');
+      clearResults();
+      setView('search');
+    }
+  }, [view, clearResults]);
 
-      // Get region names for matched courts
-      let courts: Court[] = [];
-      if (courtsData && courtsData.length > 0) {
-        const courtIds = courtsData.map((c: any) => c.id);
-        const { data: courtsWithRegions } = await supabase
-          .from('courts')
-          .select('*, regions(name)')
-          .in('id', courtIds);
-        
-        courts = (courtsWithRegions || []).map((c: any) => ({
-          ...c,
-          region_name: c.regions?.name
-        }));
-      }
+  // Copy feedback
+  const handleCopy = useCallback((text: string, fieldName?: string) => {
+    copy(text);
+    setCopiedField(fieldName || 'copied');
+    setTimeout(() => setCopiedField(null), 2000);
+  }, []);
 
-      // 2. Get contacts for found courts
-      let contacts: Contact[] = [];
-      if (courts.length > 0) {
-        const courtIds = courts.map(c => c.id);
-        const { data: contactsData } = await supabase
-          .from('contacts_courts')
-          .select('contacts(*, contact_roles(name))')
-          .in('court_id', courtIds);
-        
-        if (contactsData) {
-          const contactMap = new Map<number, Contact>();
-          contactsData.forEach((cc: any) => {
-            if (cc.contacts && !contactMap.has(cc.contacts.id)) {
-              contactMap.set(cc.contacts.id, {
-                ...cc.contacts,
-                role_name: cc.contacts.contact_roles?.name
-              });
-            }
-          });
-          contacts = Array.from(contactMap.values());
-        }
-      }
-
-      // 3. Search sheriff cells using smart search
-      const { data: cellsData } = await supabase.rpc('search_cells', { search_term: q });
-
-      // Also get cells linked to found courts
-      if (courts.length > 0) {
-        const courtIds = courts.map(c => c.id);
-        const { data: linkedCells } = await supabase
-          .from('sheriff_cells')
-          .select('*')
-          .in('court_id', courtIds);
-        
-        // Merge and dedupe
-        const cellMap = new Map<number, ShellCell>();
-        (cellsData || []).forEach((c: any) => cellMap.set(c.id, c));
-        (linkedCells || []).forEach((c: any) => cellMap.set(c.id, c));
-        
-        // Also get via junction table
-        const { data: junctionCells } = await supabase
-          .from('sheriff_cells_courts')
-          .select('sheriff_cells(*)')
-          .in('court_id', courtIds);
-        
-        (junctionCells || []).forEach((jc: any) => {
-          if (jc.sheriff_cells) cellMap.set(jc.sheriff_cells.id, jc.sheriff_cells);
-        });
-      }
-
-      const sheriffCells: ShellCell[] = cellsData || [];
-
-      // 4. Get teams links for found courts
-      let teamsLinks: TeamsLink[] = [];
-      if (courts.length > 0) {
-        const courtIds = courts.map(c => c.id);
-        const { data: linksData } = await supabase
-          .from('teams_links')
-          .select('*, teams_link_types(name)')
-          .in('court_id', courtIds)
-          .order('courtroom');
-        
-        teamsLinks = (linksData || []).map((l: any) => ({
-          ...l,
-          type_name: l.teams_link_types?.name
-        }));
-      }
-
-      // 5. Get bail court info using smart search
-      let bailCourt: BailCourt | null = null;
-      let bailContacts: BailContact[] = [];
-      let bailTeamsLinks: TeamsLink[] = [];
-
-      // Try smart search first
-      const { data: bailSearchResults } = await supabase.rpc('search_bail_courts', { search_term: q });
-      
-      let bailData = null;
-      if (bailSearchResults && bailSearchResults.length > 0) {
-        bailData = bailSearchResults[0];
-      } else if (courts.length > 0) {
-        // Fall back to bail_hub_id lookup
-        const bailHubIds = courts.map(c => c.bail_hub_id).filter(Boolean);
-        if (bailHubIds.length > 0) {
-          const { data: hubData } = await supabase
-            .from('bail_courts')
-            .select('*')
-            .in('id', bailHubIds)
-            .limit(1)
-            .single();
-          bailData = hubData;
-        }
-      }
-        
-      if (bailData) {
-        bailCourt = bailData;
-        
-        // Get bail contacts
-        const { data: bailContactsData } = await supabase
-          .from('bail_contacts')
-          .select('*, contact_roles(name)')
-          .eq('bail_court_id', bailData.id);
-        
-        bailContacts = (bailContactsData || []).map((bc: any) => ({
-          ...bc,
-          role_name: bc.contact_roles?.name
-        }));
-        
-        // Get bail teams links
-        const { data: bailLinksData } = await supabase
-          .from('bail_courts_teams_links')
-          .select('teams_links(*, teams_link_types(name))')
-          .eq('bail_court_id', bailData.id);
-        
-        bailTeamsLinks = (bailLinksData || []).map((bl: any) => ({
-          ...bl.teams_links,
-          type_name: bl.teams_links?.teams_link_types?.name
-        })).filter(Boolean);
-      }
-
-      setResults({
-        courts,
-        contacts,
-        sheriffCells,
-        teamsLinks,
-        bailCourt,
-        bailContacts,
-        bailTeamsLinks
-      });
-    } catch (err) {
-      console.error('Search error:', err);
-    } finally {
-      setLoading(false);
+  // Map app selection
+  const handleOpenMap = useCallback((address: string) => {
+    const encodedAddress = encodeURIComponent(address);
+    
+    // Try to detect platform and open appropriate map app
+    const userAgent = navigator.userAgent.toLowerCase();
+    
+    if (/iphone|ipad|ipod/.test(userAgent)) {
+      // iOS - open in Apple Maps
+      window.open(`maps://maps.apple.com/?q=${encodedAddress}`, '_blank');
+    } else if (/android/.test(userAgent)) {
+      // Android - open in Google Maps
+      window.open(`geo:0,0?q=${encodedAddress}`, '_blank');
+    } else {
+      // Fallback to Google Maps web
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
     }
   }, []);
 
-  // Debounced search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      handleSearch(query);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [query, handleSearch]);
-
-  const hasResults = results && (
-    results.courts.length > 0 || 
-    results.sheriffCells.length > 0 ||
-    results.bailCourt
-  );
+  // Quick suggestions
+  const suggestions = ['Abbotsford', 'Surrey', 'Victoria', 'Kelowna', 'Prince George'];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3 mb-4">
-            <Scale className="w-8 h-8 text-blue-600" />
-            <h1 className="text-xl font-bold text-gray-800">BC Legal Reference</h1>
-          </div>
-          
-          {/* Search Input */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search courts, cells, contacts... (e.g., 'Abbotsford', 'Surrey', 'Victoria')"
-              className="w-full pl-10 pr-4 py-3 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              autoFocus
-            />
-            {loading && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen bg-slate-900 text-white">
+      <AnimatePresence mode="wait">
+        {/* Search Home View */}
+        {view === 'search' && (
+          <motion.div
+            key="search"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="min-h-screen flex flex-col"
+          >
+            <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20">
+              {/* Logo/Title */}
+              <div className="mb-8 text-center">
+                <Scale className="w-12 h-12 text-indigo-400 mx-auto mb-4" />
+                <h1 className="text-2xl font-bold text-white mb-2">BC Legal Reference</h1>
+                <p className="text-slate-400 text-sm">Search courts, contacts, and cells</p>
               </div>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Results */}
-      <main className="max-w-4xl mx-auto px-4 py-6">
-        {!query && (
-          <div className="text-center py-12">
-            <Scale className="w-16 h-16 text-blue-200 mx-auto mb-4" />
-            <h2 className="text-2xl font-medium text-gray-600 mb-2">Search BC Courts & Contacts</h2>
-            <p className="text-gray-500 mb-6">Enter a court name, city, or search term to find related information</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {['Abbotsford', 'Surrey', 'Victoria', 'Kelowna', 'Prince George'].map(term => (
-                <button
-                  key={term}
-                  onClick={() => setQuery(term)}
-                  className="px-4 py-2 bg-white border rounded-full text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition-colors"
-                >
-                  {term}
-                </button>
-              ))}
+              
+              {/* Search Bar */}
+              <div className="w-full max-w-md">
+                <SearchBar
+                  value={query}
+                  onChange={handleSearch}
+                  isLoading={isLoading}
+                  autoFocus
+                />
+              </div>
+              
+              {/* Quick Suggestions */}
+              <div className="mt-6">
+                <QuickSuggestions 
+                  suggestions={suggestions}
+                  onSelect={handleSearch}
+                />
+              </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
-        {query && !loading && !hasResults && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No results found for "{query}"</p>
-          </div>
-        )}
+        {/* Search Results View */}
+        {view === 'results' && (
+          <motion.div
+            key="results"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+            className="min-h-screen flex flex-col"
+          >
+            {/* Header */}
+            <div className="sticky top-0 z-10 bg-slate-900 border-b border-slate-800">
+              <div className="flex items-center gap-2 p-3">
+                <button
+                  onClick={handleBack}
+                  className="p-2 -ml-1 text-slate-400 hover:text-white transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                
+                <div className="flex-1">
+                  <SearchBar
+                    value={query}
+                    onChange={handleSearch}
+                    isLoading={isLoading}
+                    onClear={() => {
+                      clearResults();
+                      setView('search');
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
 
-        {hasResults && (
-          <div className="space-y-6">
-            {/* Courts Section */}
-            <Section title="Courts" icon={Building2} count={results.courts.length}>
-              {results.courts.map(court => (
-                <div key={court.id} className="bg-white rounded-lg border p-4 shadow-sm">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="font-semibold text-lg text-gray-800">{court.name}</h3>
-                      <p className="text-sm text-gray-500">{court.region_name} Region</p>
-                    </div>
-                    <div className="flex gap-1">
-                      {court.has_provincial && <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">Provincial</span>}
-                      {court.has_supreme && <span className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded">Supreme</span>}
-                      {court.is_circuit && <span className="px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded">Circuit</span>}
-                    </div>
-                  </div>
-                  
-                  {court.address && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                      <MapPin className="w-4 h-4" />
-                      <span>{court.address}</span>
+            {/* Results */}
+            <div className="flex-1 p-4 space-y-4">
+              {error && (
+                <div className="text-red-400 text-center py-4">{error}</div>
+              )}
+
+              {results && (
+                <>
+                  {/* No results */}
+                  {results.courts.length === 0 && results.sheriffCells.length === 0 && (
+                    <div className="text-slate-400 text-center py-8">
+                      No results found for &ldquo;{query}&rdquo;
                     </div>
                   )}
-                  
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {court.phone && <CopyButton text={court.phone} label="phone" />}
-                    {court.fax && <CopyButton text={court.fax} label="fax" />}
-                    {court.sheriff_phone && <CopyButton text={court.sheriff_phone} label="sheriff" />}
-                    {court.access_code && (
-                      <span className="px-2 py-1 text-sm bg-yellow-50 border border-yellow-200 rounded">
-                        🔑 {court.access_code}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </Section>
 
-            {/* Contacts Section */}
-            <Section title="Contacts" icon={Mail} count={results.contacts.length}>
-              <div className="bg-white rounded-lg border divide-y">
-                {results.contacts.filter(c => c.email).map(contact => (
-                  <div key={contact.id} className="p-3 flex items-center justify-between">
-                    <div>
-                      <span className="text-sm font-medium text-gray-700">{contact.role_name}</span>
+                  {/* Court Card */}
+                  {results.courts.length > 0 && (
+                    <div className="space-y-2">
+                      {results.courts.map((court) => (
+                        <div key={court.id}>
+                          <CourtCard 
+                            court={court} 
+                            onClick={() => handleSelectCourt(court)}
+                          />
+                          
+                          {/* Circuit court warning */}
+                          {court.is_circuit && court.contact_hub_name && (
+                            <div className="mt-2">
+                              <CircuitWarning
+                                courtName={court.name}
+                                hubCourtName={court.contact_hub_name}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                    <CopyButton text={contact.email!} label="email" />
-                  </div>
-                ))}
-              </div>
-            </Section>
+                  )}
 
-            {/* Sheriff Cells Section */}
-            <Section title="Sheriff & Police Cells" icon={Shield} count={results.sheriffCells.length}>
-              {results.sheriffCells.map(cell => (
-                <div key={cell.id} className="bg-white rounded-lg border p-4 shadow-sm">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h4 className="font-medium text-gray-800">{cell.name}</h4>
-                      {cell.catchment && (
-                        <p className="text-sm text-gray-500">Serves: {cell.catchment}</p>
+                  {/* Top Contacts Preview (only for non-circuit courts) */}
+                  {results.courts.length > 0 && !results.courts[0].is_circuit && results.contacts.length > 0 && (
+                    <div className="space-y-2">
+                      <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide px-1">Top Contacts</h3>
+                      <TopContactsPreview 
+                        contacts={results.contacts}
+                        onCopy={() => setCopiedField('contact')}
+                      />
+                    </div>
+                  )}
+
+                  {/* Cells Preview */}
+                  {results.sheriffCells.length > 0 && (
+                    <CellsPreview cells={results.sheriffCells} />
+                  )}
+
+                  {/* Teams Links Count Card */}
+                  {results.teamsLinks.length > 0 && (
+                    <TeamsLinkCountCard
+                      count={results.teamsLinks.length}
+                      onClick={() => {
+                        if (results.courts.length > 0) {
+                          handleSelectCourt(results.courts[0]);
+                        }
+                      }}
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Court Detail View */}
+        {view === 'detail' && detailCourt && (
+          <motion.div
+            key="detail"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+            className="min-h-screen flex flex-col"
+          >
+            {/* Header */}
+            <div className="sticky top-0 z-10 bg-slate-900 border-b border-slate-800">
+              <div className="flex items-center justify-between p-3">
+                <button
+                  onClick={handleBack}
+                  className="p-2 -ml-1 text-slate-400 hover:text-white transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                
+                <div className="flex-1 text-center">
+                  <h1 className="font-semibold text-white truncate px-4">{detailCourt.name}</h1>
+                </div>
+                
+                {/* Location button */}
+                {detailCourt.address && (
+                  <button
+                    onClick={() => handleOpenMap(detailCourt.address!)}
+                    className="p-2 text-slate-400 hover:text-white transition-colors"
+                  >
+                    <MapPin className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+              
+              {/* Tags */}
+              <div className="flex flex-wrap gap-1.5 px-4 pb-3">
+                {detailCourt.region_code && (
+                  <span className="px-2 py-0.5 bg-slate-700 text-slate-300 text-xs rounded">
+                    {detailCourt.region_code} - {detailCourt.region_name}
+                  </span>
+                )}
+                {detailCourt.has_provincial && (
+                  <span className="px-2 py-0.5 bg-blue-900/50 text-blue-300 text-xs rounded">
+                    Provincial
+                  </span>
+                )}
+                {detailCourt.has_supreme && (
+                  <span className="px-2 py-0.5 bg-purple-900/50 text-purple-300 text-xs rounded">
+                    Supreme
+                  </span>
+                )}
+                {detailCourt.is_circuit && (
+                  <span className="px-2 py-0.5 bg-amber-900/50 text-amber-300 text-xs rounded">
+                    Circuit
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 p-4 space-y-6 pb-20">
+              {/* Circuit Court Warning */}
+              {detailCourt.is_circuit && detailCourt.contact_hub_name && (
+                <CircuitWarning
+                  courtName={detailCourt.name}
+                  hubCourtName={detailCourt.contact_hub_name}
+                />
+              )}
+
+              {/* Quick Info */}
+              {(detailCourt.phone || detailCourt.fax || detailCourt.access_code) && (
+                <div className="grid grid-cols-2 gap-2">
+                  {detailCourt.phone && (
+                    <a 
+                      href={`tel:${detailCourt.phone}`}
+                      className="flex items-center gap-2 p-3 bg-slate-800/50 rounded-lg"
+                    >
+                      <Phone className="w-4 h-4 text-slate-400" />
+                      <div>
+                        <div className="text-xs text-slate-400">Phone</div>
+                        <div className="text-sm text-slate-200">{detailCourt.phone}</div>
+                      </div>
+                    </a>
+                  )}
+                  {detailCourt.fax && (
+                    <div 
+                      className="flex items-center gap-2 p-3 bg-slate-800/50 rounded-lg cursor-pointer"
+                      onClick={() => handleCopy(detailCourt.fax!, 'fax')}
+                    >
+                      <div className="flex-1">
+                        <div className="text-xs text-slate-400">Fax</div>
+                        <div className="text-sm text-slate-200">{detailCourt.fax}</div>
+                      </div>
+                      {copiedField === 'fax' ? (
+                        <Check className="w-4 h-4 text-green-400" />
+                      ) : (
+                        <Copy className="w-4 h-4 text-slate-500" />
                       )}
                     </div>
-                    <span className={`px-2 py-1 text-xs rounded ${
-                      cell.cell_type === 'courthouse' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-                    }`}>
-                      {cell.cell_type === 'courthouse' ? 'Courthouse' : 'Police'}
+                  )}
+                  {detailCourt.access_code && (
+                    <div 
+                      className="flex items-center gap-2 p-3 bg-slate-800/50 rounded-lg cursor-pointer col-span-2"
+                      onClick={() => handleCopy(detailCourt.access_code!, 'access')}
+                    >
+                      <div className="flex-1">
+                        <div className="text-xs text-slate-400">Access Code</div>
+                        <div className="text-sm text-slate-200 font-mono">{detailCourt.access_code}</div>
+                      </div>
+                      {copiedField === 'access' ? (
+                        <Check className="w-4 h-4 text-green-400" />
+                      ) : (
+                        <Copy className="w-4 h-4 text-slate-500" />
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Court Contacts */}
+              {!detailCourt.is_circuit && detailContacts.length > 0 && (
+                <CourtContactsStack 
+                  contacts={detailContacts}
+                  onCopy={() => setCopiedField('contact')}
+                />
+              )}
+
+              {/* Crown Contacts */}
+              {!detailCourt.is_circuit && detailContacts.length > 0 && (
+                <CrownContactsStack
+                  contacts={detailContacts}
+                  bailContacts={detailBailContacts}
+                  onCopy={() => setCopiedField('crown')}
+                />
+              )}
+
+              {/* Cells */}
+              {detailCells.length > 0 && (
+                <CellsList cells={detailCells} />
+              )}
+
+              {/* Bail Info */}
+              {detailBailCourt && (
+                <div className="space-y-3 p-4 bg-emerald-900/10 rounded-lg border border-emerald-800/30">
+                  <div className="flex items-center gap-2">
+                    <Scale className="w-4 h-4 text-emerald-400" />
+                    <span className="text-sm font-medium text-emerald-300">
+                      Virtual Bail - {detailBailCourt.name}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {cell.phones.map((phone, i) => (
-                      <CopyButton key={i} text={phone} label="phone" />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </Section>
-
-            {/* MS Teams Links Section */}
-            <Section title="MS Teams Courtrooms" icon={Video} count={results.teamsLinks.length} defaultOpen={false}>
-              <div className="bg-white rounded-lg border divide-y max-h-64 overflow-y-auto">
-                {results.teamsLinks.map(link => (
-                  <div key={link.id} className="p-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-gray-800">
-                        {link.courtroom || link.name || 'Courtroom'}
-                      </span>
-                      {link.type_name && (
-                        <span className="text-xs text-gray-500">{link.type_name}</span>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap gap-2 text-sm">
-                      {link.conference_id && (
-                        <CopyButton text={link.conference_id} label="conference ID" />
-                      )}
-                      {link.teams_link && (
-                        <a 
-                          href={link.teams_link} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 px-2 py-1 text-sm bg-blue-50 text-blue-700 border border-blue-200 rounded hover:bg-blue-100"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          Join
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Section>
-
-            {/* Bail Information Section */}
-            {results.bailCourt && (
-              <Section title="Virtual Bail" icon={Users} count={1}>
-                <div className="bg-white rounded-lg border p-4 shadow-sm">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h4 className="font-semibold text-gray-800">{results.bailCourt.name} Bail Hub</h4>
-                      {results.bailCourt.is_hybrid && (
-                        <span className="text-xs text-purple-600">Hybrid Courtroom</span>
-                      )}
-                    </div>
-                    <span className={`px-2 py-1 text-xs rounded ${
-                      results.bailCourt.is_daytime ? 'bg-yellow-100 text-yellow-700' : 'bg-indigo-100 text-indigo-700'
-                    }`}>
-                      {results.bailCourt.is_daytime ? '☀️ Daytime' : '🌙 Evening'}
-                    </span>
-                  </div>
                   
-                  {/* Triage Times */}
-                  {(results.bailCourt.triage_time_am || results.bailCourt.triage_time_pm) && (
-                    <div className="mb-3 p-2 bg-gray-50 rounded">
-                      <div className="text-sm text-gray-700">
-                        <Clock className="w-4 h-4 inline mr-1" />
-                        <strong>Triage:</strong> {results.bailCourt.triage_time_am} / {results.bailCourt.triage_time_pm}
-                      </div>
-                      <div className="text-sm text-gray-700">
-                        <strong>Court:</strong> {results.bailCourt.court_start_am} - {results.bailCourt.court_end}
-                      </div>
-                      {results.bailCourt.cutoff_new_arrests && (
-                        <div className="text-sm text-red-600">
-                          <strong>Cutoff:</strong> {results.bailCourt.cutoff_new_arrests}
+                  {(detailBailCourt.triage_time_am || detailBailCourt.triage_time_pm) && (
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      {detailBailCourt.triage_time_am && (
+                        <div className="p-2 bg-slate-800/50 rounded">
+                          <div className="text-slate-400">AM Triage</div>
+                          <div className="text-slate-200">{detailBailCourt.triage_time_am}</div>
+                        </div>
+                      )}
+                      {detailBailCourt.triage_time_pm && (
+                        <div className="p-2 bg-slate-800/50 rounded">
+                          <div className="text-slate-400">PM Triage</div>
+                          <div className="text-slate-200">{detailBailCourt.triage_time_pm}</div>
                         </div>
                       )}
                     </div>
                   )}
-                  
-                  {/* Bail Contacts */}
-                  {results.bailContacts.length > 0 && (
-                    <div className="mb-3">
-                      <h5 className="text-sm font-medium text-gray-600 mb-2">Bail Contacts:</h5>
-                      <div className="space-y-1">
-                        {results.bailContacts.map(bc => (
-                          <div key={bc.id} className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">{bc.role_name}</span>
-                            {bc.email && <CopyButton text={bc.email} label="email" />}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Bail Teams Links */}
-                  {results.bailTeamsLinks.length > 0 && (
-                    <div>
-                      <h5 className="text-sm font-medium text-gray-600 mb-2">Bail MS Teams:</h5>
-                      <div className="space-y-2">
-                        {results.bailTeamsLinks.map(link => (
-                          <div key={link.id} className="flex items-center justify-between text-sm p-2 bg-blue-50 rounded">
-                            <span className="text-gray-700">{link.courtroom || link.name}</span>
-                            <div className="flex gap-2">
-                              {link.conference_id && <CopyButton text={link.conference_id} label="ID" />}
-                              {link.teams_link && (
-                                <a 
-                                  href={link.teams_link} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-                                >
-                                  <Video className="w-3 h-3" />
-                                  Join
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
-              </Section>
-            )}
-          </div>
-        )}
-      </main>
+              )}
 
-      {/* Footer */}
-      <footer className="text-center py-4 text-sm text-gray-500">
-        BC Legal Reference Database
-      </footer>
+              {/* MS Teams Links */}
+              {detailTeams.length > 0 && (
+                <div id="teams">
+                  <TeamsList 
+                    links={detailTeams}
+                    onCopyAll={() => setCopiedField('teams')}
+                  />
+                </div>
+              )}
+
+              {/* Bail Teams Links */}
+              {detailBailTeams.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-medium text-slate-400 uppercase tracking-wide px-1 mb-1.5">Bail MS Teams</h4>
+                  <TeamsList 
+                    links={detailBailTeams}
+                    onCopyAll={() => setCopiedField('bailteams')}
+                  />
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Copy Toast */}
+      <AnimatePresence>
+        {copiedField && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-green-600 text-white text-sm rounded-lg shadow-lg"
+          >
+            Copied to clipboard
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
-
-
