@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, forwardRef } from 'react';
-import { Clipboard, Check, ChevronDown } from 'react-bootstrap-icons';
+import { Clipboard, Check, ChevronDown, ArrowLeft } from 'react-bootstrap-icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { theme, SectionColor } from '@/lib/theme';
 
@@ -442,22 +442,24 @@ interface BackButtonProps {
   label?: string;
 }
 
-export function BackButton({ onClick, href, label = 'BACK' }: BackButtonProps) {
-  const content = (
-    <>
-      <span className="text-lg">←</span>
-      <span>{label}</span>
-    </>
-  );
-  
-  const className = "p-2 -ml-2 text-zinc-400 hover:text-blue-400 transition-colors font-mono text-xs flex items-center gap-1";
+export function BackButton({ onClick, href }: BackButtonProps) {
+  const className = "p-2 -ml-2 transition-colors";
+  const style = { color: theme.colors.text.muted };
   
   if (href) {
     const Link = require('next/link').default;
-    return <Link href={href} className={className}>{content}</Link>;
+    return (
+      <Link href={href} className={`${className} hover:text-blue-400`} style={style}>
+        <ArrowLeft className="w-5 h-5" />
+      </Link>
+    );
   }
   
-  return <button onClick={onClick} className={className}>{content}</button>;
+  return (
+    <button onClick={onClick} className={`${className} hover:text-blue-400`} style={style}>
+      <ArrowLeft className="w-5 h-5" />
+    </button>
+  );
 }
 
 // =============================================================================
