@@ -18,20 +18,25 @@ export const UI_CONFIG = {
 } as const;
 
 // ============================================================================
-// CONTACT ROLES
+// CONTACT ROLES - Must match database contact_roles table IDs
 // ============================================================================
 
 export const CONTACT_ROLES = {
-  COURT_REGISTRY: 1,
-  CRIMINAL_REGISTRY: 2,
-  JCM: 3,
-  BAIL_JCM: 4,
-  SCHEDULING: 5,
-  INTERPRETER: 6,
-  CROWN: 7,
-  BAIL_CROWN: 8,
-  FEDERAL_CROWN: 9,
-  FIRST_NATIONS_CROWN: 10,
+  CROWN: 1,
+  JCM: 2,
+  SHERIFF_QB: 3,
+  REGISTRY_QB: 4,
+  LABC_NAVIGATOR: 5,
+  FEDERAL_CROWN: 6,
+  SCHEDULING: 8,
+  COURT_REGISTRY: 9,
+  CRIMINAL_REGISTRY: 10,
+  INTERPRETER: 11,
+  BAIL_CROWN: 12,
+  BAIL_JCM: 13,
+  TRANSCRIPTS: 14,
+  COORDINATOR: 21,
+  FIRST_NATIONS_CROWN: 23,
 } as const;
 
 // ============================================================================
