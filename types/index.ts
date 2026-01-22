@@ -106,11 +106,8 @@ export interface BailCourt {
   triage_time_pm: string | null;
   court_start_am: string | null;
   court_start_pm: string | null;
-  court_time_am?: string | null;  // Alias for court_start_am
-  court_time_pm?: string | null;  // Alias for court_start_pm
   court_end: string | null;
   cutoff_new_arrests: string | null;
-  arrest_cutoff?: string | null;  // Alias for cutoff_new_arrests
   youth_custody_day: string | null;
   youth_custody_time: string | null;
 }
@@ -259,3 +256,4 @@ export const REGION_NAMES: Record<number, string> = {
   5: 'Northern',
   6: 'Federal',
 };
+

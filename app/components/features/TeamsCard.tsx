@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { MicrosoftTeams, Eye, EyeSlash, Clipboard, ClipboardCheck } from 'react-bootstrap-icons';
 import { Card } from '@/app/components/ui/Card';
 import { Button } from '@/app/components/ui/Button';
-import { cn, textClasses, iconClasses, inlineStyles } from '@/lib/config/theme';
+import { cn, textClasses, iconClasses } from '@/lib/config/theme';
 import { formatDate, joinTeamsMeeting } from '@/lib/utils';
 import { formatCourtRoom, isVBTriageLink } from '@/lib/config/constants';
 import type { TeamsLink, BailTeam } from '@/types';
@@ -31,25 +31,25 @@ export function TeamsCard({ link, showDialIn = false, onCopy, isCopied }: TeamsC
         <Button
           variant="join"
           size="sm"
-          onClick={() => joinTeamsMeeting(link.url)}
+          onClick={() => joinTeamsMeeting(link.teams_link)}
         >
           Join
         </Button>
       </div>
       
       {/* Dial-in info (collapsed by default) */}
-      {showDialIn && (link.phone_number || link.conference_id) && (
+      {showDialIn && (link.phone || link.conference_id) && (
         <div className="mt-2 pt-2 border-t border-slate-700/50 text-xs space-y-1">
-          {link.phone_number && (
+          {link.phone && (
             <div className="flex items-center gap-2 text-slate-400">
               <span>📞</span>
-              <span className="font-mono">{link.phone_number}</span>
+              <span className="font-mono">{link.phone}</span>
             </div>
           )}
-          {link.toll_free && (
+          {link.phone_toll_free && (
             <div className="flex items-center gap-2 text-slate-400">
               <span>🆓</span>
-              <span className="font-mono">{link.toll_free}</span>
+              <span className="font-mono">{link.phone_toll_free}</span>
             </div>
           )}
           {link.conference_id && (
@@ -140,3 +140,4 @@ export function TeamsList({ links, filterVBTriage = false, onCopy, isCopied }: T
     </div>
   );
 }
+

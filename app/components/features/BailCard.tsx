@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { Building, ChevronRight } from 'react-bootstrap-icons';
 import { Card } from '@/app/components/ui/Card';
 import { TeamsList } from './TeamsCard';
-import { cn, textClasses, cardClasses, iconClasses, inlineStyles } from '@/lib/config/theme';
+import { cn, textClasses, cardClasses, iconClasses, getSectionHeaderProps } from '@/lib/config/theme';
 import { isVBTriageLink, getBailHubTag } from '@/lib/config/constants';
 import type { BailCourt, BailTeam, TeamsLink, Court } from '@/types';
 
@@ -19,11 +19,11 @@ export function BailSchedule({ bailCourt }: BailScheduleProps) {
       ? `${bailCourt.triage_time_am} / ${bailCourt.triage_time_pm}` 
       : bailCourt.triage_time_am || bailCourt.triage_time_pm || null 
     },
-    { label: 'COURT', value: bailCourt.court_time_am && bailCourt.court_time_pm 
-      ? `${bailCourt.court_time_am} / ${bailCourt.court_time_pm}` 
-      : bailCourt.court_time_am || bailCourt.court_time_pm || null 
+    { label: 'COURT', value: bailCourt.court_start_am && bailCourt.court_start_pm 
+      ? `${bailCourt.court_start_am} / ${bailCourt.court_start_pm}` 
+      : bailCourt.court_start_am || bailCourt.court_start_pm || null 
     },
-    { label: 'CUTOFF', value: bailCourt.arrest_cutoff },
+    { label: 'CUTOFF', value: bailCourt.cutoff_new_arrests },
     { label: 'YOUTH', value: bailCourt.youth_custody_day && bailCourt.youth_custody_time 
       ? `${bailCourt.youth_custody_day} ${bailCourt.youth_custody_time}` 
       : null,
@@ -35,10 +35,7 @@ export function BailSchedule({ bailCourt }: BailScheduleProps) {
 
   return (
     <div className="space-y-2">
-      <h4 
-        className={textClasses.sectionHeader}
-        style={inlineStyles.sectionHeader}
-      >
+      <h4 {...getSectionHeaderProps()}>
         SCHEDULE
       </h4>
       <Card className="divide-y divide-slate-700/50">
@@ -151,3 +148,4 @@ export function BailSectionContent({
 
 // Get bail hub tag for section title
 export { getBailHubTag };
+
