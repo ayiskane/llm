@@ -68,6 +68,7 @@ export interface ShellCell {
   court_id: number | null;
   region_id: number | null;
   court_name?: string;
+  notes?: string | null;
 }
 
 // ============================================================================
