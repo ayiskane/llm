@@ -1,11 +1,12 @@
 'use client';
 
 import { Telephone } from 'react-bootstrap-icons';
-import { cn, textClasses, iconClasses, cardClasses } from '@/lib/config/theme';
+import { cn } from '@/lib/utils';
+import { card, text, iconSize } from '@/lib/config/theme';
 import type { ShellCell } from '@/types';
 
 // ============================================================================
-// CELL ROW COMPONENT (matches backup exactly)
+// CELL ROW COMPONENT
 // ============================================================================
 
 interface CellRowProps {
@@ -18,8 +19,8 @@ function CellRow({ cell }: CellRowProps) {
   };
 
   return (
-    <div className={cardClasses.row}>
-      <div className={cn(textClasses.secondary, 'text-sm mb-1.5')}>{cell.name}</div>
+    <div className={card.row}>
+      <div className={cn(text.secondary, 'text-sm mb-1.5')}>{cell.name}</div>
       {cell.phones && cell.phones.length > 0 && (
         <div className="flex items-center gap-3">
           {cell.phones.map((phone, idx) => (
@@ -28,7 +29,7 @@ function CellRow({ cell }: CellRowProps) {
               onClick={() => handleCall(phone)}
               className="flex items-center gap-2 text-slate-400 hover:text-indigo-400 transition-colors"
             >
-              <Telephone className={iconClasses.xs} />
+              <Telephone className={iconSize.xs} />
               <span className="text-xs">{phone}</span>
             </button>
           ))}
@@ -51,7 +52,7 @@ export function CellCard({ cell }: CellCardProps) {
 }
 
 // ============================================================================
-// CELL LIST COMPONENT (matches backup - unified container with rows)
+// CELL LIST COMPONENT
 // ============================================================================
 
 interface CellListProps {
@@ -65,7 +66,7 @@ export function CellList({ cells, maxDisplay = 20 }: CellListProps) {
   if (displayCells.length === 0) return null;
 
   return (
-    <div className={cardClasses.containerPadded}>
+    <div className={card.padded}>
       {displayCells.map((cell) => (
         <CellRow key={cell.id} cell={cell} />
       ))}

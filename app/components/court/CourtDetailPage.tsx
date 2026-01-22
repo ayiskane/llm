@@ -3,7 +3,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { ArrowLeft, EnvelopeAt, ShieldCheck, Bank2, CameraVideo } from 'react-bootstrap-icons';
 import { cn } from '@/lib/utils';
-import { colors, cardClasses, textClasses, inlineStyles, getSectionHeaderProps } from '@/lib/config/theme';
 import { StickyHeader } from '../layouts/StickyHeader';
 import { Section, PillButton, Toast } from '../ui';
 import { CourtHeader } from './CourtHeader';
@@ -30,7 +29,6 @@ export function CourtDetailPage({ courtDetails, onBack }: CourtDetailPageProps) 
   const { copiedField, copyToClipboard, isCopied } = useCopyToClipboard();
   
   const scrollRef = useRef<HTMLDivElement>(null);
-  
   const contactsRef = useRef<HTMLDivElement>(null);
   const cellsRef = useRef<HTMLDivElement>(null);
   const bailRef = useRef<HTMLDivElement>(null);
@@ -51,10 +49,7 @@ export function CourtDetailPage({ courtDetails, onBack }: CourtDetailPageProps) 
     setExpandedSection(section);
     
     const refs: Record<string, React.RefObject<HTMLDivElement | null>> = {
-      contacts: contactsRef,
-      cells: cellsRef,
-      bail: bailRef,
-      teams: teamsRef,
+      contacts: contactsRef, cells: cellsRef, bail: bailRef, teams: teamsRef,
     };
     
     const ref = section ? refs[section] : null;
@@ -67,11 +62,7 @@ export function CourtDetailPage({ courtDetails, onBack }: CourtDetailPageProps) 
           const containerRect = scrollContainer.getBoundingClientRect();
           const elementRect = element.getBoundingClientRect();
           const offsetTop = elementRect.top - containerRect.top + scrollContainer.scrollTop;
-          
-          scrollContainer.scrollTo({
-            top: Math.max(0, offsetTop - 10),
-            behavior: 'smooth'
-          });
+          scrollContainer.scrollTo({ top: Math.max(0, offsetTop - 10), behavior: 'smooth' });
         }
       }, 100);
     }
@@ -81,7 +72,6 @@ export function CourtDetailPage({ courtDetails, onBack }: CourtDetailPageProps) 
     setExpandedSection(prev => prev === section ? null : section);
   }, []);
 
-  // Nav buttons config
   const navButtons = [
     { key: 'contacts', label: 'Contacts', icon: <EnvelopeAt className="w-4 h-4" />, count: contacts.length, show: !court.is_circuit && contacts.length > 0 },
     { key: 'cells', label: 'Cells', icon: <ShieldCheck className="w-4 h-4" />, count: cells.length, show: cells.length > 0 },
@@ -105,16 +95,13 @@ export function CourtDetailPage({ courtDetails, onBack }: CourtDetailPageProps) 
           <CourtHeader court={court} collapsed={isHeaderCollapsed} />
         </div>
 
-        {/* Quick Nav Pills */}
         <div className="flex gap-2 px-3 py-2 overflow-x-auto">
           {navButtons.filter(btn => btn.show).map((btn) => (
             <PillButton key={btn.key} isActive={expandedSection === btn.key} onClick={() => navigateToSection(btn.key as AccordionSection)}>
               {btn.icon}
               <span>{btn.label}</span>
               {btn.count !== '' && (
-                <span style={{ 
-                  color: expandedSection === btn.key ? 'rgba(255,255,255,0.7)' : colors.text.disabled 
-                }}>
+                <span className={expandedSection === btn.key ? 'text-white/70' : 'text-slate-500'}>
                   {btn.count}
                 </span>
               )}

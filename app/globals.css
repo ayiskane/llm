@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   TAILWIND V4 THEME - CYBER OCEAN (matching backup branch)
+   TAILWIND V4 THEME - CYBER OCEAN
+   All theme tokens defined as CSS custom properties for consistent use
    ============================================================================ */
 
 @theme {
@@ -10,7 +11,7 @@
   --radius-md: calc(0.75rem - 2px);
   --radius-sm: calc(0.75rem - 4px);
 
-  /* Colors - matching backup HSL values */
+  /* Base colors - matching backup HSL values */
   --color-background: hsl(222.2 84% 4.9%);
   --color-foreground: hsl(210 40% 98%);
   
@@ -39,6 +40,49 @@
   --color-input: hsl(217.2 32.6% 17.5%);
   --color-ring: hsl(224.3 76.3% 48%);
 
+  /* Custom theme colors */
+  --color-theme-card: rgba(59, 130, 246, 0.03);
+  --color-theme-card-hover: rgba(59, 130, 246, 0.06);
+  --color-theme-item: rgba(59, 130, 246, 0.04);
+  --color-theme-header: rgba(8, 11, 18, 0.95);
+  --color-theme-subtle: rgba(59, 130, 246, 0.02);
+  
+  --color-theme-border: rgba(59, 130, 246, 0.12);
+  --color-theme-border-subtle: rgba(59, 130, 246, 0.08);
+  --color-theme-border-accent: rgba(59, 130, 246, 0.15);
+  --color-theme-border-hover: rgba(59, 130, 246, 0.4);
+  --color-theme-border-dashed: rgba(59, 130, 246, 0.25);
+
+  /* Section colors */
+  --color-section-emerald: #34d399;
+  --color-section-emerald-bg: rgba(16, 185, 129, 0.15);
+  --color-section-blue: #60a5fa;
+  --color-section-blue-bg: rgba(59, 130, 246, 0.15);
+  --color-section-amber: #fbbf24;
+  --color-section-amber-bg: rgba(245, 158, 11, 0.15);
+  --color-section-purple: #a78bfa;
+  --color-section-purple-bg: rgba(139, 92, 246, 0.15);
+  --color-section-teal: #2dd4bf;
+  --color-section-teal-bg: rgba(20, 184, 166, 0.15);
+  --color-section-indigo: #a5b4fc;
+  --color-section-indigo-bg: rgba(99, 102, 241, 0.15);
+  --color-section-cyan: #22d3ee;
+  --color-section-cyan-bg: rgba(34, 211, 238, 0.15);
+  --color-section-rose: #fb7185;
+  --color-section-rose-bg: rgba(244, 63, 94, 0.15);
+
+  /* Category accent colors */
+  --color-category-court: #60a5fa;
+  --color-category-provincial: #34d399;
+  --color-category-supreme: #a78bfa;
+  --color-category-bail: #fbbf24;
+  --color-category-other: #71717a;
+
+  /* Pill button colors */
+  --color-pill-active-bg: rgba(59, 130, 246, 0.25);
+  --color-pill-active-border: rgba(59, 130, 246, 0.4);
+  --color-pill-active-text: #93c5fd;
+
   /* Animations */
   --animate-fade-in: fade-in 0.2s ease-out;
   --animate-fade-in-up: fade-in-up 0.3s ease-out;
@@ -63,8 +107,140 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* ============================================================================
+   COMPONENT STYLES - Reusable utility classes
+   ============================================================================ */
+
+@layer components {
+  /* Card containers */
+  .card-base {
+    @apply rounded-lg overflow-hidden;
+    background: var(--color-theme-card);
+    border: 1px solid var(--color-theme-border);
+  }
+  
+  .card-padded {
+    @apply card-base px-4;
+  }
+  
+  .card-divided {
+    @apply card-base divide-y divide-slate-700/50;
+  }
+  
+  .card-row {
+    @apply py-3 border-b border-slate-700/30 last:border-b-0;
+  }
+  
+  .card-flex-row {
+    @apply flex justify-between px-4 py-2.5;
+  }
+
+  /* Coupon-style contact card */
+  .card-coupon {
+    @apply flex items-stretch rounded-lg overflow-hidden cursor-pointer transition-all;
+    background: var(--color-theme-card);
+    border: 1px dashed var(--color-theme-border-dashed);
+  }
+  
+  .card-coupon:hover {
+    border-color: var(--color-theme-border-hover);
+  }
+  
+  .card-coupon-divider {
+    border-left: 1px dashed var(--color-theme-border-dashed);
+  }
+
+  /* Section accordion */
+  .section-container {
+    @apply rounded-lg overflow-hidden;
+    background: var(--color-theme-card);
+    border: 1px solid var(--color-theme-border);
+  }
+  
+  .section-header {
+    @apply w-full flex items-center gap-2.5 p-3 transition-colors;
+    border-bottom: 1px solid var(--color-theme-border-subtle);
+  }
+  
+  .section-header-expanded {
+    background: var(--color-theme-card-hover);
+  }
+  
+  .section-title {
+    @apply flex-1 text-left text-[13px] uppercase tracking-wider text-slate-200 font-medium;
+  }
+  
+  .section-content {
+    background: var(--color-theme-subtle);
+  }
+
+  /* Pill buttons */
+  .pill-base {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors;
+  }
+  
+  .pill-active {
+    background: var(--color-pill-active-bg);
+    border: 1px solid var(--color-pill-active-border);
+    color: var(--color-pill-active-text);
+  }
+  
+  .pill-inactive {
+    background: var(--color-theme-item);
+    border: 1px solid var(--color-theme-border-accent);
+    @apply text-slate-400;
+  }
+
+  /* Badge/tag styling */
+  .badge-section {
+    @apply px-1.5 py-0.5 rounded text-[10px] font-mono;
+  }
+
+  /* Text styles */
+  .text-section-header {
+    @apply text-xs text-slate-500 uppercase px-1 tracking-wide;
+    font-family: Inter, sans-serif;
+  }
+  
+  .text-role-label {
+    @apply text-[9px] text-slate-400 uppercase mb-1 tracking-wide;
+    font-family: Inter, sans-serif;
+  }
+  
+  .text-schedule-label {
+    @apply text-xs font-mono font-semibold uppercase tracking-wide;
+  }
+  
+  .text-mono-value {
+    @apply text-slate-400 text-xs font-mono;
+  }
+
+  /* Sticky header */
+  .sticky-header {
+    @apply flex-shrink-0 backdrop-blur-md z-10;
+    background: var(--color-theme-header);
+    border-bottom: 1px solid var(--color-theme-border);
+  }
+
+  /* Toggle button */
+  .toggle-btn {
+    @apply flex items-center gap-1.5 px-2 py-1 rounded text-xs tracking-wide transition-all;
+  }
+  
+  .toggle-btn-active {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid var(--color-theme-border-hover);
+    @apply text-blue-400;
+  }
+  
+  .toggle-btn-inactive {
+    @apply bg-transparent text-slate-500;
+    border: 1px solid var(--color-theme-border);
   }
 }
 

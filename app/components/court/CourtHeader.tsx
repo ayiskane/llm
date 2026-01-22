@@ -1,7 +1,7 @@
 'use client';
 
 import { GeoAlt } from 'react-bootstrap-icons';
-import { cn, colors } from '@/lib/config/theme';
+import { cn } from '@/lib/utils';
 import { Tag } from '../ui/Tag';
 import { openInMaps } from '@/lib/utils';
 import type { Court } from '@/types';
@@ -31,8 +31,7 @@ export function CourtHeader({ court, collapsed = false, className }: CourtHeader
         {court.address && (
           <button
             onClick={() => openInMaps(court.address)}
-            className="p-1.5 rounded-md transition-colors shrink-0"
-            style={{ background: colors.bg.item }}
+            className="p-1.5 rounded-md bg-slate-800/50 hover:bg-slate-700/50 transition-colors shrink-0"
           >
             <GeoAlt className="w-4 h-4 text-blue-400" />
           </button>
@@ -50,8 +49,7 @@ export function CourtHeader({ court, collapsed = false, className }: CourtHeader
       {court.address && (
         <button
           onClick={() => openInMaps(court.address)}
-          className="flex items-center gap-1 text-xs mt-1 hover:text-blue-400 transition-colors"
-          style={{ color: colors.text.subtle }}
+          className="flex items-center gap-1 text-xs mt-1 text-slate-500 hover:text-blue-400 transition-colors"
         >
           <GeoAlt className="w-3 h-3" />
           <span>{court.address}</span>
@@ -60,17 +58,9 @@ export function CourtHeader({ court, collapsed = false, className }: CourtHeader
       
       <div className="flex flex-wrap items-center gap-1.5 mt-2">
         {court.region_code && (
-          <span 
-            className="px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase"
-            style={{ 
-              background: 'rgba(255,255,255,0.05)', 
-              border: `1px solid ${colors.border.primary}`,
-              color: colors.text.muted,
-              letterSpacing: '2px'
-            }}
-          >
+          <span className="px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
             <span>{court.region_code}</span>
-            <span style={{ color: colors.text.disabled }}>|</span>
+            <span className="text-slate-600">|</span>
             <span>{court.region_name}</span>
           </span>
         )}

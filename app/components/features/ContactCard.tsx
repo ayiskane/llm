@@ -2,30 +2,20 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { Clipboard, ClipboardCheck, Eye, EyeSlash } from 'react-bootstrap-icons';
-import { 
-  cn, 
-  textClasses, 
-  iconClasses, 
-  cardClasses,
-  couponCardStyles,
-  inlineStyles,
-  getContactCategoryColor,
-  getToggleButtonStyles,
-  getSectionHeaderProps,
-} from '@/lib/config/theme';
-import type { ContactCategory } from '@/lib/config/theme';
+import { cn } from '@/lib/utils';
+import { card, text, toggle, iconSize, getCategoryAccentClass, type ContactCategory } from '@/lib/config/theme';
 import { CONTACT_ROLES } from '@/lib/config/constants';
 import type { ContactWithRole, BailContact } from '@/types';
 
 // ============================================================================
-// COPY FUNCTION TYPES
+// TYPES
 // ============================================================================
 
 type CopyFunction = (text: string, fieldId: string) => void | Promise<boolean>;
 type IsCopiedFunction = (fieldId: string) => boolean;
 
 // ============================================================================
-// CONTACT ITEM (Single coupon-style card - matches backup exactly)
+// CONTACT ITEM (Single coupon-style card)
 // ============================================================================
 
 interface ContactItemProps {
@@ -57,30 +47,14 @@ function ContactItem({
   }, [copyText, onCopy, fieldId]);
 
   return (
-    <div 
-      className="flex items-stretch rounded-lg overflow-hidden cursor-pointer transition-all hover:border-blue-500/40"
-      style={{ 
-        background: 'rgba(59,130,246,0.03)',
-        border: '1px dashed rgba(59,130,246,0.25)',
-      }}
-      onClick={handleCopy}
-    >
+    <div className={card.coupon} onClick={handleCopy}>
       {/* Color accent bar */}
-      <div 
-        className="w-1 flex-shrink-0"
-        style={{ background: getContactCategoryColor(category) }}
-      />
+      <div className={cn('w-1 flex-shrink-0', getCategoryAccentClass(category))} />
       
       {/* Content */}
       <div className="flex-1 py-2.5 px-3 min-w-0 overflow-hidden">
+        <div className={text.roleLabel}>{label}</div>
         <div 
-          className={textClasses.roleLabel}
-          style={inlineStyles.roleLabelSpaced}
-        >
-          {label}
-        </div>
-        <div 
-          data-email="true"
           className={cn(
             'text-[12px] text-slate-200 font-mono leading-relaxed',
             showFull ? 'break-all whitespace-normal' : 'whitespace-nowrap overflow-hidden text-ellipsis'
@@ -88,13 +62,7 @@ function ContactItem({
         >
           {emails.length > 1 ? (
             <div className={showFull ? 'space-y-1' : ''}>
-              {showFull ? (
-                emails.map((email, i) => (
-                  <div key={i}>{email}</div>
-                ))
-              ) : (
-                emails.join(', ')
-              )}
+              {showFull ? emails.map((email, i) => <div key={i}>{email}</div>) : emails.join(', ')}
             </div>
           ) : (
             emails[0]
@@ -103,17 +71,11 @@ function ContactItem({
       </div>
       
       {/* Copy button area */}
-      <div 
-        className="flex items-center justify-center px-3 flex-shrink-0 transition-colors"
-        style={{ 
-          borderLeft: '1px dashed rgba(59,130,246,0.25)',
-          color: isFieldCopied ? '#34d399' : '#52525b',
-        }}
-      >
+      <div className={cn(card.couponDivider, 'flex items-center justify-center px-3 flex-shrink-0 transition-colors')}>
         {isFieldCopied ? (
-          <ClipboardCheck className="w-4 h-4" />
+          <ClipboardCheck className={cn(iconSize.md, 'text-emerald-400')} />
         ) : (
-          <Clipboard className="w-4 h-4" />
+          <Clipboard className={cn(iconSize.md, 'text-slate-500')} />
         )}
       </div>
     </div>
@@ -135,24 +97,15 @@ function SectionHeader({
   onToggle: () => void;
   showToggle: boolean;
 }) {
-  const headerProps = getSectionHeaderProps();
-  
   return (
     <div className="flex items-center justify-between mb-2 px-1">
-      <h4 {...headerProps}>
-        {title}
-      </h4>
+      <h4 className={text.sectionHeader}>{title}</h4>
       {showToggle && (
         <button
           onClick={(e) => { e.stopPropagation(); onToggle(); }}
-          className="flex items-center gap-1.5 px-2 py-1 rounded text-xs tracking-wide transition-all"
-          style={getToggleButtonStyles(showFull)}
+          className={cn(toggle.base, showFull ? toggle.active : toggle.inactive)}
         >
-          {showFull ? (
-            <EyeSlash className={iconClasses.xs} />
-          ) : (
-            <Eye className={iconClasses.xs} />
-          )}
+          {showFull ? <EyeSlash className={iconSize.xs} /> : <Eye className={iconSize.xs} />}
           <span>{showFull ? 'Truncate' : 'Show full'}</span>
         </button>
       )}
@@ -194,9 +147,7 @@ export function CourtContactsStack({ contacts, onCopy, isCopied }: CourtContacts
     contactConfig.forEach(config => {
       const contact = contacts.find(c => c.contact_role_id === config.roleId);
       if (contact) {
-        const contactEmails = contact.emails && contact.emails.length > 0 
-          ? contact.emails 
-          : (contact.email ? [contact.email] : []);
+        const contactEmails = contact.emails?.length ? contact.emails : (contact.email ? [contact.email] : []);
         
         if (contactEmails.length > 0) {
           if (config.roleId === CONTACT_ROLES.COURT_REGISTRY && 
@@ -204,12 +155,7 @@ export function CourtContactsStack({ contacts, onCopy, isCopied }: CourtContacts
               contactEmails[0] === criminalRegistryEmails[0]) {
             return;
           }
-          result.push({
-            label: config.label,
-            emails: contactEmails,
-            category: config.category,
-            id: contact.id,
-          });
+          result.push({ label: config.label, emails: contactEmails, category: config.category, id: contact.id });
         }
       }
     });
@@ -266,9 +212,7 @@ export function CrownContactsStack({ contacts, bailContacts, onCopy, isCopied }:
 
     const provCrown = contacts.find(c => c.contact_role_id === CONTACT_ROLES.CROWN);
     if (provCrown) {
-      const emails = provCrown.emails && provCrown.emails.length > 0 
-        ? provCrown.emails 
-        : (provCrown.email ? [provCrown.email] : []);
+      const emails = provCrown.emails?.length ? provCrown.emails : (provCrown.email ? [provCrown.email] : []);
       if (emails.length > 0) {
         result.push({ label: 'Provincial Crown', emails, category: 'provincial', id: `prov-crown-${provCrown.id}` });
       }
@@ -283,9 +227,7 @@ export function CrownContactsStack({ contacts, bailContacts, onCopy, isCopied }:
 
     const fedCrown = contacts.find(c => c.contact_role_id === CONTACT_ROLES.FEDERAL_CROWN);
     if (fedCrown) {
-      const emails = fedCrown.emails && fedCrown.emails.length > 0 
-        ? fedCrown.emails 
-        : (fedCrown.email ? [fedCrown.email] : []);
+      const emails = fedCrown.emails?.length ? fedCrown.emails : (fedCrown.email ? [fedCrown.email] : []);
       if (emails.length > 0) {
         result.push({ label: 'Federal Crown', emails, category: 'other', id: `fed-crown-${fedCrown.id}` });
       }
@@ -293,9 +235,7 @@ export function CrownContactsStack({ contacts, bailContacts, onCopy, isCopied }:
 
     const fnCrown = contacts.find(c => c.contact_role_id === CONTACT_ROLES.FIRST_NATIONS_CROWN);
     if (fnCrown) {
-      const emails = fnCrown.emails && fnCrown.emails.length > 0 
-        ? fnCrown.emails 
-        : (fnCrown.email ? [fnCrown.email] : []);
+      const emails = fnCrown.emails?.length ? fnCrown.emails : (fnCrown.email ? [fnCrown.email] : []);
       if (emails.length > 0) {
         result.push({ label: 'First Nations Crown', emails, category: 'other', id: `fn-crown-${fnCrown.id}` });
       }
