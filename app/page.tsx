@@ -625,11 +625,11 @@ export default function Home() {
                               </div>
                             )}
 
-                            {/* Tuesday Youth In-Custody - Abbotsford specific */}
-                            {detailBailCourt.name?.toLowerCase().includes('fraser') && (
+                            {/* Youth In-Custody - from database */}
+                            {detailBailCourt.youth_custody_day && detailBailCourt.youth_custody_time && (
                               <div className="px-2 py-1.5 rounded" style={{ background: 'rgba(251,191,36,0.1)' }}>
-                                <span className="text-amber-400">TUES</span>
-                                <span className="text-slate-200 ml-2">Youth 9:30 AM</span>
+                                <span className="text-amber-400">{detailBailCourt.youth_custody_day.toUpperCase()}</span>
+                                <span className="text-slate-200 ml-2">Youth {detailBailCourt.youth_custody_time}</span>
                               </div>
                             )}
                           </div>
