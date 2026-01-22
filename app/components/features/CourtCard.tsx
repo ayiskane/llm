@@ -1,8 +1,7 @@
 'use client';
 
 import { GeoAlt, ChevronRight } from 'react-bootstrap-icons';
-import { Card } from '@/app/components/ui/Card';
-import { cn, iconClasses } from '@/lib/config/theme';
+import { cn, iconSize } from '@/lib/config/theme';
 import { openInMaps } from '@/lib/utils';
 import type { Court, CourtWithRegion } from '@/types';
 
@@ -29,22 +28,19 @@ export function CourtCard({ court, onClick, contactCount, cellCount, teamsCount 
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          {/* Court name */}
           <h3 className="font-medium text-slate-200 text-sm">
             {court.name}
           </h3>
           
-          {/* Address */}
           {court.address && (
             <div className="flex items-start gap-1 mt-1">
-              <GeoAlt className={cn(iconClasses.xs, 'text-slate-500 mt-0.5 shrink-0')} />
+              <GeoAlt className={cn(iconSize.xs, 'text-slate-500 mt-0.5 shrink-0')} />
               <span className="text-xs text-slate-400 line-clamp-2">
                 {court.address}
               </span>
             </div>
           )}
           
-          {/* Region and court types */}
           <div className="flex items-center gap-2 mt-2">
             {region && (
               <span className="text-xs text-slate-500">
@@ -66,10 +62,9 @@ export function CourtCard({ court, onClick, contactCount, cellCount, teamsCount 
           </div>
         </div>
         
-        <ChevronRight className={cn(iconClasses.md, 'text-slate-500 shrink-0 mt-1')} />
+        <ChevronRight className={cn(iconSize.md, 'text-slate-500 shrink-0 mt-1')} />
       </div>
       
-      {/* Counts */}
       {(contactCount || cellCount || teamsCount) && (
         <div className="flex gap-3 mt-3 pt-3 border-t border-slate-700/50">
           {contactCount !== undefined && contactCount > 0 && (
@@ -93,7 +88,6 @@ export function CourtCard({ court, onClick, contactCount, cellCount, teamsCount 
   );
 }
 
-// Court header for detail view
 interface CourtHeaderProps {
   court: CourtWithRegion;
 }
@@ -110,7 +104,7 @@ export function CourtHeader({ court }: CourtHeaderProps) {
           onClick={() => openInMaps(court.address)}
           className="flex items-start gap-1 text-left group"
         >
-          <GeoAlt className={cn(iconClasses.sm, 'text-slate-500 mt-0.5 shrink-0 group-hover:text-blue-400 transition-colors')} />
+          <GeoAlt className={cn(iconSize.sm, 'text-slate-500 mt-0.5 shrink-0 group-hover:text-blue-400 transition-colors')} />
           <span className="text-sm text-slate-400 group-hover:text-blue-400 transition-colors">
             {court.address}
           </span>
@@ -139,4 +133,3 @@ export function CourtHeader({ court }: CourtHeaderProps) {
     </div>
   );
 }
-
