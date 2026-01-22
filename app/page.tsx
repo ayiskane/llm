@@ -9,7 +9,8 @@ import { SearchBar, QuickSuggestions } from '@/app/components/SearchBar';
 import { CourtCard } from '@/app/components/CourtCard';
 import { CourtContactsStack, CrownContactsStack, TopContactsPreview } from '@/app/components/ContactStack';
 import { CellsList, CellsPreview } from '@/app/components/CellCard';
-import { TeamsList, isVBTriageLink } from '@/app/components/TeamsCard';
+import { TeamsList } from '@/app/components/TeamsCard';
+import { BailSectionContent, getBailHubTag } from '@/app/components/BailCard';
 import { CircuitWarning } from '@/app/components/CircuitWarning';
 
 // Shared UI Components
@@ -582,90 +583,18 @@ export default function Home() {
                     ref={bailRef}
                     color="teal"
                     title="Virtual Bail"
-                    count={detailBailCourt.name ? `${detailBailCourt.name.toUpperCase().replace(' VIRTUAL BAIL', '').replace('FRASER', 'ABBY')} HUB` : ''}
+                    count={getBailHubTag(detailBailCourt)}
                     isExpanded={expandedSection === 'bail'}
                     onToggle={() => toggleSection('bail')}
                   >
-                    <div className="p-3 space-y-3">
-                      {/* If bail hub is different court, show link card */}
-                      {detailBailCourt.court_id && detailBailCourt.court_id !== detailCourt.id && (
-                        <button
-                          onClick={() => {
-                            if (detailBailCourt.court_id) {
-                              handleSelectCourt({ id: detailBailCourt.court_id } as Court, 'bail');
-                            }
-                          }}
-                          className="w-full flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-slate-700/50"
-                          style={{ background: theme.colors.bg.item, border: `1px solid ${theme.colors.border.subtle}` }}
-                        >
-                          <Bank2 className="w-4 h-4 text-teal-400" />
-                          <span className="flex-1 text-left text-sm font-medium text-white">
-                            {detailBailCourt.name.replace(' Virtual Bail', '')} Law Courts
-                          </span>
-                          <ChevronRight className="w-4 h-4 text-slate-500" />
-                        </button>
-                      )}
-
-                      {/* Schedule Section */}
-                      {(detailBailCourt.triage_time_am || detailBailCourt.triage_time_pm || detailBailCourt.court_start_am || detailBailCourt.cutoff_new_arrests) && (
-                        <div className="space-y-1.5">
-                          <h4 className="text-xs text-slate-500 uppercase px-1" style={{ fontFamily: 'Inter, sans-serif', letterSpacing: '1px' }}>Schedule</h4>
-                          
-                          {/* Vertical List - Sheriff Cells style */}
-                          <div className="bg-slate-800/30 rounded-lg border border-slate-700/50 overflow-hidden divide-y divide-slate-700/50">
-                            {/* Triage */}
-                            {(detailBailCourt.triage_time_am || detailBailCourt.triage_time_pm) && (
-                              <div className="flex justify-between px-4 py-2.5">
-                                <span className="text-slate-300 text-xs font-mono font-semibold uppercase" style={{ letterSpacing: '1px' }}>Triage</span>
-                                <span className="text-slate-400 text-xs font-mono">
-                                  {[detailBailCourt.triage_time_am, detailBailCourt.triage_time_pm].filter(Boolean).join(' / ')}
-                                </span>
-                              </div>
-                            )}
-
-                            {/* Court */}
-                            {(detailBailCourt.court_start_am || detailBailCourt.court_start_pm) && (
-                              <div className="flex justify-between px-4 py-2.5">
-                                <span className="text-slate-300 text-xs font-mono font-semibold uppercase" style={{ letterSpacing: '1px' }}>Court</span>
-                                <span className="text-slate-400 text-xs font-mono">
-                                  {[detailBailCourt.court_start_am, detailBailCourt.court_start_pm].filter(Boolean).join(' / ')}
-                                </span>
-                              </div>
-                            )}
-
-                            {/* Cutoff */}
-                            {detailBailCourt.cutoff_new_arrests && (
-                              <div className="flex justify-between px-4 py-2.5">
-                                <span className="text-slate-300 text-xs font-mono font-semibold uppercase" style={{ letterSpacing: '1px' }}>Cutoff</span>
-                                <span className="text-slate-400 text-xs font-mono">{detailBailCourt.cutoff_new_arrests}</span>
-                              </div>
-                            )}
-
-                            {/* Youth In-Custody - from database */}
-                            {detailBailCourt.youth_custody_day && detailBailCourt.youth_custody_time && (
-                              <div className="flex justify-between px-4 py-2.5">
-                                <span className="text-amber-400 text-xs font-mono font-semibold uppercase" style={{ letterSpacing: '1px' }}>Youth</span>
-                                <span className="text-slate-400 text-xs font-mono">{detailBailCourt.youth_custody_day} {detailBailCourt.youth_custody_time}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Combine bail teams + VB Triage links from court teams (deduplicated) */}
-                      {(() => {
-                        const vbTriageLinks = detailTeams.filter(isVBTriageLink);
-                        // Deduplicate: only add VB Triage links that aren't already in bail teams
-                        const existingIds = new Set(detailBailTeams.map(l => l.id));
-                        const uniqueVbTriageLinks = vbTriageLinks.filter(l => !existingIds.has(l.id));
-                        const allBailTeams = [...detailBailTeams, ...uniqueVbTriageLinks];
-                        return allBailTeams.length > 0 && (
-                          <div>
-                            <TeamsList links={allBailTeams} onCopyAll={() => showCopiedToast('bailteams')} filterVBTriage={false} />
-                          </div>
-                        );
-                      })()}
-                    </div>
+                    <BailSectionContent
+                      bailCourt={detailBailCourt}
+                      currentCourtId={detailCourt.id}
+                      bailTeams={detailBailTeams}
+                      courtTeams={detailTeams}
+                      onNavigateToHub={(courtId) => handleSelectCourt({ id: courtId } as Court, 'bail')}
+                      onCopyTeams={() => showCopiedToast('bailteams')}
+                    />
                   </Section>
                 )}
 
