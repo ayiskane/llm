@@ -3,8 +3,11 @@
 import { forwardRef } from 'react';
 import { cn, cardClasses } from '@/lib/config/theme';
 
+// Card variants - subset of cardClasses that apply to Card component
+type CardVariant = 'base' | 'padded' | 'divided' | 'interactive';
+
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'base' | 'padded' | 'divided' | 'interactive';
+  variant?: CardVariant;
   children: React.ReactNode;
 }
 
@@ -65,3 +68,4 @@ export const CardContent = forwardRef<HTMLDivElement, CardContentProps>(
 );
 
 CardContent.displayName = 'CardContent';
+

@@ -3,8 +3,11 @@
 import { forwardRef } from 'react';
 import { cn, buttonClasses } from '@/lib/config/theme';
 
+// Derive variant type from buttonClasses keys - single source of truth
+type ButtonVariant = keyof typeof buttonClasses;
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'icon' | 'join';
+  variant?: ButtonVariant;
   size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;
 }
@@ -35,3 +38,4 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = 'Button';
+

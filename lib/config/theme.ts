@@ -192,10 +192,10 @@ export const theme = {
 
 // Card containers
 export const cardClasses = {
-  container: 'bg-slate-800/30 rounded-lg border border-slate-700/50 overflow-hidden',
-  containerPadded: 'bg-slate-800/30 rounded-lg border border-slate-700/50 overflow-hidden px-4',
-  containerDivided: 'bg-slate-800/30 rounded-lg border border-slate-700/50 overflow-hidden divide-y divide-slate-700/50',
-  interactive: 'cursor-pointer hover:bg-slate-800 transition-colors active:bg-slate-700',
+  base: 'bg-slate-800/30 rounded-lg border border-slate-700/50 overflow-hidden',
+  padded: 'bg-slate-800/30 rounded-lg border border-slate-700/50 overflow-hidden px-4',
+  divided: 'bg-slate-800/30 rounded-lg border border-slate-700/50 overflow-hidden divide-y divide-slate-700/50',
+  interactive: 'bg-slate-800/30 rounded-lg border border-slate-700/50 overflow-hidden cursor-pointer hover:bg-slate-800 transition-colors active:bg-slate-700',
   row: 'py-3 border-b border-slate-700/30 last:border-b-0',
   flexRow: 'flex justify-between px-4 py-2.5',
 } as const;
@@ -239,6 +239,7 @@ export const buttonClasses = {
   secondary: 'bg-slate-700 hover:bg-slate-600 transition-colors',
   ghost: 'hover:bg-slate-700/50 transition-colors',
   icon: 'p-2 rounded-lg transition-colors',
+  join: 'bg-purple-600 hover:bg-purple-500 text-white transition-colors',
   navLink: 'w-full flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-slate-700/50',
   copy: 'p-1.5 rounded transition-colors hover:bg-slate-700',
   action: 'flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors',
@@ -454,5 +455,6 @@ export const breakpoints = {
 // Type exports
 export type ThemeColors = typeof theme.colors;
 export type CategoryColor = keyof typeof theme.colors.category;
+
 
 
