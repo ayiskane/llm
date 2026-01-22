@@ -161,27 +161,29 @@ interface TeamsListProps {
   links: TeamsLink[];
   onCopyAll?: () => void;
   filterVBTriage?: boolean;
-  lastUpdated?: string; // Date string like "Jan 15, 2025" or Date object
 }
 
-export function TeamsList({ links, onCopyAll, filterVBTriage = true, lastUpdated }: TeamsListProps) {
+export function TeamsList({ links, onCopyAll, filterVBTriage = true }: TeamsListProps) {
   // Filter out VB Triage links by default (they're shown in Virtual Bail section)
   const filteredLinks = filterVBTriage ? links.filter(link => !isVBTriageLink(link)) : links;
   
   if (filteredLinks.length === 0) return null;
 
-  // Format the date if provided
-  const formatDate = (date: string | undefined) => {
-    if (!date) return null;
-    try {
-      const d = new Date(date);
-      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    } catch {
-      return date; // Return as-is if already formatted
-    }
+  // Get the most recent source_updated_at from all links
+  const getMostRecentDate = () => {
+    const dates = filteredLinks
+      .map(link => link.source_updated_at)
+      .filter((d): d is string => !!d)
+      .map(d => new Date(d))
+      .filter(d => !isNaN(d.getTime()));
+    
+    if (dates.length === 0) return null;
+    
+    const mostRecent = new Date(Math.max(...dates.map(d => d.getTime())));
+    return mostRecent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const displayDate = formatDate(lastUpdated);
+  const displayDate = getMostRecentDate();
 
   return (
     <div className="space-y-1.5">
