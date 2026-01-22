@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Clipboard, ClipboardCheck, Telephone, Envelope, ChevronDown, ChevronUp } from 'react-bootstrap-icons';
+import { Clipboard, ClipboardCheck, Telephone, ChevronDown, ChevronUp } from 'react-bootstrap-icons';
 import { Card } from '@/app/components/ui/Card';
 import { cn, textClasses, iconClasses, getRoleLabelProps, getSectionHeaderProps } from '@/lib/config/theme';
 import { formatPhone, formatEmailsForCopy, makeCall, sendEmail } from '@/lib/utils';
@@ -10,8 +10,8 @@ import type { ContactWithRole } from '@/types';
 
 interface ContactCardProps {
   contact: ContactWithRole;
-  onCopy: (text: string, id: string) => void;
-  isCopied: (id: string) => boolean;
+  onCopy?: (text: string, id: string) => void;  // NOW OPTIONAL
+  isCopied?: (id: string) => boolean;           // NOW OPTIONAL
 }
 
 export function ContactCard({ contact, onCopy, isCopied }: ContactCardProps) {
@@ -26,6 +26,9 @@ export function ContactCard({ contact, onCopy, isCopied }: ContactCardProps) {
   const displayEmails = emails.join(', ');
   const copyText = formatEmailsForCopy(emails);
   const isTruncated = displayEmails.length > 40;
+
+  // Check if copy is enabled
+  const canCopy = onCopy && isCopied;
 
   return (
     <Card className="p-3">
@@ -81,7 +84,7 @@ export function ContactCard({ contact, onCopy, isCopied }: ContactCardProps) {
               {isExpanded ? <ChevronUp className={iconClasses.sm} /> : <ChevronDown className={iconClasses.sm} />}
             </button>
           )}
-          {emails.length > 0 && (
+          {canCopy && emails.length > 0 && (
             <button
               onClick={() => onCopy(copyText, `contact-${contact.id}`)}
               className="p-1.5 rounded hover:bg-slate-700/50 text-slate-400 hover:text-slate-200 transition-colors"
@@ -103,8 +106,8 @@ export function ContactCard({ contact, onCopy, isCopied }: ContactCardProps) {
 interface ContactStackProps {
   contacts: ContactWithRole[];
   category: 'court' | 'crown';
-  onCopy: (text: string, id: string) => void;
-  isCopied: (id: string) => boolean;
+  onCopy?: (text: string, id: string) => void;  // NOW OPTIONAL
+  isCopied?: (id: string) => boolean;           // NOW OPTIONAL
 }
 
 export function ContactStack({ contacts, category, onCopy, isCopied }: ContactStackProps) {
@@ -141,5 +144,3 @@ export function ContactStack({ contacts, category, onCopy, isCopied }: ContactSt
     </div>
   );
 }
-
-
