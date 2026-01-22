@@ -1,8 +1,7 @@
 // ============================================================================
 // LLM: LEGAL LEGENDS MANUAL - THEME CONFIGURATION
 // ============================================================================
-// Type definitions and class name mappings for Tailwind CSS classes
-// All actual styles defined in globals.css using @layer components
+// Tailwind utility class strings for consistent styling across components
 // ============================================================================
 
 export { cn } from '@/lib/utils';
@@ -15,7 +14,7 @@ export type SectionColor = 'emerald' | 'blue' | 'amber' | 'purple' | 'teal' | 'i
 export type ContactCategory = 'court' | 'provincial' | 'supreme' | 'bail' | 'other';
 
 // ============================================================================
-// SECTION COLOR MAPPINGS (for dynamic class application)
+// SECTION COLOR MAPPINGS
 // ============================================================================
 
 export const sectionColorMap: Record<SectionColor, { dot: string; badge: string }> = {
@@ -42,7 +41,7 @@ export const categoryColorMap: Record<ContactCategory, string> = {
 };
 
 // ============================================================================
-// ICON SIZE CLASSES
+// UTILITY CLASS STRINGS
 // ============================================================================
 
 export const iconSize = {
@@ -52,15 +51,11 @@ export const iconSize = {
   lg: 'w-5 h-5',
 } as const;
 
-// ============================================================================
-// TEXT STYLE CLASSES (reference to @layer components in globals.css)
-// ============================================================================
-
 export const text = {
-  sectionHeader: 'text-section-header',
-  roleLabel: 'text-role-label',
-  scheduleLabel: 'text-schedule-label',
-  monoValue: 'text-mono-value',
+  sectionHeader: 'text-xs text-slate-500 uppercase px-1 tracking-wide',
+  roleLabel: 'text-[9px] text-slate-400 uppercase mb-1 tracking-wide',
+  scheduleLabel: 'text-xs font-mono font-semibold uppercase tracking-wide',
+  monoValue: 'text-slate-400 text-xs font-mono',
   primary: 'text-white',
   secondary: 'text-slate-200',
   muted: 'text-slate-300',
@@ -68,73 +63,48 @@ export const text = {
   disabled: 'text-slate-500',
 } as const;
 
-// ============================================================================
-// CARD STYLE CLASSES (reference to @layer components in globals.css)
-// ============================================================================
-
 export const card = {
-  base: 'card-base',
-  padded: 'card-padded',
-  divided: 'card-divided',
-  row: 'card-row',
-  flexRow: 'card-flex-row',
-  coupon: 'card-coupon',
-  couponDivider: 'card-coupon-divider',
+  base: 'rounded-lg overflow-hidden bg-slate-800/30 border border-slate-700/50',
+  padded: 'rounded-lg overflow-hidden bg-slate-800/30 border border-slate-700/50 px-4',
+  divided: 'rounded-lg overflow-hidden bg-slate-800/30 border border-slate-700/50 divide-y divide-slate-700/50',
+  row: 'py-3 border-b border-slate-700/30 last:border-b-0',
+  flexRow: 'flex justify-between px-4 py-2.5',
+  coupon: 'flex items-stretch rounded-lg overflow-hidden cursor-pointer transition-all bg-blue-500/[0.03] border border-dashed border-blue-500/25 hover:border-blue-500/40',
+  couponDivider: 'border-l border-dashed border-blue-500/25',
 } as const;
-
-// ============================================================================
-// SECTION STYLE CLASSES
-// ============================================================================
 
 export const section = {
-  container: 'section-container',
-  header: 'section-header',
-  headerExpanded: 'section-header-expanded',
-  title: 'section-title',
-  content: 'section-content',
+  container: 'rounded-lg overflow-hidden bg-slate-800/30 border border-slate-700/50',
+  header: 'w-full flex items-center gap-2.5 p-3 transition-colors border-b border-slate-700/30',
+  headerExpanded: 'bg-slate-800/50',
+  title: 'flex-1 text-left text-[13px] uppercase tracking-wider text-slate-200 font-medium',
+  content: 'bg-slate-900/20',
 } as const;
-
-// ============================================================================
-// PILL BUTTON CLASSES
-// ============================================================================
 
 export const pill = {
-  base: 'pill-base',
-  active: 'pill-active',
-  inactive: 'pill-inactive',
+  base: 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors',
+  active: 'bg-blue-500/25 border border-blue-500/40 text-blue-300',
+  inactive: 'bg-blue-500/[0.04] border border-blue-500/15 text-slate-400',
 } as const;
 
-// ============================================================================
-// TOGGLE BUTTON CLASSES
-// ============================================================================
-
 export const toggle = {
-  base: 'toggle-btn',
-  active: 'toggle-btn-active',
-  inactive: 'toggle-btn-inactive',
+  base: 'flex items-center gap-1.5 px-2 py-1 rounded text-xs tracking-wide transition-all',
+  active: 'bg-blue-500/15 border border-blue-500/40 text-blue-400',
+  inactive: 'bg-transparent border border-slate-700/50 text-slate-500',
 } as const;
 
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
-/**
- * Get section color classes for a given color
- */
 export function getSectionColors(color: SectionColor) {
   return sectionColorMap[color];
 }
 
-/**
- * Get category accent bar class
- */
 export function getCategoryAccentClass(category: ContactCategory): string {
   return categoryColorMap[category];
 }
 
-/**
- * Get schedule label class with optional amber color
- */
 export function getScheduleLabelClass(isAmber = false): string {
   return `${text.scheduleLabel} ${isAmber ? 'text-amber-400' : 'text-slate-300'}`;
 }
