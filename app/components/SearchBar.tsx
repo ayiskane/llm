@@ -49,9 +49,9 @@ export function SearchBar({
     <div className="relative">
       <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
         {isLoading ? (
-          <ArrowClockwise className="w-5 h-5 animate-spin" />
+          <ArrowClockwise className="w-4 h-4 animate-spin" />
         ) : (
-          <Search className="w-5 h-5" />
+          <Search className="w-4 h-4" />
         )}
       </div>
       
@@ -62,7 +62,7 @@ export function SearchBar({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="w-full h-12 pl-11 pr-10 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent rounded-xl"
+        className="w-full h-9 pl-10 pr-9 bg-slate-800 border-slate-700 text-sm text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent rounded-xl"
       />
       
       {value && (
