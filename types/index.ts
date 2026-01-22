@@ -3,52 +3,54 @@
 // =============================================================================
 
 export interface Court {
-  id: string;
+  id: number;
   name: string;
   address: string | null;
-  region_id: string | null;
-  bail_hub_id: string | null;
+  region_id: number | null;
+  bail_hub_id: number | null;
   has_provincial: boolean;
   has_supreme: boolean;
+  search_terms: string | null;
+  phone: string | null;
+  fax: string | null;
+  sheriff_phone: string | null;
   created_at: string;
-  updated_at: string;
 }
 
 export interface Region {
-  id: string;
+  id: number;
   name: string;
   code: string;
   created_at: string;
 }
 
 export interface Contact {
-  id: string;
-  role_id: string;
+  id: number;
+  contact_role_id: number;
   email: string | null;
   emails: string[] | null;
   phone: string | null;
-  phones: string[] | null;
   fax: string | null;
   notes: string | null;
   created_at: string;
-  updated_at: string;
 }
 
 export interface ContactRole {
-  id: string;
+  id: number;
   name: string;
-  category: 'court' | 'crown';
-  display_order: number;
+  description: string | null;
 }
 
 export interface ContactCourt {
-  contact_id: string;
-  court_id: string;
+  id: number;
+  contact_id: number;
+  court_id: number;
+  created_at: string;
 }
 
 export interface TeamsLink {
-  id: string;
-  court_id: string;
+  id: number;
+  court_id: number;
   name: string;
   url: string;
   phone_number: string | null;
@@ -56,26 +58,26 @@ export interface TeamsLink {
   conference_id: string | null;
   source_updated_at: string | null;
   created_at: string;
-  updated_at: string;
 }
 
 export interface ShellCell {
-  id: string;
+  id: number;
   name: string;
   phones: string[] | null;
   fax: string | null;
   notes: string | null;
   created_at: string;
-  updated_at: string;
 }
 
 export interface ShellCellCourt {
-  cell_id: string;
-  court_id: string;
+  id: number;
+  cell_id: number;
+  court_id: number;
+  created_at: string;
 }
 
 export interface BailCourt {
-  id: string;
+  id: number;
   name: string;
   triage_time_am: string | null;
   triage_time_pm: string | null;
@@ -86,12 +88,11 @@ export interface BailCourt {
   youth_custody_time: string | null;
   source_updated_at: string | null;
   created_at: string;
-  updated_at: string;
 }
 
 export interface BailTeam {
-  id: string;
-  bail_court_id: string;
+  id: number;
+  bail_court_id: number;
   name: string;
   url: string;
   phone_number: string | null;
@@ -99,31 +100,28 @@ export interface BailTeam {
   conference_id: string | null;
   source_updated_at: string | null;
   created_at: string;
-  updated_at: string;
 }
 
 export interface BailContact {
-  id: string;
-  region_id: string;
+  id: number;
+  region_id: number;
   role: string;
   name: string | null;
   phone: string | null;
   email: string | null;
   created_at: string;
-  updated_at: string;
 }
 
 export interface Program {
-  id: string;
+  id: number;
   name: string;
   location: string | null;
-  region_id: string | null;
+  region_id: number | null;
   type: string | null;
   phone: string | null;
   email: string | null;
   notes: string | null;
   created_at: string;
-  updated_at: string;
 }
 
 // =============================================================================
@@ -131,7 +129,7 @@ export interface Program {
 // =============================================================================
 
 export interface ContactWithRole extends Contact {
-  role: ContactRole;
+  contact_role: ContactRole;
 }
 
 export interface CourtWithRegion extends Court {
