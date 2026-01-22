@@ -2,21 +2,21 @@
 
 import { useState, useCallback } from 'react';
 import { Clipboard, ClipboardCheck, Eye, EyeSlash } from 'react-bootstrap-icons';
-import { cn, textClasses, iconClasses } from '@/lib/config/theme';
+import { 
+  cn, 
+  textClasses, 
+  iconClasses, 
+  cardClasses,
+  couponCardStyles,
+  inlineStyles,
+  getContactCategoryColor,
+  getToggleButtonStyles,
+  getSectionHeaderProps,
+} from '@/lib/config/theme';
+import type { ContactCategory } from '@/lib/config/theme';
 import { formatEmailsForCopy } from '@/lib/utils';
 import { ROLE_DISPLAY_NAMES, COURT_CONTACT_ROLE_IDS, CROWN_CONTACT_ROLE_IDS } from '@/lib/config/constants';
 import type { ContactWithRole } from '@/types';
-
-// Category colors for accent bar
-type ContactCategory = 'court' | 'provincial' | 'supreme' | 'bail' | 'other';
-
-const categoryColors: Record<ContactCategory, string> = {
-  court: '#60a5fa',      // blue
-  provincial: '#34d399', // emerald
-  supreme: '#a78bfa',    // purple
-  bail: '#fbbf24',       // amber
-  other: '#71717a',      // zinc
-};
 
 // Map role IDs to categories
 function getContactCategory(roleId: number): ContactCategory {
@@ -55,30 +55,25 @@ export function ContactCard({ contact, category, onCopy }: ContactCardProps) {
 
   return (
     <div 
-      className="flex items-stretch rounded-lg overflow-hidden cursor-pointer transition-all hover:border-blue-500/40"
-      style={{ 
-        background: 'rgba(59,130,246,0.03)',
-        border: '1px dashed rgba(59,130,246,0.25)',
-      }}
+      className={cardClasses.coupon}
+      style={couponCardStyles.container}
       onClick={handleCopy}
     >
       {/* Color accent bar */}
       <div 
         className="w-1 shrink-0"
-        style={{ background: categoryColors[contactCategory] }}
+        style={{ background: getContactCategoryColor(contactCategory) }}
       />
       
       {/* Content */}
       <div className="flex-1 py-2.5 px-3 min-w-0 overflow-hidden">
         <div 
-          className="text-[9px] text-slate-400 uppercase mb-1 font-mono"
-          style={{ letterSpacing: '1px' }}
+          className={textClasses.roleLabel}
+          style={inlineStyles.letterSpacing.wide}
         >
           {roleDisplayName}
         </div>
-        <div 
-          className="text-[12px] text-slate-200 font-mono leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis"
-        >
+        <div className="text-[12px] text-slate-200 font-mono leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
           {emails.join(', ')}
         </div>
       </div>
@@ -87,7 +82,7 @@ export function ContactCard({ contact, category, onCopy }: ContactCardProps) {
       <div 
         className="flex items-center justify-center px-3 shrink-0 transition-colors"
         style={{ 
-          borderLeft: '1px dashed rgba(59,130,246,0.25)',
+          ...couponCardStyles.divider,
           color: copied ? '#34d399' : '#52525b',
         }}
       >
@@ -113,24 +108,18 @@ function SectionHeader({
   onToggle: () => void;
   showToggle: boolean;
 }) {
+  const headerProps = getSectionHeaderProps();
+  
   return (
     <div className="flex items-center justify-between mb-2 px-1">
-      <h4 
-        className={textClasses.sectionHeader}
-        style={{ fontFamily: 'Inter, sans-serif', letterSpacing: '1px' }}
-      >
+      <h4 {...headerProps}>
         {title}
       </h4>
       {showToggle && (
         <button
           onClick={onToggle}
           className="flex items-center gap-1.5 px-2 py-1 rounded text-xs tracking-wide transition-all"
-          style={{ 
-            fontFamily: 'Inter, sans-serif',
-            background: showFull ? 'rgba(59,130,246,0.15)' : 'transparent',
-            border: `1px solid ${showFull ? 'rgba(59,130,246,0.4)' : 'rgba(51,65,85,0.5)'}`,
-            color: showFull ? '#60a5fa' : '#71717a',
-          }}
+          style={getToggleButtonStyles(showFull)}
         >
           {showFull ? (
             <EyeSlash className={iconClasses.xs} />

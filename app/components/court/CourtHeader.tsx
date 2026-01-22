@@ -1,7 +1,7 @@
 'use client';
 
 import { GeoAlt } from 'react-bootstrap-icons';
-import { cn } from '@/lib/utils';
+import { cn, inlineStyles } from '@/lib/config/theme';
 import { Tag } from '../ui/Tag';
 import { openInMaps } from '@/lib/utils';
 import type { Court } from '@/types';
@@ -60,7 +60,7 @@ export function CourtHeader({ court, collapsed = false, className }: CourtHeader
         {court.region_code && (
           <span 
             className="px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1.5 uppercase bg-slate-800/50 border border-slate-700/50 text-slate-400"
-            style={{ letterSpacing: '2px' }}
+            style={inlineStyles.letterSpacing.wider}
           >
             <span>{court.region_code}</span>
             <span className="text-slate-600">|</span>
