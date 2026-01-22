@@ -593,18 +593,15 @@ export default function Home() {
                       {/* Schedule Section */}
                       {(detailBailCourt.triage_time_am || detailBailCourt.triage_time_pm || detailBailCourt.court_start_am || detailBailCourt.cutoff_new_arrests) && (
                         <div className="space-y-1.5">
-                          <h4 className="text-xs text-slate-500 uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>Schedule</h4>
+                          <h4 className="text-xs text-slate-500 uppercase tracking-wide px-1" style={{ fontFamily: 'Inter, sans-serif' }}>Schedule</h4>
                           
-                          {/* Vertical List */}
-                          <div 
-                            className="rounded-lg overflow-hidden divide-y divide-slate-700"
-                            style={{ background: theme.colors.bg.item, border: `1px solid ${theme.colors.border.subtle}` }}
-                          >
+                          {/* Vertical List - Sheriff Cells style */}
+                          <div className="bg-slate-800/30 rounded-lg border border-slate-700/50 overflow-hidden divide-y divide-slate-700/50">
                             {/* Triage */}
                             {(detailBailCourt.triage_time_am || detailBailCourt.triage_time_pm) && (
-                              <div className="flex justify-between px-3 py-2.5">
-                                <span className="text-slate-400 text-xs">Triage</span>
-                                <span className="text-slate-200 text-xs font-mono">
+                              <div className="flex justify-between px-4 py-2.5">
+                                <span className="text-slate-300 text-xs font-mono font-semibold uppercase">Triage</span>
+                                <span className="text-slate-400 text-xs font-mono">
                                   {[detailBailCourt.triage_time_am, detailBailCourt.triage_time_pm].filter(Boolean).join(' / ')}
                                 </span>
                               </div>
@@ -612,9 +609,9 @@ export default function Home() {
 
                             {/* Court */}
                             {(detailBailCourt.court_start_am || detailBailCourt.court_start_pm) && (
-                              <div className="flex justify-between px-3 py-2.5">
-                                <span className="text-slate-400 text-xs">Court</span>
-                                <span className="text-slate-200 text-xs font-mono">
+                              <div className="flex justify-between px-4 py-2.5">
+                                <span className="text-slate-300 text-xs font-mono font-semibold uppercase">Court</span>
+                                <span className="text-slate-400 text-xs font-mono">
                                   {[detailBailCourt.court_start_am, detailBailCourt.court_start_pm].filter(Boolean).join(' / ')}
                                 </span>
                               </div>
@@ -622,17 +619,17 @@ export default function Home() {
 
                             {/* Cutoff */}
                             {detailBailCourt.cutoff_new_arrests && (
-                              <div className="flex justify-between px-3 py-2.5">
-                                <span className="text-slate-400 text-xs">Cutoff</span>
-                                <span className="text-slate-200 text-xs font-mono">{detailBailCourt.cutoff_new_arrests}</span>
+                              <div className="flex justify-between px-4 py-2.5">
+                                <span className="text-slate-300 text-xs font-mono font-semibold uppercase">Cutoff</span>
+                                <span className="text-slate-400 text-xs font-mono">{detailBailCourt.cutoff_new_arrests}</span>
                               </div>
                             )}
 
                             {/* Youth In-Custody - from database */}
                             {detailBailCourt.youth_custody_day && detailBailCourt.youth_custody_time && (
-                              <div className="flex justify-between px-3 py-2.5">
-                                <span className="text-amber-400 text-xs">Youth</span>
-                                <span className="text-slate-200 text-xs font-mono">{detailBailCourt.youth_custody_day} {detailBailCourt.youth_custody_time}</span>
+                              <div className="flex justify-between px-4 py-2.5">
+                                <span className="text-amber-400 text-xs font-mono font-semibold uppercase">Youth</span>
+                                <span className="text-slate-400 text-xs font-mono">{detailBailCourt.youth_custody_day} {detailBailCourt.youth_custody_time}</span>
                               </div>
                             )}
                           </div>
