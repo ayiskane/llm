@@ -1,5 +1,85 @@
 # Efficient Search Implementation Guide
 
+## ✅ IMPLEMENTED: Contextual Search System
+
+I've created a **contextual search system** that understands relationships between entities. When you search "north van", it returns:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ 🏛️ North Vancouver                    [COURT]           │
+│    R2 • Vancouver Coastal                               │
+│    ─────────────────────────────────────────────────── │
+│    👤 5 contacts  (Crown, JCM, Registry, Fed Crown)     │
+│    📞 3 cells     (North Van RCMP, West Van PD, ...)    │
+│    🔗 4 Teams links                                     │
+│    ⚖️ Bail hub   (Vancouver Coastal Virtual Bail)       │
+│    📋 2 programs                                        │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Files Created
+
+| File | Purpose |
+|------|---------|
+| `lib/search/contextualSearch.ts` | Core search engine with alias expansion, fuzzy matching, relationship mapping |
+| `hooks/useContextualSearch.ts` | React hook that loads all data and provides instant search |
+| `app/components/ContextualSearchBar.tsx` | UI component with grouped results |
+
+### How It Works
+
+1. **Alias Expansion**: "north van" → "north vancouver"
+2. **Fuzzy Match**: Finds "North Vancouver" court using Fuse.js
+3. **Relationship Lookup**: Pulls all related entities via Maps:
+   - `courtToContacts` → all contacts for that court
+   - `courtToCells` → all cells serving that court  
+   - `regionToCells` → additional cells in same region
+   - `courtToTeamsLinks` → Teams links for courtrooms
+   - `courtToBailCourt` → bail hub
+   - `regionToBailContacts` → bail contacts for region
+   - `regionToPrograms` → programs in region
+
+### ⚠️ Required: Install Fuse.js
+
+```bash
+cd your-project
+npm install fuse.js
+```
+
+### Usage
+
+```tsx
+import { useContextualSearch } from '@/hooks/useContextualSearch';
+import { ContextualSearchBar } from '@/app/components/ContextualSearchBar';
+
+// Option 1: Use the pre-built component
+<ContextualSearchBar 
+  onSelect={(result) => {
+    console.log(result.primary);     // North Vancouver Court
+    console.log(result.related);     // { contacts, cells, teamsLinks, ... }
+  }}
+/>
+
+// Option 2: Use the hook directly
+const { search, quickSearch, isReady } = useContextualSearch();
+
+const results = search('north van');
+// results[0].primary.item = North Vancouver Court
+// results[0].related.contacts = [Crown, JCM, Registry, ...]
+// results[0].related.cells = [North Van RCMP, ...]
+```
+
+### Supported Aliases
+
+| Canonical | Aliases |
+|-----------|---------|
+| north vancouver | north van, n van, nvan, n. van, nv |
+| abbotsford | abby, abb, abotsford, abbotford |
+| new westminster | new west, newwest, nw |
+| prince george | pg, prg, prince g |
+| ... | (50+ aliases total) |
+
+---
+
 ## Current State Analysis
 
 Your app already has a solid foundation:
