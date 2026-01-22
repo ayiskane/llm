@@ -197,7 +197,7 @@ export function TeamsList({ links, onCopyAll, filterVBTriage = true }: TeamsList
       {/* Header with Last Updated and Eye Toggle */}
       <div className="flex items-center justify-between px-1">
         {displayDate && (
-          <span className="text-xs text-slate-500 uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <span className="text-xs text-slate-500 uppercase" style={{ fontFamily: 'Inter, sans-serif', letterSpacing: '1px' }}>
             Last Updated: {displayDate}
           </span>
         )}
