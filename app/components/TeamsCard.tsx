@@ -197,7 +197,7 @@ export function TeamsList({ links, onCopyAll, filterVBTriage = true }: TeamsList
       {/* Header with Last Updated and Eye Toggle */}
       <div className="flex items-center justify-between px-1">
         {displayDate && (
-          <span className="text-xs text-slate-500 tracking-wide">
+          <span className="text-xs text-slate-500 uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>
             Last Updated: {displayDate}
           </span>
         )}
@@ -205,6 +205,7 @@ export function TeamsList({ links, onCopyAll, filterVBTriage = true }: TeamsList
           <button
             onClick={() => setShowDialIn(!showDialIn)}
             className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+            style={{ fontFamily: 'Inter, sans-serif' }}
           >
             {showDialIn ? (
               <>
