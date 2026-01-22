@@ -62,7 +62,7 @@ export function ContactCard({ contact, onCopy, isCopied }: ContactCardProps) {
           {/* Phone */}
           {contact.phone && (
             <button
-              onClick={() => makeCall(contact.phone!)}
+              onClick={() => makeCall(contact.phone)}
               className={cn(textClasses.link, 'text-sm mt-1 flex items-center gap-1')}
             >
               <Telephone className={iconClasses.xs} />
@@ -141,4 +141,5 @@ export function ContactStack({ contacts, category, onCopy, isCopied }: ContactSt
     </div>
   );
 }
+
 

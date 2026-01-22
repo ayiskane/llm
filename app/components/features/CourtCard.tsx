@@ -3,6 +3,7 @@
 import { GeoAlt, ChevronRight } from 'react-bootstrap-icons';
 import { Card } from '@/app/components/ui/Card';
 import { cn, iconClasses } from '@/lib/config/theme';
+import { openInMaps } from '@/lib/utils';
 import type { Court, CourtWithRegion } from '@/types';
 
 interface CourtCardProps {
@@ -106,10 +107,7 @@ export function CourtHeader({ court }: CourtHeaderProps) {
       
       {court.address && (
         <button
-          onClick={() => {
-            const encoded = encodeURIComponent(court.address!);
-            window.open(`https://maps.google.com/maps?q=${encoded}`, '_blank');
-          }}
+          onClick={() => openInMaps(court.address)}
           className="flex items-start gap-1 text-left group"
         >
           <GeoAlt className={cn(iconClasses.sm, 'text-slate-500 mt-0.5 shrink-0 group-hover:text-blue-400 transition-colors')} />
@@ -141,3 +139,4 @@ export function CourtHeader({ court }: CourtHeaderProps) {
     </div>
   );
 }
+

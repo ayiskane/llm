@@ -1,11 +1,16 @@
 // =============================================================================
 // UTILITY FUNCTIONS
 // =============================================================================
+// All functions are defensive - they accept null/undefined and handle gracefully
+// =============================================================================
 
 /**
  * Format phone number for display
+ * Returns empty string if phone is null/undefined
  */
-export function formatPhone(phone: string): string {
+export function formatPhone(phone: string | null | undefined): string {
+  if (!phone) return '';
+  
   // Remove all non-digits
   const digits = phone.replace(/\D/g, '');
   
@@ -21,15 +26,18 @@ export function formatPhone(phone: string): string {
 
 /**
  * Format phone number for tel: link
+ * Returns empty string if phone is null/undefined
  */
-export function formatPhoneForCall(phone: string): string {
+export function formatPhoneForCall(phone: string | null | undefined): string {
+  if (!phone) return '';
   return phone.replace(/\D/g, '');
 }
 
 /**
  * Format date for display
+ * Returns empty string if date is null/undefined
  */
-export function formatDate(date: string | Date | null): string {
+export function formatDate(date: string | Date | null | undefined): string {
   if (!date) return '';
   
   const d = new Date(date);
@@ -49,8 +57,11 @@ export function formatEmailsForCopy(emails: string[]): string {
 
 /**
  * Open address in maps app
+ * No-op if address is null/undefined
  */
-export function openInMaps(address: string): void {
+export function openInMaps(address: string | null | undefined): void {
+  if (!address) return;
+  
   const encoded = encodeURIComponent(address);
   // Try Apple Maps on iOS, Google Maps elsewhere
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -62,38 +73,49 @@ export function openInMaps(address: string): void {
 
 /**
  * Make a phone call
+ * No-op if phone is null/undefined
  */
-export function makeCall(phone: string): void {
+export function makeCall(phone: string | null | undefined): void {
+  if (!phone) return;
   window.open(`tel:${formatPhoneForCall(phone)}`, '_self');
 }
 
 /**
  * Send an email
+ * No-op if email is null/undefined/empty
  */
-export function sendEmail(email: string | string[]): void {
+export function sendEmail(email: string | string[] | null | undefined): void {
+  if (!email) return;
   const emailStr = Array.isArray(email) ? email.join(',') : email;
+  if (!emailStr) return;
   window.open(`mailto:${emailStr}`, '_self');
 }
 
 /**
  * Join MS Teams meeting
+ * No-op if url is null/undefined
  */
-export function joinTeamsMeeting(url: string): void {
+export function joinTeamsMeeting(url: string | null | undefined): void {
+  if (!url) return;
   window.open(url, '_blank');
 }
 
 /**
  * Truncate text with ellipsis
+ * Returns empty string if text is null/undefined
  */
-export function truncate(text: string, maxLength: number): string {
+export function truncate(text: string | null | undefined, maxLength: number): string {
+  if (!text) return '';
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength - 3) + '...';
 }
 
 /**
  * Get initials from name
+ * Returns empty string if name is null/undefined
  */
-export function getInitials(name: string): string {
+export function getInitials(name: string | null | undefined): string {
+  if (!name) return '';
   return name
     .split(' ')
     .map(word => word[0])

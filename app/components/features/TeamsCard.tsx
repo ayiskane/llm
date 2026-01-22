@@ -28,13 +28,15 @@ export function TeamsCard({ link, showDialIn = false, onCopy, isCopied }: TeamsC
             {displayName}
           </span>
         </div>
-        <Button
-          variant="join"
-          size="sm"
-          onClick={() => joinTeamsMeeting(link.teams_link)}
-        >
-          Join
-        </Button>
+        {link.teams_link && (
+          <Button
+            variant="join"
+            size="sm"
+            onClick={() => joinTeamsMeeting(link.teams_link)}
+          >
+            Join
+          </Button>
+        )}
       </div>
       
       {/* Dial-in info (collapsed by default) */}
@@ -140,4 +142,5 @@ export function TeamsList({ links, filterVBTriage = false, onCopy, isCopied }: T
     </div>
   );
 }
+
 
