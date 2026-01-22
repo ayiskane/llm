@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Search, X, MapPin, Phone, Users, Gavel, Building2, Scale, ChevronRight } from 'lucide-react';
+import { Search, X, GeoAlt, Telephone, People, Building, ChevronRight } from 'react-bootstrap-icons';
 import { useContextualSearch } from '@/hooks/useContextualSearch';
 import type { ContextualResult, QuickSearchResult } from '@/lib/search/contextualSearch';
 
@@ -202,7 +202,7 @@ function ContextualResultCard({ result, isSelected, onClick }: ContextualResultC
           </div>
           {primary.type === 'court' && primary.item.region_name && (
             <div className="text-sm text-white/50 flex items-center gap-1 mt-0.5">
-              <MapPin className="w-3 h-3" />
+              <GeoAlt className="w-3 h-3" />
               {primary.item.region_code} • {primary.item.region_name}
             </div>
           )}
@@ -224,31 +224,31 @@ function ContextualResultCard({ result, isSelected, onClick }: ContextualResultC
       <div className="mt-3 pl-11 flex flex-wrap gap-2">
         {related.contacts.length > 0 && (
           <RelatedBadge 
-            icon={<Users className="w-3 h-3" />}
+            icon={<People className="w-3 h-3" />}
             label={`${related.contacts.length} contacts`}
           />
         )}
         {related.cells.length > 0 && (
           <RelatedBadge 
-            icon={<Phone className="w-3 h-3" />}
+            icon={<Telephone className="w-3 h-3" />}
             label={`${related.cells.length} cells`}
           />
         )}
         {related.teamsLinks.length > 0 && (
           <RelatedBadge 
-            icon={<Building2 className="w-3 h-3" />}
+            icon={<Building className="w-3 h-3" />}
             label={`${related.teamsLinks.length} Teams links`}
           />
         )}
         {related.bailCourt && (
           <RelatedBadge 
-            icon={<Scale className="w-3 h-3" />}
+            icon={<span className="text-xs">⚖️</span>}
             label="Bail hub"
           />
         )}
         {related.programs.length > 0 && (
           <RelatedBadge 
-            icon={<Gavel className="w-3 h-3" />}
+            icon={<Building className="w-3 h-3" />}
             label={`${related.programs.length} programs`}
           />
         )}
@@ -276,15 +276,15 @@ function RelatedBadge({ icon, label }: { icon: React.ReactNode; label: string })
 function getPrimaryIcon(type: string) {
   switch (type) {
     case 'court':
-      return <Gavel className="w-4 h-4 text-blue-400" />;
+      return <span className="text-blue-400">🏛️</span>;
     case 'cell':
-      return <Phone className="w-4 h-4 text-amber-400" />;
+      return <Telephone className="w-4 h-4 text-amber-400" />;
     case 'bail_court':
-      return <Scale className="w-4 h-4 text-purple-400" />;
+      return <span className="text-purple-400">⚖️</span>;
     case 'program':
-      return <Building2 className="w-4 h-4 text-green-400" />;
+      return <Building className="w-4 h-4 text-green-400" />;
     default:
-      return <MapPin className="w-4 h-4 text-white/50" />;
+      return <GeoAlt className="w-4 h-4 text-white/50" />;
   }
 }
 
