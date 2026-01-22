@@ -593,7 +593,7 @@ export default function Home() {
                       {/* Schedule Section */}
                       {(detailBailCourt.triage_time_am || detailBailCourt.triage_time_pm || detailBailCourt.court_start_am || detailBailCourt.cutoff_new_arrests) && (
                         <div className="space-y-1.5">
-                          <h4 className="text-xs text-slate-500 tracking-wide">Schedule</h4>
+                          <h4 className="text-xs text-slate-500 uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>Schedule</h4>
                           
                           {/* Vertical List */}
                           <div 
