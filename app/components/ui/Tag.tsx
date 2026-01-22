@@ -1,7 +1,7 @@
 'use client';
 
-import { cn, sectionColors, getTagStyles } from '@/lib/config/theme';
-import type { SectionColor } from '@/lib/config/theme';
+import { cn } from '@/lib/utils';
+import { sectionColorMap, type SectionColor } from '@/lib/config/theme';
 
 export type TagColor = SectionColor;
 
@@ -17,14 +17,16 @@ export function Tag({ children, color, size = 'sm', className }: TagProps) {
     ? 'px-2 py-1.5 text-[9px]' 
     : 'px-2.5 py-1.5 text-[10px]';
   
+  const colors = sectionColorMap[color];
+  
   return (
     <span 
       className={cn(
         sizeClasses,
-        'rounded font-mono inline-flex items-center justify-center leading-none',
+        'rounded font-mono inline-flex items-center justify-center leading-none tracking-widest',
+        colors.badge,
         className
       )}
-      style={getTagStyles(color)}
     >
       {children}
     </span>
