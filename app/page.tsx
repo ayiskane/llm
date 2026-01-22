@@ -566,51 +566,87 @@ export default function Home() {
                     ref={bailRef}
                     color="teal"
                     title="Virtual Bail"
-                    count=""
+                    count={detailBailCourt.name ? `${detailBailCourt.name.toUpperCase().replace(' VIRTUAL BAIL', '').replace('FRASER', 'ABBY')} HUB` : ''}
                     isExpanded={expandedSection === 'bail'}
                     onToggle={() => toggleSection('bail')}
                   >
                     <div className="p-3 space-y-3">
-                      {/* Bail Hub Name */}
-                      <div className="text-sm font-semibold text-white">
-                        {detailBailCourt.name} Bail Hub
-                      </div>
+                      {/* If bail hub is different court, show link card */}
+                      {detailBailCourt.court_id && detailBailCourt.court_id !== detailCourt.id && (
+                        <button
+                          onClick={() => {
+                            if (detailBailCourt.court_id) {
+                              handleSelectCourt({ id: detailBailCourt.court_id } as Court, 'bail');
+                            }
+                          }}
+                          className="w-full flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-slate-700/50"
+                          style={{ background: theme.colors.bg.item, border: `1px solid ${theme.colors.border.subtle}` }}
+                        >
+                          <Bank2 className="w-4 h-4 text-teal-400" />
+                          <span className="flex-1 text-left text-sm font-medium text-white">
+                            {detailBailCourt.name.replace(' Virtual Bail', '')} Law Courts
+                          </span>
+                          <ChevronRight className="w-4 h-4 text-slate-500" />
+                        </button>
+                      )}
 
-                      {/* Triage Times */}
-                      {(detailBailCourt.triage_time_am || detailBailCourt.triage_time_pm) && (
-                        <div className="space-y-1.5">
-                          <h4 className="text-[9px] font-medium text-slate-400 uppercase tracking-wide">Triage Times</h4>
-                          <div className="space-y-1.5">
-                            {detailBailCourt.triage_time_am && (
-                              <div 
-                                className="flex items-center rounded-lg overflow-hidden"
-                                style={{ background: theme.colors.bg.item, border: `1px solid ${theme.colors.border.subtle}` }}
-                              >
-                                <div 
-                                  className="px-3 py-2 text-xs font-medium uppercase"
-                                  style={{ background: 'rgba(45, 212, 191, 0.1)', color: '#2dd4bf', borderRight: `1px solid ${theme.colors.border.subtle}` }}
-                                >
-                                  AM
-                                </div>
-                                <div className="px-3 py-2 text-sm" style={{ color: theme.colors.text.secondary }}>
-                                  {detailBailCourt.triage_time_am}
+                      {/* Schedule Section */}
+                      {(detailBailCourt.triage_time_am || detailBailCourt.triage_time_pm || detailBailCourt.court_start_am || detailBailCourt.cutoff_new_arrests) && (
+                        <div className="space-y-2">
+                          <h4 className="text-[9px] font-medium text-slate-400 uppercase tracking-wide">Schedule</h4>
+                          
+                          {/* Schedule Table */}
+                          <div 
+                            className="rounded-lg overflow-hidden"
+                            style={{ background: theme.colors.bg.item, border: `1px solid ${theme.colors.border.subtle}` }}
+                          >
+                            {/* Triage Row */}
+                            {(detailBailCourt.triage_time_am || detailBailCourt.triage_time_pm) && (
+                              <div className="flex items-center px-3 py-2" style={{ borderBottom: `1px solid ${theme.colors.border.subtle}` }}>
+                                <span className="text-xs text-slate-400 w-20">Triage</span>
+                                <div className="flex-1 flex items-center gap-4">
+                                  {detailBailCourt.triage_time_am && (
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-medium text-teal-400">AM</span>
+                                      <span className="text-sm text-slate-200">{detailBailCourt.triage_time_am}</span>
+                                    </div>
+                                  )}
+                                  {detailBailCourt.triage_time_pm && (
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-medium text-teal-400">PM</span>
+                                      <span className="text-sm text-slate-200">{detailBailCourt.triage_time_pm}</span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             )}
-                            {detailBailCourt.triage_time_pm && (
-                              <div 
-                                className="flex items-center rounded-lg overflow-hidden"
-                                style={{ background: theme.colors.bg.item, border: `1px solid ${theme.colors.border.subtle}` }}
-                              >
-                                <div 
-                                  className="px-3 py-2 text-xs font-medium uppercase"
-                                  style={{ background: 'rgba(45, 212, 191, 0.1)', color: '#2dd4bf', borderRight: `1px solid ${theme.colors.border.subtle}` }}
-                                >
-                                  PM
+
+                            {/* Court Row */}
+                            {(detailBailCourt.court_start_am || detailBailCourt.court_start_pm) && (
+                              <div className="flex items-center px-3 py-2" style={{ borderBottom: detailBailCourt.cutoff_new_arrests ? `1px solid ${theme.colors.border.subtle}` : 'none' }}>
+                                <span className="text-xs text-slate-400 w-20">Court</span>
+                                <div className="flex-1 flex items-center gap-4">
+                                  {detailBailCourt.court_start_am && (
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-medium text-teal-400">AM</span>
+                                      <span className="text-sm text-slate-200">{detailBailCourt.court_start_am}</span>
+                                    </div>
+                                  )}
+                                  {detailBailCourt.court_start_pm && (
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-medium text-teal-400">PM</span>
+                                      <span className="text-sm text-slate-200">{detailBailCourt.court_start_pm}</span>
+                                    </div>
+                                  )}
                                 </div>
-                                <div className="px-3 py-2 text-sm" style={{ color: theme.colors.text.secondary }}>
-                                  {detailBailCourt.triage_time_pm}
-                                </div>
+                              </div>
+                            )}
+
+                            {/* Arrest Cutoff Row */}
+                            {detailBailCourt.cutoff_new_arrests && (
+                              <div className="flex items-center px-3 py-2">
+                                <span className="text-xs text-slate-400 w-20">Cutoff</span>
+                                <span className="text-sm text-slate-200">{detailBailCourt.cutoff_new_arrests}</span>
                               </div>
                             )}
                           </div>
