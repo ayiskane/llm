@@ -62,16 +62,34 @@ export default function Home() {
     fetchCourtDetails 
   } = useCourtDetails();
 
-  // Scroll handler for collapsing header - called directly via onScroll prop
+  // Track last collapsed state to add hysteresis
+  const lastCollapsedRef = useRef(false);
+
+  // Scroll handler for collapsing header - with hysteresis to prevent flickering
   const handleDetailScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = e.currentTarget.scrollTop;
-    setIsHeaderCollapsed(scrollTop > 60);
+    const wasCollapsed = lastCollapsedRef.current;
+    
+    // Use different thresholds for collapsing vs expanding (hysteresis)
+    // Collapse when scrolling down past 80px, expand when scrolling up past 30px
+    let shouldCollapse = wasCollapsed;
+    if (!wasCollapsed && scrollTop > 80) {
+      shouldCollapse = true;
+    } else if (wasCollapsed && scrollTop < 30) {
+      shouldCollapse = false;
+    }
+    
+    if (shouldCollapse !== wasCollapsed) {
+      lastCollapsedRef.current = shouldCollapse;
+      setIsHeaderCollapsed(shouldCollapse);
+    }
   }, []);
 
   // Reset state on detail view entry
   useEffect(() => {
     if (view === 'detail') {
       setIsHeaderCollapsed(false);
+      lastCollapsedRef.current = false;
       setExpandedSection('contacts');
       // Reset scroll position
       if (detailScrollRef.current) {
