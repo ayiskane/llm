@@ -595,43 +595,48 @@ export default function Home() {
                         <div className="space-y-1.5">
                           <h4 className="text-[9px] font-medium text-slate-400 uppercase tracking-wide">Schedule</h4>
                           
-                          {/* Dense Key-Value Grid */}
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            {/* Triage */}
-                            {(detailBailCourt.triage_time_am || detailBailCourt.triage_time_pm) && (
-                              <div className="px-2 py-1.5 rounded" style={{ background: theme.colors.bg.subtle }}>
-                                <span className="text-slate-500">TRIAGE</span>
-                                <span className="text-slate-200 ml-2">
-                                  {[detailBailCourt.triage_time_am, detailBailCourt.triage_time_pm].filter(Boolean).join(' / ')}
-                                </span>
-                              </div>
-                            )}
+                          {/* Card Container */}
+                          <div 
+                            className="rounded-lg overflow-hidden"
+                            style={{ background: theme.colors.bg.item, border: `1px solid ${theme.colors.border.subtle}` }}
+                          >
+                            <div className="grid grid-cols-2">
+                              {/* Triage */}
+                              {(detailBailCourt.triage_time_am || detailBailCourt.triage_time_pm) && (
+                                <div className="px-3 py-2 font-mono text-xs" style={{ borderRight: `1px solid ${theme.colors.border.subtle}`, borderBottom: `1px solid ${theme.colors.border.subtle}` }}>
+                                  <span className="text-slate-500">Triage</span>
+                                  <span className="text-slate-200 ml-2">
+                                    {[detailBailCourt.triage_time_am, detailBailCourt.triage_time_pm].filter(Boolean).join(' / ')}
+                                  </span>
+                                </div>
+                              )}
 
-                            {/* Court */}
-                            {(detailBailCourt.court_start_am || detailBailCourt.court_start_pm) && (
-                              <div className="px-2 py-1.5 rounded" style={{ background: theme.colors.bg.subtle }}>
-                                <span className="text-slate-500">COURT</span>
-                                <span className="text-slate-200 ml-2">
-                                  {[detailBailCourt.court_start_am, detailBailCourt.court_start_pm].filter(Boolean).join(' / ')}
-                                </span>
-                              </div>
-                            )}
+                              {/* Court */}
+                              {(detailBailCourt.court_start_am || detailBailCourt.court_start_pm) && (
+                                <div className="px-3 py-2 font-mono text-xs" style={{ borderBottom: `1px solid ${theme.colors.border.subtle}` }}>
+                                  <span className="text-slate-500">Court</span>
+                                  <span className="text-slate-200 ml-2">
+                                    {[detailBailCourt.court_start_am, detailBailCourt.court_start_pm].filter(Boolean).join(' / ')}
+                                  </span>
+                                </div>
+                              )}
 
-                            {/* Cutoff */}
-                            {detailBailCourt.cutoff_new_arrests && (
-                              <div className="px-2 py-1.5 rounded" style={{ background: theme.colors.bg.subtle }}>
-                                <span className="text-slate-500">CUTOFF</span>
-                                <span className="text-slate-200 ml-2">{detailBailCourt.cutoff_new_arrests}</span>
-                              </div>
-                            )}
+                              {/* Cutoff */}
+                              {detailBailCourt.cutoff_new_arrests && (
+                                <div className="px-3 py-2 font-mono text-xs" style={{ borderRight: (detailBailCourt.youth_custody_day ? `1px solid ${theme.colors.border.subtle}` : 'none') }}>
+                                  <span className="text-slate-500">Cutoff</span>
+                                  <span className="text-slate-200 ml-2">{detailBailCourt.cutoff_new_arrests}</span>
+                                </div>
+                              )}
 
-                            {/* Youth In-Custody - from database */}
-                            {detailBailCourt.youth_custody_day && detailBailCourt.youth_custody_time && (
-                              <div className="px-2 py-1.5 rounded" style={{ background: 'rgba(251,191,36,0.1)' }}>
-                                <span className="text-amber-400">{detailBailCourt.youth_custody_day.toUpperCase()}</span>
-                                <span className="text-slate-200 ml-2">Youth {detailBailCourt.youth_custody_time}</span>
-                              </div>
-                            )}
+                              {/* Youth In-Custody - from database */}
+                              {detailBailCourt.youth_custody_day && detailBailCourt.youth_custody_time && (
+                                <div className="px-3 py-2 font-mono text-xs">
+                                  <span className="text-amber-400">{detailBailCourt.youth_custody_day}</span>
+                                  <span className="text-slate-200 ml-2">Youth {detailBailCourt.youth_custody_time}</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       )}
