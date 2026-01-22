@@ -40,9 +40,11 @@ export const Section = forwardRef<HTMLDivElement, SectionProps>(
           {/* Title */}
           <span className={section.title}>{title}</span>
           
-          {/* Count badge */}
+          {/* Count badge - styled inline */}
           {count !== undefined && count !== '' && (
-            <span className={cn('badge-section', colors.badge)}>{count}</span>
+            <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-mono', colors.badge)}>
+              {count}
+            </span>
           )}
           
           {/* Chevron */}
