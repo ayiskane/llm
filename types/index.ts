@@ -1,8 +1,6 @@
 // ============================================================================
 // LLM: LEGAL LEGENDS MANUAL - TYPE DEFINITIONS
 // ============================================================================
-// Types that match the Supabase database schema
-// ============================================================================
 
 // ============================================================================
 // COURT
@@ -29,6 +27,11 @@ export interface Court {
   bail_hub_id: number | null;
 }
 
+// Court with joined region data
+export interface CourtWithRegion extends Court {
+  region?: Region;
+}
+
 // ============================================================================
 // CONTACT
 // ============================================================================
@@ -45,6 +48,11 @@ export interface Contact {
 export interface ContactRole {
   id: number;
   name: string;
+}
+
+// Contact with joined role data
+export interface ContactWithRole extends Contact {
+  contact_role?: ContactRole;
 }
 
 // ============================================================================
@@ -96,8 +104,11 @@ export interface BailCourt {
   triage_time_pm: string | null;
   court_start_am: string | null;
   court_start_pm: string | null;
+  court_time_am?: string | null;  // Alias for court_start_am
+  court_time_pm?: string | null;  // Alias for court_start_pm
   court_end: string | null;
   cutoff_new_arrests: string | null;
+  arrest_cutoff?: string | null;  // Alias for cutoff_new_arrests
   youth_custody_day: string | null;
   youth_custody_time: string | null;
 }
@@ -111,6 +122,18 @@ export interface BailContact {
   availability_id: number | null;
   role_name?: string;
   availability_name?: string;
+}
+
+// BailTeam - for bail_teams table (links to MS Teams)
+export interface BailTeam {
+  id: number;
+  name: string | null;
+  bail_court_id: number;
+  teams_link: string | null;
+  conference_id: string | null;
+  phone: string | null;
+  phone_toll_free: string | null;
+  courtroom?: string | null;
 }
 
 // ============================================================================
@@ -153,7 +176,22 @@ export interface Program {
 }
 
 // ============================================================================
-// VIEW MODES
+// COMBINED QUERY RESULT
+// ============================================================================
+
+export interface CourtDetails {
+  court: CourtWithRegion;
+  contacts: ContactWithRole[];
+  cells: ShellCell[];
+  teamsLinks: TeamsLink[];
+  bailCourt: BailCourt | null;
+  bailTeams: BailTeam[];
+  bailContacts: BailContact[];
+  programs: Program[];
+}
+
+// ============================================================================
+// VIEW MODE
 // ============================================================================
 
 export type ViewMode = 'home' | 'results' | 'detail';
@@ -198,23 +236,6 @@ export const CONTACT_ROLE_NAMES: Record<number, string> = {
   23: 'First Nations Crown',
 };
 
-// Court contact roles (displayed in "Court Contacts" section)
-export const COURT_CONTACT_ROLE_IDS = [
-  CONTACT_ROLES.CRIMINAL_REGISTRY,
-  CONTACT_ROLES.JCM,
-  CONTACT_ROLES.BAIL_JCM,
-  CONTACT_ROLES.SCHEDULING,
-  CONTACT_ROLES.INTERPRETER,
-  CONTACT_ROLES.LABC_NAVIGATOR,
-];
-
-// Crown contact roles (displayed in "Crown Contacts" section)
-export const CROWN_CONTACT_ROLE_IDS = [
-  CONTACT_ROLES.CROWN,
-  CONTACT_ROLES.FEDERAL_CROWN,
-  CONTACT_ROLES.FIRST_NATIONS_CROWN,
-];
-
 // ============================================================================
 // REGION CONSTANTS
 // ============================================================================
@@ -236,36 +257,3 @@ export const REGION_NAMES: Record<number, string> = {
   5: 'Northern',
   6: 'Federal',
 };
-
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
-/**
- * Check if a teams link is a VB Triage link
- */
-export function isVBTriageLink(link: TeamsLink): boolean {
-  const name = (link.name || link.courtroom || '').toLowerCase();
-  return name.includes('triage') || name.includes('vb triage');
-}
-
-/**
- * Get display name for a contact role
- */
-export function getContactRoleName(roleId: number): string {
-  return CONTACT_ROLE_NAMES[roleId] || 'Contact';
-}
-
-/**
- * Get region code from ID
- */
-export function getRegionCode(regionId: number): string {
-  return REGION_CODES[regionId] || '';
-}
-
-/**
- * Get region name from ID
- */
-export function getRegionName(regionId: number): string {
-  return REGION_NAMES[regionId] || '';
-}

@@ -37,8 +37,96 @@ export const CACHE_CONFIG = {
   GC_TIME_MS: 30 * 60 * 1000,    // 30 minutes
 } as const;
 
-// Alias for backwards compatibility
-export const UI = UI_CONFIG;
+// ============================================================================
+// CONTACT ROLE IDS (references to contact_roles table in Supabase)
+// ============================================================================
+
+export const CONTACT_ROLES = {
+  CROWN: 1,
+  JCM: 2,
+  SHERIFF_QB: 3,
+  REGISTRY_QB: 4,
+  LABC_NAVIGATOR: 5,
+  FEDERAL_CROWN: 6,
+  SCHEDULING: 8,
+  COURT_REGISTRY: 9,
+  CRIMINAL_REGISTRY: 10,
+  INTERPRETER: 11,
+  BAIL_CROWN: 12,
+  BAIL_JCM: 13,
+  TRANSCRIPTS: 14,
+  COORDINATOR: 21,
+  FIRST_NATIONS_CROWN: 23,
+} as const;
+
+// Contact role display names
+export const ROLE_DISPLAY_NAMES: Record<number, string> = {
+  [CONTACT_ROLES.CROWN]: 'Crown',
+  [CONTACT_ROLES.JCM]: 'JCM',
+  [CONTACT_ROLES.SHERIFF_QB]: 'Sheriff QB',
+  [CONTACT_ROLES.REGISTRY_QB]: 'Registry QB',
+  [CONTACT_ROLES.LABC_NAVIGATOR]: 'LABC Navigator',
+  [CONTACT_ROLES.FEDERAL_CROWN]: 'Federal Crown',
+  [CONTACT_ROLES.SCHEDULING]: 'SC Scheduling',
+  [CONTACT_ROLES.COURT_REGISTRY]: 'Court Registry',
+  [CONTACT_ROLES.CRIMINAL_REGISTRY]: 'Criminal Registry',
+  [CONTACT_ROLES.INTERPRETER]: 'Interpreter Request',
+  [CONTACT_ROLES.BAIL_CROWN]: 'Bail Crown',
+  [CONTACT_ROLES.BAIL_JCM]: 'Bail JCM',
+  [CONTACT_ROLES.TRANSCRIPTS]: 'Transcripts',
+  [CONTACT_ROLES.COORDINATOR]: 'Coordinator',
+  [CONTACT_ROLES.FIRST_NATIONS_CROWN]: 'First Nations Crown',
+};
+
+// Group contacts into categories for UI display
+export const COURT_CONTACT_ROLE_IDS = [
+  CONTACT_ROLES.CRIMINAL_REGISTRY,
+  CONTACT_ROLES.JCM,
+  CONTACT_ROLES.BAIL_JCM,
+  CONTACT_ROLES.SCHEDULING,
+  CONTACT_ROLES.INTERPRETER,
+  CONTACT_ROLES.LABC_NAVIGATOR,
+];
+
+export const CROWN_CONTACT_ROLE_IDS = [
+  CONTACT_ROLES.CROWN,
+  CONTACT_ROLES.FEDERAL_CROWN,
+  CONTACT_ROLES.FIRST_NATIONS_CROWN,
+];
+
+// ============================================================================
+// BAIL HELPERS
+// ============================================================================
+
+/**
+ * Check if a teams link name indicates VB Triage
+ */
+export function isVBTriageLink(name: string | null | undefined): boolean {
+  if (!name) return false;
+  const lower = name.toLowerCase();
+  return lower.includes('triage') || lower.includes('vb triage');
+}
+
+/**
+ * Get display tag for bail hub
+ */
+export function getBailHubTag(bailCourtName: string | null | undefined): string {
+  if (!bailCourtName) return 'Virtual Bail';
+  return bailCourtName;
+}
+
+/**
+ * Format courtroom number for display
+ * "CR 101" -> "101", "Courtroom 5" -> "5"
+ */
+export function formatCourtRoom(courtroom: string | null | undefined): string {
+  if (!courtroom) return '';
+  // Remove common prefixes
+  return courtroom
+    .replace(/^(CR|Courtroom|Room)\s*/i, '')
+    .replace(/^0+/, '') // Remove leading zeros
+    .trim();
+}
 
 // ============================================================================
 // LOCATION ALIASES (for future fuzzy search)
@@ -74,24 +162,3 @@ export const LOCATION_ALIASES: Record<string, string[]> = {
   'quesnel': ['ques'],
   'williams lake': ['williams', 'wl'],
 };
-
-// ============================================================================
-// BAIL HELPERS
-// ============================================================================
-
-/**
- * Check if a teams link name indicates VB Triage
- */
-export function isVBTriageLink(name: string | null | undefined): boolean {
-  if (!name) return false;
-  const lower = name.toLowerCase();
-  return lower.includes('triage') || lower.includes('vb triage');
-}
-
-/**
- * Get display tag for bail hub
- */
-export function getBailHubTag(bailCourtName: string | null | undefined): string {
-  if (!bailCourtName) return 'Virtual Bail';
-  return bailCourtName;
-}

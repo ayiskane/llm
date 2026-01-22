@@ -302,6 +302,53 @@ export const sectionColors: Record<SectionColor, { dot: string; bg: string; bord
 };
 
 // ============================================================================
+// ACCORDION COLORS (for collapsible sections)
+// ============================================================================
+
+export const accordionColors = {
+  slate: {
+    dot: 'bg-slate-400',
+    border: 'border-slate-500/30',
+    hover: 'hover:bg-slate-800/50',
+  },
+  emerald: {
+    dot: 'bg-emerald-400',
+    border: 'border-emerald-500/30',
+    hover: 'hover:bg-emerald-900/20',
+  },
+  blue: {
+    dot: 'bg-blue-400',
+    border: 'border-blue-500/30',
+    hover: 'hover:bg-blue-900/20',
+  },
+  amber: {
+    dot: 'bg-amber-400',
+    border: 'border-amber-500/30',
+    hover: 'hover:bg-amber-900/20',
+  },
+  cyan: {
+    dot: 'bg-cyan-400',
+    border: 'border-cyan-500/30',
+    hover: 'hover:bg-cyan-900/20',
+  },
+  indigo: {
+    dot: 'bg-indigo-400',
+    border: 'border-indigo-500/30',
+    hover: 'hover:bg-indigo-900/20',
+  },
+  purple: {
+    dot: 'bg-purple-400',
+    border: 'border-purple-500/30',
+    hover: 'hover:bg-purple-900/20',
+  },
+  teal: {
+    dot: 'bg-teal-400',
+    border: 'border-teal-500/30',
+    hover: 'hover:bg-teal-900/20',
+  },
+} as const;
+
+// ============================================================================
 // BAIL REGION COLORS
 // ============================================================================
 
@@ -404,3 +451,4 @@ export const breakpoints = {
 // Type exports
 export type ThemeColors = typeof theme.colors;
 export type CategoryColor = keyof typeof theme.colors.category;
+
