@@ -444,68 +444,84 @@ export default function Home() {
 
               {/* Title Block - with smooth transition */}
               <div 
-                className="px-4 transition-all duration-300 ease-out"
+                className="px-4 overflow-hidden"
                 style={{ borderBottom: `1px solid ${theme.colors.border.subtle}` }}
               >
-                {isHeaderCollapsed ? (
-                  /* Collapsed: Name + Tags + Address Icon in one row */
-                  <div className="flex items-center gap-2 pb-2">
-                    <h1 className="text-sm font-semibold text-white flex-1">
-                      {getCourtDisplayName(detailCourt)}
-                    </h1>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      {detailCourt.has_provincial && <Tag color="emerald">PC</Tag>}
-                      {detailCourt.has_supreme && <Tag color="purple">SC</Tag>}
-                      {detailCourt.is_circuit && <Tag color="amber">CIR</Tag>}
-                    </div>
-                    {detailCourt.address && (
-                      <button 
-                        onClick={() => handleOpenMap(detailCourt.address!)}
-                        className="p-1.5 rounded-md transition-colors flex-shrink-0"
-                        style={{ background: theme.colors.bg.item }}
-                      >
-                        <GeoAlt className="w-4 h-4 text-blue-400" />
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  /* Expanded: Full layout */
-                  <div className="pb-3">
-                    <h1 className="text-lg font-semibold text-white">
-                      {getCourtDisplayName(detailCourt)}
-                    </h1>
-                    {detailCourt.address && (
-                      <button 
-                        onClick={() => handleOpenMap(detailCourt.address!)}
-                        className="flex items-center gap-1 text-xs mt-1 hover:text-blue-400 transition-colors"
-                        style={{ color: theme.colors.text.subtle }}
-                      >
-                        <GeoAlt className="w-3 h-3" />
-                        <span>{detailCourt.address}</span>
-                      </button>
-                    )}
-                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                      {detailCourt.region_code && (
-                        <span 
-                          className="px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase"
-                          style={{ 
-                            background: 'rgba(255,255,255,0.05)', 
-                            border: `1px solid ${theme.colors.border.primary}`,
-                            color: theme.colors.text.muted,
-                            letterSpacing: '2px'
-                          }}
+                <AnimatePresence mode="wait">
+                  {isHeaderCollapsed ? (
+                    /* Collapsed: Name + Tags + Address Icon in one row */
+                    <motion.div 
+                      key="collapsed"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2, ease: 'easeOut' }}
+                      className="flex items-center gap-2 py-2"
+                    >
+                      <h1 className="text-sm font-semibold text-white flex-1">
+                        {getCourtDisplayName(detailCourt)}
+                      </h1>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {detailCourt.has_provincial && <Tag color="emerald">PC</Tag>}
+                        {detailCourt.has_supreme && <Tag color="purple">SC</Tag>}
+                        {detailCourt.is_circuit && <Tag color="amber">CIR</Tag>}
+                      </div>
+                      {detailCourt.address && (
+                        <button 
+                          onClick={() => handleOpenMap(detailCourt.address!)}
+                          className="p-1.5 rounded-md transition-colors flex-shrink-0"
+                          style={{ background: theme.colors.bg.item }}
                         >
-                          <span>{detailCourt.region_code}</span>
-                          <span style={{ color: theme.colors.text.disabled }}>|</span>
-                          <span>{detailCourt.region_name}</span>
-                        </span>
+                          <GeoAlt className="w-4 h-4 text-blue-400" />
+                        </button>
                       )}
-                      {detailCourt.has_provincial && <Tag color="emerald">PROVINCIAL</Tag>}
-                      {detailCourt.has_supreme && <Tag color="purple">SUPREME</Tag>}
-                      {detailCourt.is_circuit && <Tag color="amber">CIRCUIT</Tag>}
-                    </div>
-                  </div>
-                )}
+                    </motion.div>
+                  ) : (
+                    /* Expanded: Full layout */
+                    <motion.div 
+                      key="expanded"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2, ease: 'easeOut' }}
+                      className="py-3"
+                    >
+                      <h1 className="text-lg font-semibold text-white">
+                        {getCourtDisplayName(detailCourt)}
+                      </h1>
+                      {detailCourt.address && (
+                        <button 
+                          onClick={() => handleOpenMap(detailCourt.address!)}
+                          className="flex items-center gap-1 text-xs mt-1 hover:text-blue-400 transition-colors"
+                          style={{ color: theme.colors.text.subtle }}
+                        >
+                          <GeoAlt className="w-3 h-3" />
+                          <span>{detailCourt.address}</span>
+                        </button>
+                      )}
+                      <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                        {detailCourt.region_code && (
+                          <span 
+                            className="px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase"
+                            style={{ 
+                              background: 'rgba(255,255,255,0.05)', 
+                              border: `1px solid ${theme.colors.border.primary}`,
+                              color: theme.colors.text.muted,
+                              letterSpacing: '2px'
+                            }}
+                          >
+                            <span>{detailCourt.region_code}</span>
+                            <span style={{ color: theme.colors.text.disabled }}>|</span>
+                            <span>{detailCourt.region_name}</span>
+                          </span>
+                        )}
+                        {detailCourt.has_provincial && <Tag color="emerald">PROVINCIAL</Tag>}
+                        {detailCourt.has_supreme && <Tag color="purple">SUPREME</Tag>}
+                        {detailCourt.is_circuit && <Tag color="amber">CIRCUIT</Tag>}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Quick Nav */}
@@ -600,7 +616,7 @@ export default function Home() {
                             {/* Triage */}
                             {(detailBailCourt.triage_time_am || detailBailCourt.triage_time_pm) && (
                               <div className="flex justify-between px-4 py-2.5">
-                                <span className="text-slate-300 text-xs font-mono font-semibold uppercase">Triage</span>
+                                <span className="text-slate-300 text-xs font-mono font-semibold uppercase" style={{ letterSpacing: '1px' }}>Triage</span>
                                 <span className="text-slate-400 text-xs font-mono">
                                   {[detailBailCourt.triage_time_am, detailBailCourt.triage_time_pm].filter(Boolean).join(' / ')}
                                 </span>
@@ -610,7 +626,7 @@ export default function Home() {
                             {/* Court */}
                             {(detailBailCourt.court_start_am || detailBailCourt.court_start_pm) && (
                               <div className="flex justify-between px-4 py-2.5">
-                                <span className="text-slate-300 text-xs font-mono font-semibold uppercase">Court</span>
+                                <span className="text-slate-300 text-xs font-mono font-semibold uppercase" style={{ letterSpacing: '1px' }}>Court</span>
                                 <span className="text-slate-400 text-xs font-mono">
                                   {[detailBailCourt.court_start_am, detailBailCourt.court_start_pm].filter(Boolean).join(' / ')}
                                 </span>
@@ -620,7 +636,7 @@ export default function Home() {
                             {/* Cutoff */}
                             {detailBailCourt.cutoff_new_arrests && (
                               <div className="flex justify-between px-4 py-2.5">
-                                <span className="text-slate-300 text-xs font-mono font-semibold uppercase">Cutoff</span>
+                                <span className="text-slate-300 text-xs font-mono font-semibold uppercase" style={{ letterSpacing: '1px' }}>Cutoff</span>
                                 <span className="text-slate-400 text-xs font-mono">{detailBailCourt.cutoff_new_arrests}</span>
                               </div>
                             )}
@@ -628,7 +644,7 @@ export default function Home() {
                             {/* Youth In-Custody - from database */}
                             {detailBailCourt.youth_custody_day && detailBailCourt.youth_custody_time && (
                               <div className="flex justify-between px-4 py-2.5">
-                                <span className="text-amber-400 text-xs font-mono font-semibold uppercase">Youth</span>
+                                <span className="text-amber-400 text-xs font-mono font-semibold uppercase" style={{ letterSpacing: '1px' }}>Youth</span>
                                 <span className="text-slate-400 text-xs font-mono">{detailBailCourt.youth_custody_day} {detailBailCourt.youth_custody_time}</span>
                               </div>
                             )}
