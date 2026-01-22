@@ -13,15 +13,14 @@ import {
   getBailHubTag 
 } from '@/app/components/features';
 import { useSearch, useCourtDetails, useCopyToClipboard, useScrollHeader } from '@/lib/hooks';
-import { APP_NAME } from '@/lib/config/constants';
-import { isVBTriageLink } from '@/lib/config/constants';
+import { APP_NAME, isVBTriageLink, COURT_CONTACT_ROLE_IDS, CROWN_CONTACT_ROLE_IDS } from '@/lib/config/constants';
 import { cn } from '@/lib/config/theme';
 import type { Court, ViewMode } from '@/types';
 
 export default function Home() {
   // View state
   const [viewMode, setViewMode] = useState<ViewMode>('home');
-  const [selectedCourtId, setSelectedCourtId] = useState<string | null>(null);
+  const [selectedCourtId, setSelectedCourtId] = useState<number | null>(null);
   
   // Hooks
   const { query, results, search, clearSearch, hasResults, isLoadingIndex } = useSearch();
@@ -143,9 +142,13 @@ export default function Home() {
   if (viewMode === 'detail' && courtDetails) {
     const { court, contacts, cells, teamsLinks, bailCourt, bailTeams } = courtDetails;
     
-    // Filter contacts by category
-    const courtContacts = contacts.filter(c => c.role?.category === 'court');
-    const crownContacts = contacts.filter(c => c.role?.category === 'crown');
+    // Filter contacts by category using the helper functions
+    const courtContacts = contacts.filter(c => 
+      COURT_CONTACT_ROLE_IDS.includes(c.contact_role_id)
+    );
+    const crownContacts = contacts.filter(c => 
+      CROWN_CONTACT_ROLE_IDS.includes(c.contact_role_id)
+    );
     
     // Filter out VB Triage from main teams list (shown in bail section)
     const filteredTeams = teamsLinks.filter(t => !isVBTriageLink(t.name));
