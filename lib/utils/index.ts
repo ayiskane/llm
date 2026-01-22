@@ -1,8 +1,18 @@
 // =============================================================================
 // UTILITY FUNCTIONS
 // =============================================================================
-// All functions are defensive - they accept null/undefined and handle gracefully
+// Combines shadcn cn() with app-specific utilities
 // =============================================================================
+
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+/**
+ * Merge class names with tailwind-merge (shadcn pattern)
+ */
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
 
 /**
  * Format phone number for display
@@ -186,3 +196,4 @@ export function uniqueBy<T>(array: T[], key: keyof T): T[] {
 export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
