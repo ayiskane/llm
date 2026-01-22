@@ -106,16 +106,13 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between mb-2 px-1">
-      <h4 
-        className="text-[10px] text-slate-400 uppercase tracking-wider"
-        style={{ fontFamily: 'Inter, sans-serif' }}
-      >
+      <h4 className="text-xs text-slate-500 uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>
         {title}
       </h4>
       {showToggle && (
         <button
           onClick={onToggle}
-          className="flex items-center gap-1.5 px-2 py-1 rounded text-[9px] uppercase tracking-wide transition-all"
+          className="flex items-center gap-1.5 px-2 py-1 rounded text-xs tracking-wide transition-all"
           style={{ 
             fontFamily: 'Inter, sans-serif',
             background: showFull ? 'rgba(59,130,246,0.15)' : 'transparent',
