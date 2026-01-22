@@ -131,24 +131,25 @@ interface CellRowProps {
 function CellRow({ cell }: CellRowProps) {
   const displayName = formatCellName(cell);
   
-  const handleCall = () => {
-    if (cell.phone) {
-      window.open(`tel:${cell.phone.replace(/\D/g, '')}`, '_self');
-    }
+  const handleCall = (phoneNumber: string) => {
+    window.open(`tel:${phoneNumber.replace(/\D/g, '')}`, '_self');
   };
 
   return (
     <div className={cardClasses.row}>
       <div className={cn(textClasses.secondary, 'text-sm mb-1.5')}>{displayName}</div>
-      {cell.phone && (
+      {cell.phones && cell.phones.length > 0 && (
         <div className="flex items-center gap-3">
-          <button
-            onClick={handleCall}
-            className="flex items-center gap-2 text-slate-400 hover:text-indigo-400 transition-colors"
-          >
-            <Telephone className={iconClasses.xs} />
-            <span className="text-xs">{cell.phone}</span>
-          </button>
+          {cell.phones.map((phone, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleCall(phone)}
+              className="flex items-center gap-2 text-slate-400 hover:text-indigo-400 transition-colors"
+            >
+              <Telephone className={iconClasses.xs} />
+              <span className="text-xs">{phone}</span>
+            </button>
+          ))}
         </div>
       )}
     </div>
