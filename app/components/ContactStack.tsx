@@ -138,25 +138,28 @@ function SectionHeader({
 // Single contact item with coupon style
 function ContactItem({ 
   label, 
-  email, 
+  emails, 
   category = 'other', 
   showFull,
   onCopy,
 }: { 
   label: string; 
-  email: string; 
+  emails: string[]; 
   category?: ContactCategory;
   showFull: boolean;
   onCopy: () => void;
 }) {
   const [copied, setCopied] = useState(false);
 
+  // Format emails for copying: "email1, email2, email3"
+  const copyText = emails.join(', ');
+
   const handleCopy = useCallback(() => {
-    copy(email);
+    copy(copyText);
     setCopied(true);
     onCopy();
     setTimeout(() => setCopied(false), 2000);
-  }, [email, onCopy]);
+  }, [copyText, onCopy]);
 
   return (
     <div 
@@ -187,7 +190,19 @@ function ContactItem({
             showFull ? 'break-all whitespace-normal' : 'whitespace-nowrap overflow-hidden text-ellipsis'
           }`}
         >
-          {email}
+          {emails.length > 1 ? (
+            <div className={showFull ? 'space-y-1' : ''}>
+              {showFull ? (
+                emails.map((email, i) => (
+                  <div key={i}>{email}</div>
+                ))
+              ) : (
+                emails.join(', ')
+              )}
+            </div>
+          ) : (
+            emails[0]
+          )}
         </div>
       </div>
       
@@ -220,32 +235,38 @@ export function CourtContactsStack({ contacts, onCopy }: { contacts: Contact[]; 
     { roleId: CONTACT_ROLES.JCM, category: 'provincial', label: 'Provincial JCM' },
     { roleId: CONTACT_ROLES.BAIL_JCM, category: 'bail', label: 'Bail JCM' },
     { roleId: CONTACT_ROLES.SCHEDULING, category: 'supreme', label: 'Supreme Scheduling' },
-    { roleId: CONTACT_ROLES.INTERPRETER, category: 'other', label: 'Interpreter' },
+    { roleId: CONTACT_ROLES.INTERPRETER, category: 'other', label: 'Interpreter Request' },
   ];
 
   // Build ordered contact list with useMemo for stable reference
   const orderedContacts = useMemo(() => {
-    const result: { label: string; email: string; category: ContactCategory }[] = [];
+    const result: { label: string; emails: string[]; category: ContactCategory }[] = [];
     
     // Track criminal registry to skip duplicate court registry
-    let criminalRegistryEmail: string | null = null;
+    let criminalRegistryEmails: string[] = [];
     const criminalRegistry = contacts.find(c => c.contact_role_id === CONTACT_ROLES.CRIMINAL_REGISTRY);
     if (criminalRegistry) {
-      criminalRegistryEmail = criminalRegistry.email || (criminalRegistry.emails && criminalRegistry.emails[0]) || null;
+      criminalRegistryEmails = criminalRegistry.emails || (criminalRegistry.email ? [criminalRegistry.email] : []);
     }
 
     contactConfig.forEach(config => {
       const contact = contacts.find(c => c.contact_role_id === config.roleId);
       if (contact) {
-        const email = contact.email || (contact.emails && contact.emails[0]);
-        if (email) {
+        // Get all emails - prefer emails array, fallback to single email
+        const contactEmails = contact.emails && contact.emails.length > 0 
+          ? contact.emails 
+          : (contact.email ? [contact.email] : []);
+        
+        if (contactEmails.length > 0) {
           // Skip court registry if same as criminal registry
-          if (config.roleId === CONTACT_ROLES.COURT_REGISTRY && criminalRegistryEmail && email === criminalRegistryEmail) {
+          if (config.roleId === CONTACT_ROLES.COURT_REGISTRY && 
+              criminalRegistryEmails.length > 0 && 
+              contactEmails[0] === criminalRegistryEmails[0]) {
             return;
           }
           result.push({
             label: config.label,
-            email,
+            emails: contactEmails,
             category: config.category,
           });
         }
@@ -256,10 +277,10 @@ export function CourtContactsStack({ contacts, onCopy }: { contacts: Contact[]; 
   }, [contacts]);
 
   // Extract just emails for truncation check dependency
-  const emails = useMemo(() => orderedContacts.map(c => c.email), [orderedContacts]);
+  const allEmails = useMemo(() => orderedContacts.flatMap(c => c.emails), [orderedContacts]);
 
   // Truncation detection
-  const { containerRef, hasTruncation } = useTruncationDetection(emails, showFull);
+  const { containerRef, hasTruncation } = useTruncationDetection(allEmails, showFull);
 
   if (orderedContacts.length === 0) return null;
 
@@ -276,7 +297,7 @@ export function CourtContactsStack({ contacts, onCopy }: { contacts: Contact[]; 
           <ContactItem 
             key={contact.label} 
             label={contact.label} 
-            email={contact.email}
+            emails={contact.emails}
             category={contact.category}
             showFull={showFull}
             onCopy={onCopy || (() => {})}
@@ -301,16 +322,21 @@ export function CrownContactsStack({
 
   // Build crown contacts list with useMemo for stable reference
   const crownContacts = useMemo(() => {
-    const result: { label: string; email: string; category: ContactCategory }[] = [];
+    const result: { label: string; emails: string[]; category: ContactCategory }[] = [];
 
     // Provincial Crown
     const provCrown = contacts.find(c => c.contact_role_id === CONTACT_ROLES.CROWN);
-    if (provCrown?.email) {
-      result.push({
-        label: 'Provincial Crown',
-        email: provCrown.email,
-        category: 'provincial'
-      });
+    if (provCrown) {
+      const emails = provCrown.emails && provCrown.emails.length > 0 
+        ? provCrown.emails 
+        : (provCrown.email ? [provCrown.email] : []);
+      if (emails.length > 0) {
+        result.push({
+          label: 'Provincial Crown',
+          emails,
+          category: 'provincial'
+        });
+      }
     }
 
     // Bail Crown (from bail contacts)
@@ -319,7 +345,7 @@ export function CrownContactsStack({
       if (bailCrown?.email) {
         result.push({
           label: 'Bail Crown',
-          email: bailCrown.email,
+          emails: [bailCrown.email],
           category: 'bail'
         });
       }
@@ -327,32 +353,42 @@ export function CrownContactsStack({
 
     // Federal Crown
     const fedCrown = contacts.find(c => c.contact_role_id === CONTACT_ROLES.FEDERAL_CROWN);
-    if (fedCrown?.email) {
-      result.push({
-        label: 'Federal Crown',
-        email: fedCrown.email,
-        category: 'other'
-      });
+    if (fedCrown) {
+      const emails = fedCrown.emails && fedCrown.emails.length > 0 
+        ? fedCrown.emails 
+        : (fedCrown.email ? [fedCrown.email] : []);
+      if (emails.length > 0) {
+        result.push({
+          label: 'Federal Crown',
+          emails,
+          category: 'other'
+        });
+      }
     }
 
     // First Nations Crown
     const fnCrown = contacts.find(c => c.contact_role_id === CONTACT_ROLES.FIRST_NATIONS_CROWN);
-    if (fnCrown?.email) {
-      result.push({
-        label: 'First Nations Crown',
-        email: fnCrown.email,
-        category: 'other'
-      });
+    if (fnCrown) {
+      const emails = fnCrown.emails && fnCrown.emails.length > 0 
+        ? fnCrown.emails 
+        : (fnCrown.email ? [fnCrown.email] : []);
+      if (emails.length > 0) {
+        result.push({
+          label: 'First Nations Crown',
+          emails,
+          category: 'other'
+        });
+      }
     }
 
     return result;
   }, [contacts, bailContacts]);
 
   // Extract just emails for truncation check dependency
-  const emails = useMemo(() => crownContacts.map(c => c.email), [crownContacts]);
+  const allEmails = useMemo(() => crownContacts.flatMap(c => c.emails), [crownContacts]);
 
   // Truncation detection
-  const { containerRef, hasTruncation } = useTruncationDetection(emails, showFull);
+  const { containerRef, hasTruncation } = useTruncationDetection(allEmails, showFull);
 
   if (crownContacts.length === 0) return null;
 
@@ -369,7 +405,7 @@ export function CrownContactsStack({
           <ContactItem 
             key={contact.label}
             label={contact.label}
-            email={contact.email}
+            emails={contact.emails}
             category={contact.category}
             showFull={showFull}
             onCopy={onCopy || (() => {})}
@@ -403,12 +439,20 @@ export function TopContactsPreview({
     [CONTACT_ROLES.INTERPRETER]: 'other',
   };
 
+  // Get role label, with special case for Interpreter
+  const getRoleLabel = (roleId: number) => {
+    if (roleId === CONTACT_ROLES.INTERPRETER) {
+      return 'Interpreter Request';
+    }
+    return CONTACT_ROLE_NAMES[roleId] || 'Unknown';
+  };
+
   if (showAll) {
     const allContacts = contacts
-      .filter(c => c.email)
+      .filter(c => c.email || (c.emails && c.emails.length > 0))
       .map(c => ({
-        label: CONTACT_ROLE_NAMES[c.contact_role_id] || 'Unknown',
-        email: c.email!,
+        label: getRoleLabel(c.contact_role_id),
+        emails: c.emails && c.emails.length > 0 ? c.emails : (c.email ? [c.email] : []),
         category: roleToCategory[c.contact_role_id] || 'other' as ContactCategory
       }));
 
@@ -420,7 +464,7 @@ export function TopContactsPreview({
           <ContactItem 
             key={`${contact.label}-${idx}`}
             label={contact.label}
-            email={contact.email}
+            emails={contact.emails}
             category={contact.category}
             showFull={false}
             onCopy={onCopy || (() => {})}
@@ -440,16 +484,16 @@ export function TopContactsPreview({
   const topContacts = priorityRoles
     .map(roleId => {
       const contact = contacts.find(c => c.contact_role_id === roleId);
-      if (contact?.email) {
+      if (contact && (contact.email || (contact.emails && contact.emails.length > 0))) {
         return {
-          label: CONTACT_ROLE_NAMES[roleId] || 'Unknown',
-          email: contact.email,
+          label: getRoleLabel(roleId),
+          emails: contact.emails && contact.emails.length > 0 ? contact.emails : (contact.email ? [contact.email] : []),
           category: roleToCategory[roleId] || 'other' as ContactCategory
         };
       }
       return null;
     })
-    .filter((c): c is { label: string; email: string; category: ContactCategory } => c !== null)
+    .filter((c): c is { label: string; emails: string[]; category: ContactCategory } => c !== null)
     .slice(0, 3);
 
   if (topContacts.length === 0) return null;
@@ -460,7 +504,7 @@ export function TopContactsPreview({
         <ContactItem 
           key={contact.label}
           label={contact.label}
-          email={contact.email}
+          emails={contact.emails}
           category={contact.category}
           showFull={false}
           onCopy={onCopy || (() => {})}
