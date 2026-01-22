@@ -158,7 +158,7 @@ export const Section = forwardRef<HTMLDivElement, SectionProps>(
           >
             {title}
           </span>
-          {count !== undefined && (
+          {count !== undefined && count !== '' && (
             <span 
               className="px-1.5 py-0.5 rounded text-[10px]"
               style={{ 
