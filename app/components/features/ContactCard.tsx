@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Clipboard, ClipboardCheck, Eye, EyeSlash } from 'react-bootstrap-icons';
 import { 
   cn, 
@@ -25,31 +25,43 @@ function getContactCategory(roleId: number): ContactCategory {
   return 'other';
 }
 
+// ============================================================================
+// COPY FUNCTION TYPES - Consistent interface for all components
+// ============================================================================
+
+type CopyFunction = (text: string, fieldId: string) => void | Promise<boolean>;
+type IsCopiedFunction = (fieldId: string) => boolean;
+
+// ============================================================================
+// CONTACT CARD
+// ============================================================================
+
 interface ContactCardProps {
   contact: ContactWithRole;
   category?: ContactCategory;
-  onCopy?: () => void;
+  onCopy?: CopyFunction;
+  isCopied?: IsCopiedFunction;
 }
 
-export function ContactCard({ contact, category, onCopy }: ContactCardProps) {
-  const [copied, setCopied] = useState(false);
+export function ContactCard({ contact, category, onCopy, isCopied }: ContactCardProps) {
   const roleDisplayName = ROLE_DISPLAY_NAMES[contact.contact_role_id] || contact.contact_role?.name || 'Contact';
   
   // Get all emails
   const emails = contact.emails?.length ? contact.emails : (contact.email ? [contact.email] : []);
   const copyText = formatEmailsForCopy(emails);
+  const fieldId = `contact-${contact.id}`;
   
   // Determine category from role if not provided
   const contactCategory = category || getContactCategory(contact.contact_role_id);
 
-  const handleCopy = useCallback(() => {
-    if (copyText) {
-      navigator.clipboard.writeText(copyText);
-      setCopied(true);
-      onCopy?.();
-      setTimeout(() => setCopied(false), 2000);
+  // Check if this specific field is copied
+  const isFieldCopied = isCopied ? isCopied(fieldId) : false;
+
+  const handleCopy = () => {
+    if (copyText && onCopy) {
+      onCopy(copyText, fieldId);
     }
-  }, [copyText, onCopy]);
+  };
 
   if (emails.length === 0) return null;
 
@@ -83,10 +95,10 @@ export function ContactCard({ contact, category, onCopy }: ContactCardProps) {
         className="flex items-center justify-center px-3 shrink-0 transition-colors"
         style={{ 
           ...couponCardStyles.divider,
-          color: copied ? '#34d399' : '#52525b',
+          color: isFieldCopied ? '#34d399' : '#52525b',
         }}
       >
-        {copied ? (
+        {isFieldCopied ? (
           <ClipboardCheck className={cn(iconClasses.sm, 'text-emerald-400')} />
         ) : (
           <Clipboard className={iconClasses.sm} />
@@ -96,7 +108,10 @@ export function ContactCard({ contact, category, onCopy }: ContactCardProps) {
   );
 }
 
-// Section header with eye toggle
+// ============================================================================
+// SECTION HEADER WITH TOGGLE
+// ============================================================================
+
 function SectionHeader({ 
   title, 
   showFull, 
@@ -133,14 +148,18 @@ function SectionHeader({
   );
 }
 
-// Contact stack for court or crown contacts
+// ============================================================================
+// CONTACT STACK
+// ============================================================================
+
 interface ContactStackProps {
   contacts: ContactWithRole[];
   category: 'court' | 'crown';
-  onCopy?: () => void;
+  onCopy?: CopyFunction;
+  isCopied?: IsCopiedFunction;
 }
 
-export function ContactStack({ contacts, category, onCopy }: ContactStackProps) {
+export function ContactStack({ contacts, category, onCopy, isCopied }: ContactStackProps) {
   const [showFull, setShowFull] = useState(false);
   const roleIds = category === 'court' ? COURT_CONTACT_ROLE_IDS : CROWN_CONTACT_ROLE_IDS;
   
@@ -179,6 +198,7 @@ export function ContactStack({ contacts, category, onCopy }: ContactStackProps) 
             contact={contact}
             category={contactCategory}
             onCopy={onCopy}
+            isCopied={isCopied}
           />
         ))}
       </div>
