@@ -4,9 +4,23 @@ import { useState } from 'react';
 import { MicrosoftTeams, Telephone, Clipboard, Check, ChevronRight, Eye, EyeSlash } from 'react-bootstrap-icons';
 import { Button } from '@/components/ui/button';
 import copy from 'copy-to-clipboard';
+import { 
+  textClasses, 
+  cardClasses, 
+  iconClasses, 
+  buttonClasses,
+  inlineStyles,
+  cn 
+} from '@/lib/theme';
 import type { TeamsLink } from '@/types';
 
-// Format courtroom name with CR prefix (but not for JCM FXD)
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Format courtroom name with CR prefix (but not for JCM FXD)
+ */
 function formatCourtroomName(link: TeamsLink): string {
   const name = link.courtroom || link.name || 'MS Teams';
   
@@ -35,11 +49,17 @@ function formatCourtroomName(link: TeamsLink): string {
   return name;
 }
 
-// Check if this is a VB Triage link (should be filtered from regular Teams list)
+/**
+ * Check if this is a VB Triage link (should be filtered from regular Teams list)
+ */
 export function isVBTriageLink(link: TeamsLink): boolean {
   const name = (link.courtroom || link.name || '').toLowerCase();
   return name.includes('vb triage') || name.includes('vbtriage') || name.includes('triage');
 }
+
+// ============================================================================
+// TEAMS CARD COMPONENT (Individual team link)
+// ============================================================================
 
 interface TeamsCardProps {
   link: TeamsLink;
@@ -76,18 +96,18 @@ export function TeamsCard({ link, onCopyAll, showDialIn = false }: TeamsCardProp
     <div className="py-2.5 px-3 rounded-lg bg-slate-800/30">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <MicrosoftTeams className="w-4 h-4 text-slate-400 flex-shrink-0" />
-          <span className="text-sm font-medium text-slate-200 truncate">{displayName}</span>
+          <MicrosoftTeams className={cn(iconClasses.md, 'text-slate-400 flex-shrink-0')} />
+          <span className={cn(textClasses.secondary, 'text-sm font-medium truncate')}>{displayName}</span>
         </div>
         
         {link.teams_link && (
           <Button
             variant="secondary"
             size="sm"
-            className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 h-7"
+            className={cn(buttonClasses.primary, 'text-xs px-3 h-7')}
             onClick={handleJoin}
           >
-            <MicrosoftTeams className="w-3 h-3 mr-1" />
+            <MicrosoftTeams className={cn(iconClasses.xs, 'mr-1')} />
             Join
           </Button>
         )}
@@ -103,7 +123,7 @@ export function TeamsCard({ link, onCopyAll, showDialIn = false }: TeamsCardProp
             <div className="flex-1 min-w-0 space-y-0.5">
               {link.phone && (
                 <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                  <Telephone className="w-3 h-3" />
+                  <Telephone className={iconClasses.xs} />
                   <span>{link.phone}</span>
                 </div>
               )}
@@ -113,16 +133,16 @@ export function TeamsCard({ link, onCopyAll, showDialIn = false }: TeamsCardProp
                 </div>
               )}
               {link.conference_id && (
-                <div className="text-xs text-slate-400 font-mono">
+                <div className={cn(textClasses.monoValue, 'text-slate-400')}>
                   ID: {link.conference_id}
                 </div>
               )}
             </div>
             
             {copied ? (
-              <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+              <Check className={cn(iconClasses.md, 'text-green-400 flex-shrink-0')} />
             ) : (
-              <Clipboard className="w-4 h-4 text-slate-500 flex-shrink-0" />
+              <Clipboard className={cn(iconClasses.md, 'text-slate-500 flex-shrink-0')} />
             )}
           </div>
         </div>
@@ -131,7 +151,10 @@ export function TeamsCard({ link, onCopyAll, showDialIn = false }: TeamsCardProp
   );
 }
 
-// Teams links preview card for search results (shows count, tap to navigate)
+// ============================================================================
+// TEAMS LINK COUNT CARD (Preview for search results)
+// ============================================================================
+
 interface TeamsLinkCountCardProps {
   count: number;
   onClick?: () => void;
@@ -142,23 +165,29 @@ export function TeamsLinkCountCard({ count, onClick }: TeamsLinkCountCardProps) 
 
   return (
     <div 
-      className="py-3 px-4 rounded-lg bg-slate-800/50 border border-slate-700/50 cursor-pointer hover:bg-slate-800 transition-colors active:bg-slate-700"
+      className={cn(
+        cardClasses.container,
+        'py-3 px-4 cursor-pointer hover:bg-slate-800 transition-colors active:bg-slate-700'
+      )}
       onClick={onClick}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <MicrosoftTeams className="w-4 h-4 text-indigo-400" />
-          <span className="text-sm font-medium text-slate-200">
+          <MicrosoftTeams className={cn(iconClasses.md, 'text-indigo-400')} />
+          <span className={cn(textClasses.secondary, 'text-sm font-medium')}>
             {count} MS Teams Link{count !== 1 ? 's' : ''}
           </span>
         </div>
-        <ChevronRight className="w-4 h-4 text-slate-500" />
+        <ChevronRight className={cn(iconClasses.md, 'text-slate-500')} />
       </div>
     </div>
   );
 }
 
-// Full teams list for court detail page
+// ============================================================================
+// TEAMS LIST COMPONENT (Full list for court detail page)
+// ============================================================================
+
 interface TeamsListProps {
   links: TeamsLink[];
   onCopyAll?: () => void;
@@ -197,7 +226,10 @@ export function TeamsList({ links, onCopyAll, filterVBTriage = true }: TeamsList
       {/* Header with Last Updated and Eye Toggle */}
       <div className="flex items-center justify-between px-1">
         {displayDate && (
-          <span className="text-xs text-slate-500 uppercase" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <span 
+            className={textClasses.lastUpdated}
+            style={inlineStyles.roleLabelNormal}
+          >
             Last Updated: {displayDate}
           </span>
         )}
@@ -205,16 +237,16 @@ export function TeamsList({ links, onCopyAll, filterVBTriage = true }: TeamsList
           <button
             onClick={() => setShowDialIn(!showDialIn)}
             className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-300 transition-colors"
-            style={{ fontFamily: 'Inter, sans-serif' }}
+            style={inlineStyles.roleLabelNormal}
           >
             {showDialIn ? (
               <>
-                <EyeSlash className="w-3.5 h-3.5" />
+                <EyeSlash className={iconClasses.sm} />
                 <span>Hide dial-in</span>
               </>
             ) : (
               <>
-                <Eye className="w-3.5 h-3.5" />
+                <Eye className={iconClasses.sm} />
                 <span>Show dial-in</span>
               </>
             )}
