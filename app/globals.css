@@ -1,119 +1,67 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* ============================================================================
-   LLM: LEGAL LEGENDS MANUAL - GLOBAL STYLES
-   Cyber Ocean Theme
+   SHADCN CSS VARIABLES - CYBER OCEAN THEME
    ============================================================================ */
 
-@theme {
-  /* ========================================
-     CUSTOM COLORS
-     ======================================== */
-  
-  /* Background colors */
-  --color-bg-primary: #080b12;
-  --color-bg-card: rgba(59, 130, 246, 0.03);
-  --color-bg-card-hover: rgba(59, 130, 246, 0.06);
-  --color-bg-subtle: rgba(59, 130, 246, 0.02);
-  
-  /* Border colors */
-  --color-border-primary: rgba(59, 130, 246, 0.12);
-  --color-border-subtle: rgba(59, 130, 246, 0.08);
-  --color-border-accent: rgba(59, 130, 246, 0.15);
-  
-  /* Accent colors */
-  --color-accent-primary: #3b82f6;
-  --color-accent-secondary: #22d3ee;
-  
-  /* Toast */
-  --color-toast-bg: rgba(51, 65, 85, 0.95);
+@layer base {
+  :root {
+    /* Background - Deep ocean blue */
+    --background: 222 47% 5%;
+    --foreground: 210 40% 98%;
 
-  /* ========================================
-     CUSTOM FONTS
-     ======================================== */
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+    /* Card - Slightly lighter than background */
+    --card: 222 47% 7%;
+    --card-foreground: 210 40% 98%;
 
-  /* ========================================
-     ANIMATIONS
-     ======================================== */
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(-4px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    /* Popover */
+    --popover: 222 47% 7%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Primary - Electric blue */
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
+
+    /* Secondary - Slate */
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    /* Muted */
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    /* Accent */
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    /* Destructive */
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Border, Input, Ring */
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 224 76% 48%;
+
+    /* Radius */
+    --radius: 0.5rem;
   }
+}
 
-  @keyframes fade-in-up {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+@layer base {
+  * {
+    @apply border-border;
   }
-
-  @keyframes slide-in {
-    from {
-      opacity: 0;
-      transform: translateX(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
-
-  @keyframes pulse-subtle {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.7;
-    }
-  }
-
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  --animate-fade-in: fade-in 0.2s ease-out;
-  --animate-fade-in-up: fade-in-up 0.3s ease-out;
-  --animate-slide-in: slide-in 0.2s ease-out;
-  --animate-pulse-subtle: pulse-subtle 2s ease-in-out infinite;
-  --animate-spin: spin 1s linear infinite;
 }
 
 /* ============================================================================
-   BASE STYLES
-   ============================================================================ */
-
-html {
-  -webkit-tap-highlight-color: transparent;
-  scroll-behavior: smooth;
-}
-
-body {
-  background-color: var(--color-bg-primary);
-  color: white;
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* ============================================================================
-   BACKGROUND EFFECTS (Cyber Ocean)
+   CYBER OCEAN BACKGROUND EFFECTS
    ============================================================================ */
 
 .cyber-grid {
@@ -181,23 +129,7 @@ body {
 }
 
 /* ============================================================================
-   FOCUS STYLES
-   ============================================================================ */
-
-:focus-visible {
-  outline: 2px solid var(--color-accent-primary);
-  outline-offset: 2px;
-}
-
-button:focus-visible,
-a:focus-visible,
-input:focus-visible {
-  outline: 2px solid var(--color-accent-primary);
-  outline-offset: 2px;
-}
-
-/* ============================================================================
-   SELECTION
+   FOCUS & SELECTION
    ============================================================================ */
 
 ::selection {
@@ -206,68 +138,14 @@ input:focus-visible {
 }
 
 /* ============================================================================
-   COMPONENT UTILITIES
+   GRADIENT UTILITIES
    ============================================================================ */
 
-/* Card base styles */
-.card-base {
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border-primary);
-  border-radius: 8px;
-}
-
-.card-interactive {
-  transition: background-color 0.15s ease;
-}
-
-.card-interactive:hover {
-  background: var(--color-bg-card-hover);
-}
-
-/* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
+  background: linear-gradient(135deg, hsl(var(--primary)), #22d3ee);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-/* Gradient border */
-.gradient-border {
-  position: relative;
-}
-
-.gradient-border::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-}
-
-/* ============================================================================
-   TOAST STYLES
-   ============================================================================ */
-
-.toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--color-toast-bg);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  z-index: 50;
-  animation: fade-in-up 0.2s ease-out;
 }
 
 /* ============================================================================
