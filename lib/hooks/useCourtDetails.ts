@@ -5,7 +5,7 @@ import { fetchCourtDetails } from '@/lib/api/queries';
 import { CACHE_CONFIG } from '@/lib/config/constants';
 import type { CourtDetails } from '@/types';
 
-export function useCourtDetails(courtId: string | null) {
+export function useCourtDetails(courtId: number | null) {
   return useQuery<CourtDetails | null>({
     queryKey: ['courtDetails', courtId],
     queryFn: () => courtId ? fetchCourtDetails(courtId) : Promise.resolve(null),
