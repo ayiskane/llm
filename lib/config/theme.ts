@@ -372,9 +372,8 @@ export const bailColorClasses: Record<string, { bg: string; border: string; text
  * Combine multiple class strings, filtering out falsy values
  * Similar to clsx/cn from class-variance-authority
  */
-export function cn(...classes: (string | undefined | null | false)[]): string {
-  return classes.filter(Boolean).join(' ');
-}
+// Re-export cn from lib/utils (shadcn version with tailwind-merge)
+export { cn } from '@/lib/utils';
 
 /**
  * Get section header props (className + style)
@@ -455,6 +454,7 @@ export const breakpoints = {
 // Type exports
 export type ThemeColors = typeof theme.colors;
 export type CategoryColor = keyof typeof theme.colors.category;
+
 
 
 
