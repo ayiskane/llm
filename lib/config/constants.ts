@@ -13,8 +13,9 @@ export const APP_CONFIG = {
   version: '2.0.0',
 } as const;
 
-// Convenience export
+// Convenience exports
 export const APP_NAME = APP_CONFIG.name;
+export const APP_DESCRIPTION = APP_CONFIG.description;
 
 // ============================================================================
 // UI CONFIG
