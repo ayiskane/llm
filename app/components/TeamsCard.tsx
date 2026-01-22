@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MicrosoftTeams, Telephone, Clipboard, Check, ChevronRight, BoxArrowUpRight } from 'react-bootstrap-icons';
+import { MicrosoftTeams, Telephone, Clipboard, Check, ChevronRight, Eye, EyeSlash } from 'react-bootstrap-icons';
 import { Button } from '@/components/ui/button';
 import copy from 'copy-to-clipboard';
 import type { TeamsLink } from '@/types';
@@ -44,9 +44,10 @@ export function isVBTriageLink(link: TeamsLink): boolean {
 interface TeamsCardProps {
   link: TeamsLink;
   onCopyAll?: () => void;
+  showDialIn?: boolean;
 }
 
-export function TeamsCard({ link, onCopyAll }: TeamsCardProps) {
+export function TeamsCard({ link, onCopyAll, showDialIn = false }: TeamsCardProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopyAll = () => {
@@ -69,6 +70,7 @@ export function TeamsCard({ link, onCopyAll }: TeamsCardProps) {
   };
 
   const displayName = formatCourtroomName(link);
+  const hasDialInInfo = link.phone || link.conference_id;
 
   return (
     <div className="py-2.5 px-3 rounded-lg bg-slate-800/30">
@@ -91,8 +93,8 @@ export function TeamsCard({ link, onCopyAll }: TeamsCardProps) {
         )}
       </div>
       
-      {/* Dial-in info - tap to copy */}
-      {(link.phone || link.conference_id) && (
+      {/* Dial-in info - collapsed by default, shown when showDialIn is true */}
+      {hasDialInInfo && showDialIn && (
         <div 
           className="mt-2 p-2 rounded bg-slate-900/50 cursor-pointer hover:bg-slate-900/70 transition-colors"
           onClick={handleCopyAll}
@@ -164,10 +166,15 @@ interface TeamsListProps {
 }
 
 export function TeamsList({ links, onCopyAll, filterVBTriage = true }: TeamsListProps) {
+  const [showDialIn, setShowDialIn] = useState(false);
+  
   // Filter out VB Triage links by default (they're shown in Virtual Bail section)
   const filteredLinks = filterVBTriage ? links.filter(link => !isVBTriageLink(link)) : links;
   
   if (filteredLinks.length === 0) return null;
+
+  // Check if any links have dial-in info
+  const hasAnyDialInInfo = filteredLinks.some(link => link.phone || link.conference_id);
 
   // Get the most recent source_updated_at from all links
   const getMostRecentDate = () => {
@@ -187,16 +194,35 @@ export function TeamsList({ links, onCopyAll, filterVBTriage = true }: TeamsList
 
   return (
     <div className="space-y-1.5">
-      {displayDate && (
-        <h4 className="text-xs font-medium text-slate-500 tracking-wide px-1">
-          Last Updated: {displayDate}
-        </h4>
-      )}
+      {/* Header with Last Updated and Eye Toggle */}
+      <div className="flex items-center justify-between px-1">
+        {displayDate && (
+          <span className="text-xs text-slate-500 tracking-wide">
+            Last Updated: {displayDate}
+          </span>
+        )}
+        {hasAnyDialInInfo && (
+          <button
+            onClick={() => setShowDialIn(!showDialIn)}
+            className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+          >
+            {showDialIn ? (
+              <>
+                <EyeSlash className="w-3.5 h-3.5" />
+                <span>Hide dial-in</span>
+              </>
+            ) : (
+              <>
+                <Eye className="w-3.5 h-3.5" />
+                <span>Show dial-in</span>
+              </>
+            )}
+          </button>
+        )}
+      </div>
       {filteredLinks.map((link) => (
-        <TeamsCard key={link.id} link={link} onCopyAll={onCopyAll} />
+        <TeamsCard key={link.id} link={link} onCopyAll={onCopyAll} showDialIn={showDialIn} />
       ))}
     </div>
   );
 }
-
-
