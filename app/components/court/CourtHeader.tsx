@@ -13,13 +13,32 @@ interface CourtHeaderProps {
 }
 
 /**
+ * Get official display name per BC Gov naming conventions
+ * @see https://www2.gov.bc.ca/gov/content/justice/courthouse-services/courthouse-locations
+ */
+function getDisplayName(court: Court | CourtWithRegion): string {
+  const name = court.name;
+  
+  // Already has "Court" in the name
+  if (name.toLowerCase().includes('court')) {
+    return name;
+  }
+  
+  // Circuit courts → "[Location] Provincial Court"
+  if (court.is_circuit) {
+    return `${name} Provincial Court`;
+  }
+  
+  // Staffed courthouses → "[Location] Law Courts"
+  return `${name} Law Courts`;
+}
+
+/**
  * Mobile-first animated header with smooth height transition.
  * Uses CSS grid for smooth height animation (better than max-height hack).
  */
 export function CourtHeader({ court, collapsed = false, className }: CourtHeaderProps) {
-  const displayName = court.name.toLowerCase().includes('court') 
-    ? court.name 
-    : `${court.name} Law Courts`;
+  const displayName = getDisplayName(court);
 
   const region = 'region' in court && court.region 
     ? court.region 

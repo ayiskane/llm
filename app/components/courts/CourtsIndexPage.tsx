@@ -68,10 +68,12 @@ function getAvailableLetters(groups: GroupedCourts[]): string[] {
 }
 
 /**
- * Format court name for display
- * - If name already contains "Court" → use as-is
- * - If circuit court → just location name
- * - If staffed courthouse → add "Law Courts"
+ * Format court name for display using official BC Gov naming conventions
+ * @see https://www2.gov.bc.ca/gov/content/justice/courthouse-services/courthouse-locations
+ * 
+ * - If name already contains "Court" → use as-is (e.g., "Downtown Community Court")
+ * - If circuit court → "[Location] Provincial Court"
+ * - If staffed courthouse → "[Location] Law Courts"
  */
 function getCourtDisplayName(court: CourtWithRegionName): string {
   const name = court.name;
@@ -81,12 +83,12 @@ function getCourtDisplayName(court: CourtWithRegionName): string {
     return name;
   }
   
-  // Circuit courts - just use location name
+  // Circuit courts - officially "[Location] Provincial Court"
   if (court.is_circuit) {
-    return name;
+    return `${name} Provincial Court`;
   }
   
-  // Staffed courthouses - add "Law Courts"
+  // Staffed courthouses - officially "[Location] Law Courts"
   if (court.has_provincial || court.has_supreme) {
     return `${name} Law Courts`;
   }
@@ -306,12 +308,12 @@ export function CourtsIndexPage() {
     // Filter by search
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(court => {
+      result = result.filter(court => 
         const displayName = getCourtDisplayName(court).toLowerCase();
-        return court.name.toLowerCase().includes(query) ||
-          displayName.includes(query) ||
-          court.region_name.toLowerCase().includes(query);
-      });
+        court.name.toLowerCase().includes(query) ||
+        displayName.includes(query) ||
+        court.region_name.toLowerCase().includes(query)
+      );
     }
 
     return result;
