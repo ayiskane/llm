@@ -24,11 +24,19 @@ export function TeamsCard({ link, showDialIn = false, onCopy, isCopied }: TeamsC
   const displayName = formatCourtroomName(link.courtroom || link.name);
   const hasDialInInfo = link.phone || link.conference_id;
   
+  /**
+   * Copy format:
+   * {Link}
+   * {phone}
+   * {toll free number}
+   * Conference ID: {conference ID}
+   */
   const handleCopyAll = () => {
     if (!onCopy) return;
     const copyText = [
-      link.phone && `Phone: ${link.phone}`,
-      link.phone_toll_free && `Toll-free: ${link.phone_toll_free}`,
+      link.teams_link,
+      link.phone,
+      link.phone_toll_free,
       link.conference_id && `Conference ID: ${link.conference_id}`,
     ].filter(Boolean).join('\n');
     onCopy(copyText, `teams-${link.id}`);
@@ -44,6 +52,7 @@ export function TeamsCard({ link, showDialIn = false, onCopy, isCopied }: TeamsC
         
         {link.teams_link && (
           <Button variant="join" size="sm" onClick={() => joinTeamsMeeting(link.teams_link)}>
+            <MicrosoftTeams className="w-3.5 h-3.5" />
             Join
           </Button>
         )}

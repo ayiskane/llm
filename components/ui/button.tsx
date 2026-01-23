@@ -19,7 +19,8 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        join: "bg-purple-600 text-white shadow-sm hover:bg-purple-500",
+        // Join button - matches backup branch (indigo)
+        join: "bg-indigo-600 text-white shadow-sm hover:bg-indigo-500",
       },
       size: {
         default: "h-9 px-4 py-2",
@@ -56,4 +57,3 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = "Button"
 
 export { Button, buttonVariants }
-
