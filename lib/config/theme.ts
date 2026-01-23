@@ -55,6 +55,7 @@ export const text = {
   sectionHeader: 'text-xs text-slate-500 uppercase px-1 tracking-wide',
   roleLabel: 'text-[9px] text-slate-400 uppercase mb-1 tracking-wide',
   scheduleLabel: 'text-xs font-mono font-semibold uppercase tracking-wide',
+  lastUpdated: 'text-xs text-slate-500 uppercase font-sans',
   monoValue: 'text-slate-400 text-xs font-mono',
   primary: 'text-white',
   secondary: 'text-slate-200',

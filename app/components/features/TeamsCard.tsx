@@ -64,7 +64,7 @@ export function TeamsCard({ link, onCopy, isCopied }: TeamsCardProps) {
               )}
             >
               {showDialIn ? <EyeSlash className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-              <span className="hidden sm:inline">{showDialIn ? 'Hide' : 'Dial-in'}</span>
+              <span>{showDialIn ? 'Hide' : 'Dial-in'}</span>
             </button>
           )}
           
@@ -146,9 +146,12 @@ export function TeamsList({ links, filterVBTriage = true, onCopy, isCopied }: Te
 
   return (
     <div className="space-y-1.5">
+      {/* Last Updated header - matches backup branch */}
       {lastUpdated && (
-        <div className="px-1">
-          <span className="text-xs text-slate-500 uppercase">Last Updated: {lastUpdated}</span>
+        <div className="px-1 mb-2">
+          <span className={text.lastUpdated}>
+            Last Updated: {lastUpdated}
+          </span>
         </div>
       )}
       
