@@ -285,6 +285,30 @@ function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [scrubLetter, setScrubLetter] = useState<string | null>(null);
   const [bubbleY, setBubbleY] = useState(0);
+
+  // Find nearest available letter
+  const findNearestAvailable = useCallback((letter: string, direction: 'up' | 'down' | 'nearest') => {
+    if (letters.includes(letter)) return letter;
+    
+    const idx = allLetters.indexOf(letter);
+    if (idx === -1) return null;
+    
+    // Search in both directions for nearest
+    let up = idx - 1;
+    let down = idx + 1;
+    
+    while (up >= 0 || down < allLetters.length) {
+      if (direction !== 'down' && up >= 0 && letters.includes(allLetters[up])) {
+        return allLetters[up];
+      }
+      if (direction !== 'up' && down < allLetters.length && letters.includes(allLetters[down])) {
+        return allLetters[down];
+      }
+      up--;
+      down++;
+    }
+    return null;
+  }, [allLetters, letters]);
   
   // Calculate which letter based on Y position within the container
   const getLetterFromY = useCallback((clientY: number) => {
@@ -297,13 +321,15 @@ function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProps) {
     const index = Math.floor(relativeY / letterHeight);
     
     if (index >= 0 && index < allLetters.length) {
-      // Calculate bubble Y position (relative to container)
-      const clampedY = Math.max(24, Math.min(rect.height - 24, relativeY));
+      const clampedY = Math.max(28, Math.min(rect.height - 28, relativeY));
       setBubbleY(clampedY);
-      return allLetters[index];
+      
+      const letter = allLetters[index];
+      // Return nearest available letter instead of unavailable one
+      return findNearestAvailable(letter, 'nearest');
     }
     return null;
-  }, [allLetters]);
+  }, [allLetters, findNearestAvailable]);
 
   // Handle touch/mouse start
   const handleStart = useCallback((clientY: number) => {
@@ -311,11 +337,9 @@ function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProps) {
     const letter = getLetterFromY(clientY);
     if (letter) {
       setScrubLetter(letter);
-      if (letters.includes(letter)) {
-        onSelect(letter);
-      }
+      onSelect(letter);
     }
-  }, [getLetterFromY, letters, onSelect]);
+  }, [getLetterFromY, onSelect]);
 
   // Handle touch/mouse move
   const handleMove = useCallback((clientY: number) => {
@@ -323,11 +347,9 @@ function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProps) {
     const letter = getLetterFromY(clientY);
     if (letter) {
       setScrubLetter(letter);
-      if (letters.includes(letter)) {
-        onSelect(letter);
-      }
+      onSelect(letter);
     }
-  }, [isDragging, getLetterFromY, letters, onSelect]);
+  }, [isDragging, getLetterFromY, onSelect]);
 
   // Handle touch/mouse end
   const handleEnd = useCallback(() => {
@@ -372,7 +394,7 @@ function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProps) {
   return (
     <div 
       ref={containerRef}
-      className="fixed top-1/2 -translate-y-1/2 right-1 z-50 flex flex-col justify-center py-2 px-1.5 touch-none select-none"
+      className="fixed top-1/2 -translate-y-1/2 right-0.5 z-50 flex flex-col justify-center py-1 px-1 touch-none select-none"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -381,24 +403,24 @@ function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProps) {
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseLeave}
     >
-      {/* iOS-style bubble - appears to the left of the alphabet bar */}
+      {/* iOS-style bubble - theme matched */}
       {isDragging && scrubLetter && (
         <div 
-          className="absolute right-8 pointer-events-none transition-transform duration-75"
-          style={{ top: bubbleY - 24 }}
+          className="absolute right-9 pointer-events-none transition-transform duration-75"
+          style={{ top: bubbleY - 28 }}
         >
           <div className="relative flex items-center">
-            {/* Bubble */}
-            <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center shadow-lg">
-              <span className="text-2xl font-bold text-white">{scrubLetter}</span>
+            {/* Bubble - dark theme */}
+            <div className="w-14 h-14 rounded-2xl bg-slate-800 border border-slate-600/50 flex items-center justify-center shadow-xl">
+              <span className="text-2xl font-bold text-blue-400">{scrubLetter}</span>
             </div>
             {/* Triangle pointer */}
-            <div className="w-0 h-0 border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent border-l-[8px] border-l-blue-500 -ml-px" />
+            <div className="w-0 h-0 border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent border-l-[10px] border-l-slate-800 -ml-px" />
           </div>
         </div>
       )}
       
-      {/* Letter list */}
+      {/* Letter list - bigger */}
       {allLetters.map((letter) => {
         const isAvailable = letters.includes(letter);
         const isActive = activeLetter === letter || scrubLetter === letter;
@@ -407,12 +429,12 @@ function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProps) {
           <div
             key={letter}
             className={cn(
-              'w-5 h-4 flex items-center justify-center text-[10px] font-semibold',
+              'w-6 h-[18px] flex items-center justify-center text-[11px] font-semibold',
               isAvailable 
                 ? isActive 
                   ? 'text-blue-400' 
                   : 'text-slate-400'
-                : 'text-slate-700/40'
+                : 'text-slate-700/30'
             )}
           >
             {letter}
