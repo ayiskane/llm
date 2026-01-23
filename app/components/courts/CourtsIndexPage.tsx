@@ -284,6 +284,7 @@ function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [scrubLetter, setScrubLetter] = useState<string | null>(null);
+  const [bubbleY, setBubbleY] = useState(0);
   
   // Calculate which letter based on Y position within the container
   const getLetterFromY = useCallback((clientY: number) => {
@@ -296,6 +297,9 @@ function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProps) {
     const index = Math.floor(relativeY / letterHeight);
     
     if (index >= 0 && index < allLetters.length) {
+      // Calculate bubble Y position (relative to container)
+      const clampedY = Math.max(24, Math.min(rect.height - 24, relativeY));
+      setBubbleY(clampedY);
       return allLetters[index];
     }
     return null;
@@ -305,9 +309,11 @@ function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProps) {
   const handleStart = useCallback((clientY: number) => {
     setIsDragging(true);
     const letter = getLetterFromY(clientY);
-    if (letter && letters.includes(letter)) {
+    if (letter) {
       setScrubLetter(letter);
-      onSelect(letter);
+      if (letters.includes(letter)) {
+        onSelect(letter);
+      }
     }
   }, [getLetterFromY, letters, onSelect]);
 
@@ -364,50 +370,56 @@ function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProps) {
   }, [isDragging, handleEnd]);
   
   return (
-    <>
-      {/* Large letter popup when scrubbing */}
+    <div 
+      ref={containerRef}
+      className="absolute top-0 bottom-0 right-0 z-20 flex flex-col justify-center py-2 px-1.5 touch-none select-none"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseLeave}
+    >
+      {/* iOS-style bubble - appears to the left of the alphabet bar */}
       {isDragging && scrubLetter && (
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
-          <div className="w-20 h-20 rounded-2xl bg-blue-500/90 backdrop-blur-sm flex items-center justify-center shadow-xl">
-            <span className="text-4xl font-bold text-white">{scrubLetter}</span>
+        <div 
+          className="absolute right-8 pointer-events-none transition-transform duration-75"
+          style={{ top: bubbleY - 24 }}
+        >
+          <div className="relative flex items-center">
+            {/* Bubble */}
+            <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center shadow-lg">
+              <span className="text-2xl font-bold text-white">{scrubLetter}</span>
+            </div>
+            {/* Triangle pointer */}
+            <div className="w-0 h-0 border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent border-l-[8px] border-l-blue-500 -ml-px" />
           </div>
         </div>
       )}
       
-      {/* Alphabet sidebar */}
-      <div 
-        ref={containerRef}
-        className="absolute top-0 bottom-0 right-0 z-20 flex flex-col justify-center py-4 px-1 touch-none select-none"
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        onMouseLeave={onMouseLeave}
-      >
-        {allLetters.map((letter) => {
-          const isAvailable = letters.includes(letter);
-          const isActive = activeLetter === letter || scrubLetter === letter;
-          
-          return (
-            <div
-              key={letter}
-              className={cn(
-                'w-6 h-4 flex items-center justify-center text-[9px] font-semibold transition-all',
-                isAvailable 
-                  ? isActive 
-                    ? 'text-blue-400 scale-110' 
-                    : 'text-slate-500'
-                  : 'text-slate-700/50'
-              )}
-            >
-              {letter}
-            </div>
-          );
-        })}
-      </div>
-    </>
+      {/* Letter list */}
+      {allLetters.map((letter) => {
+        const isAvailable = letters.includes(letter);
+        const isActive = activeLetter === letter || scrubLetter === letter;
+        
+        return (
+          <div
+            key={letter}
+            className={cn(
+              'w-5 h-4 flex items-center justify-center text-[10px] font-semibold',
+              isAvailable 
+                ? isActive 
+                  ? 'text-blue-400' 
+                  : 'text-slate-400'
+                : 'text-slate-700/40'
+            )}
+          >
+            {letter}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
