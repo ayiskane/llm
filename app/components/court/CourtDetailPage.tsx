@@ -7,6 +7,7 @@ import { StickyHeader } from '../layouts/StickyHeader';
 import { Section, PillButton, Toast } from '../ui';
 import { CourtHeader } from './CourtHeader';
 import { SearchBar } from './SearchBar';
+import { CircuitCourtAlert } from './CircuitCourtAlert';
 import { TeamsList } from '../features/TeamsCard';
 import { CourtContactsStack, CrownContactsStack } from '../features/ContactCard';
 import { CellList } from '../features/CellCard';
@@ -21,9 +22,10 @@ interface CourtDetailPageProps {
   courtDetails: CourtDetails;
   onBack?: () => void;
   onSearch?: (query: string) => void;
+  onNavigateToCourt?: (courtId: number) => void;
 }
 
-export function CourtDetailPage({ courtDetails, onBack, onSearch }: CourtDetailPageProps) {
+export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCourt }: CourtDetailPageProps) {
   const { court, contacts, cells, teamsLinks, bailCourt, bailTeams, bailContacts } = courtDetails;
   
   const [expandedSection, setExpandedSection] = useState<AccordionSection>('contacts');
@@ -130,12 +132,13 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch }: CourtDetailP
       {/* Scrollable content */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto scroll-smooth" onScroll={handleScroll}>
         <div className="p-3 space-y-2.5 pb-20">
-          {/* Circuit court notice */}
+          {/* Circuit court alert - Design 4: Compact Minimal */}
           {court.is_circuit && court.contact_hub_name && (
-            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm">
-              <strong>{court.name}</strong> is a circuit court. Contact information is managed by{' '}
-              <strong>{court.contact_hub_name}</strong>.
-            </div>
+            <CircuitCourtAlert
+              hubCourtName={court.contact_hub_name}
+              hubCourtId={court.contact_hub}
+              onNavigateToHub={onNavigateToCourt}
+            />
           )}
 
           {/* Contacts section */}
@@ -187,6 +190,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch }: CourtDetailP
                   currentCourtId={court.id}
                   bailTeams={bailTeams}
                   courtTeams={teamsLinks}
+                  onNavigateToHub={onNavigateToCourt}
                   onCopy={copyToClipboard}
                   isCopied={isCopied}
                 />

@@ -45,6 +45,7 @@ export default function CourtPage() {
     <CourtDetailPage 
       courtDetails={courtDetails}
       onBack={() => router.push('/')}
+      onNavigateToCourt={(courtId) => router.push(`/court/${courtId}`)}
     />
   );
 }
