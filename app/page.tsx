@@ -1,54 +1,41 @@
-'use client';
-
-import { useState } from 'react';
 import { PageLayout } from '@/app/components/layouts';
-import { CourtDetailPage } from '@/app/components/court';
-import { useCourtDetails } from '@/lib/hooks';
-
-// Default court ID - Update this to your preferred default court
-// This should be a court that has good data for testing (e.g., Victoria, Robson Square)
-const DEFAULT_COURT_ID = 1;
 
 export default function Home() {
-  const [courtId] = useState<number>(DEFAULT_COURT_ID);
-  
-  const { data: courtDetails, isLoading, error } = useCourtDetails(courtId);
-
-  // Loading state
-  if (isLoading) {
-    return (
-      <PageLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-slate-400">Loading court details...</p>
-          </div>
-        </div>
-      </PageLayout>
-    );
-  }
-
-  // Error state
-  if (error || !courtDetails) {
-    return (
-      <PageLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-red-400 mb-4">
-              {error || 'Failed to load court details'}
-            </p>
-            <p className="text-slate-500 text-sm">
-              Court ID: {courtId}
-            </p>
-          </div>
-        </div>
-      </PageLayout>
-    );
-  }
-
   return (
     <PageLayout>
-      <CourtDetailPage courtDetails={courtDetails} />
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8 max-w-md w-full text-center backdrop-blur-sm">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-amber-500/20 flex items-center justify-center">
+            <svg 
+              className="w-8 h-8 text-amber-400" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6" 
+              />
+            </svg>
+          </div>
+          
+          <h1 className="text-2xl font-bold text-white mb-3">
+            Down for Maintenance
+          </h1>
+          
+          <p className="text-slate-400 leading-relaxed">
+            Dev is sleeping, we will continue the testing phase in the morning.
+          </p>
+          
+          <div className="mt-6 pt-6 border-t border-slate-700/50">
+            <p className="text-xs text-slate-500 uppercase tracking-wider">
+              LLM: Legal Legends Manual
+            </p>
+          </div>
+        </div>
+      </div>
     </PageLayout>
   );
 }
