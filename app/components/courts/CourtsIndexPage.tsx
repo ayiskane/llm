@@ -78,7 +78,12 @@ function getAvailableLetters(groups: GroupedCourts[]): string[] {
 function getCourtDisplayName(court: CourtWithRegionName): string {
   const name = court.name;
   
-  // Already has "Court" in the name (e.g., "Downtown Community Court", "Vancouver Provincial Court")
+  // Special case: Vancouver Provincial Court is commonly known as "222 Main"
+  if (name === 'Vancouver Provincial Court') {
+    return 'Vancouver Provincial Court (222 Main)';
+  }
+  
+  // Already has "Court" in the name (e.g., "Downtown Community Court")
   if (name.toLowerCase().includes('court')) {
     return name;
   }

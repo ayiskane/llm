@@ -19,6 +19,11 @@ interface CourtHeaderProps {
 function getDisplayName(court: Court | CourtWithRegion): string {
   const name = court.name;
   
+  // Special case: Vancouver Provincial Court is commonly known as "222 Main"
+  if (name === 'Vancouver Provincial Court') {
+    return 'Vancouver Provincial Court (222 Main)';
+  }
+  
   // Already has "Court" in the name
   if (name.toLowerCase().includes('court')) {
     return name;
