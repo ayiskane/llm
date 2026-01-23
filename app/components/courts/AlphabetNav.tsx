@@ -21,7 +21,6 @@ export function AlphabetNav({
   const [currentLetter, setCurrentLetter] = useState<string | null>(null);
   const [bubbleY, setBubbleY] = useState(0);
 
-  // Find nearest available letter when scrubbing over unavailable ones
   const findNearestAvailable = useCallback((letter: string): string => {
     if (availableLetters.has(letter)) return letter;
     
@@ -85,7 +84,6 @@ export function AlphabetNav({
     setCurrentLetter(null);
   }, []);
 
-  // Touch events
   const handleTouchStart = (e: React.TouchEvent) => {
     e.preventDefault();
     handleStart(e.touches[0].clientY);
@@ -96,7 +94,6 @@ export function AlphabetNav({
     handleMove(e.touches[0].clientY);
   };
 
-  // Mouse events (for desktop testing)
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     handleStart(e.clientY);
@@ -122,12 +119,12 @@ export function AlphabetNav({
 
   return (
     <>
-      {/* Letter bubble - appears to the left when actively scrubbing */}
+      {/* Letter bubble */}
       {isDragging && currentLetter && (
         <div
           className="fixed z-50 pointer-events-none"
           style={{
-            right: 48,
+            right: 56,
             top: containerRef.current
               ? containerRef.current.getBoundingClientRect().top + bubbleY
               : 0,
@@ -135,32 +132,38 @@ export function AlphabetNav({
           }}
         >
           <div className="flex items-center">
-            <div className="w-14 h-14 bg-slate-800/95 border border-slate-600/50 rounded-2xl flex items-center justify-center shadow-xl backdrop-blur-sm">
-              <span className="text-3xl font-bold text-blue-400">
+            <div 
+              className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-xl"
+              style={{
+                backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                border: '1px solid rgba(100, 116, 139, 0.5)',
+              }}
+            >
+              <span className="text-4xl font-bold text-blue-400">
                 {currentLetter}
               </span>
             </div>
-            {/* Triangle pointer */}
             <div
-              className="w-0 h-0"
               style={{
-                borderTop: '10px solid transparent',
-                borderBottom: '10px solid transparent',
-                borderLeft: '10px solid rgba(51, 65, 85, 0.95)',
+                width: 0,
+                height: 0,
+                borderTop: '12px solid transparent',
+                borderBottom: '12px solid transparent',
+                borderLeft: '12px solid rgba(30, 41, 59, 0.95)',
               }}
             />
           </div>
         </div>
       )}
 
-      {/* Alphabet bar - rounded card with semi-transparent background */}
+      {/* Alphabet card */}
       <div
         ref={containerRef}
-        className="fixed right-2 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center px-2 py-3 select-none touch-none rounded-2xl backdrop-blur-md"
+        className="fixed right-2 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center px-2.5 py-3 select-none touch-none rounded-xl"
         style={{
-          background: 'rgba(30, 41, 59, 0.85)',
-          border: '1px solid rgba(71, 85, 105, 0.4)',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+          backgroundColor: 'rgba(30, 41, 59, 0.9)',
+          border: '1px solid rgba(100, 116, 139, 0.4)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -174,12 +177,12 @@ export function AlphabetNav({
             <span
               key={letter}
               className={cn(
-                'text-[11px] leading-[16px] font-bold transition-colors w-5 text-center',
+                'text-xs leading-5 font-bold transition-colors w-5 text-center',
                 isActive
                   ? 'text-blue-400'
                   : isAvailable
                   ? 'text-slate-200'
-                  : 'text-slate-500'
+                  : 'text-slate-600'
               )}
             >
               {letter}

@@ -490,7 +490,6 @@ function CourtListItem({ court, onClick }: CourtListItemProps) {
             Circuit
           </span>
         )}
-        <span className="text-slate-600 ml-1">›</span>
       </div>
     </button>
   );
