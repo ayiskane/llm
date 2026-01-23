@@ -15,12 +15,13 @@ import type { TeamsLink, BailTeam } from '@/types';
 
 interface TeamsCardProps {
   link: TeamsLink | BailTeam;
-  showDialIn?: boolean;
   onCopy?: (text: string, id: string) => void;
   isCopied?: (id: string) => boolean;
 }
 
-export function TeamsCard({ link, showDialIn = false, onCopy, isCopied }: TeamsCardProps) {
+export function TeamsCard({ link, onCopy, isCopied }: TeamsCardProps) {
+  const [showDialIn, setShowDialIn] = useState(false);
+  
   const displayName = formatCourtroomName(link.courtroom || link.name);
   const hasDialInInfo = link.phone || link.conference_id;
   
@@ -50,14 +51,34 @@ export function TeamsCard({ link, showDialIn = false, onCopy, isCopied }: TeamsC
           <span className={cn(text.secondary, 'text-sm font-medium truncate')}>{displayName}</span>
         </div>
         
-        {link.teams_link && (
-          <Button variant="join" size="sm" onClick={() => joinTeamsMeeting(link.teams_link)}>
-            <MicrosoftTeams className="w-3.5 h-3.5" />
-            Join
-          </Button>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Per-row dial-in toggle */}
+          {hasDialInInfo && (
+            <button
+              onClick={() => setShowDialIn(!showDialIn)}
+              className={cn(
+                'flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-colors',
+                showDialIn 
+                  ? 'bg-slate-700/50 text-slate-300' 
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-700/30'
+              )}
+            >
+              {showDialIn ? <EyeSlash className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              <span className="hidden sm:inline">{showDialIn ? 'Hide' : 'Dial-in'}</span>
+            </button>
+          )}
+          
+          {/* Join button */}
+          {link.teams_link && (
+            <Button variant="join" size="sm" onClick={() => joinTeamsMeeting(link.teams_link)}>
+              <MicrosoftTeams className="w-3.5 h-3.5" />
+              Join
+            </Button>
+          )}
+        </div>
       </div>
       
+      {/* Dial-in info panel */}
       {hasDialInInfo && showDialIn && (
         <div 
           className="mt-2 p-2 rounded bg-slate-900/50 cursor-pointer hover:bg-slate-900/70 transition-colors"
@@ -103,14 +124,10 @@ interface TeamsListProps {
 }
 
 export function TeamsList({ links, filterVBTriage = true, onCopy, isCopied }: TeamsListProps) {
-  const [showDialIn, setShowDialIn] = useState(false);
-  
   const filteredLinks = useMemo(() => {
     if (!filterVBTriage) return links;
     return links.filter(link => !isVBTriageLink(link.name || link.courtroom));
   }, [links, filterVBTriage]);
-  
-  const hasAnyDialInInfo = filteredLinks.some(link => link.phone || link.conference_id);
   
   const lastUpdated = useMemo(() => {
     const dates = filteredLinks
@@ -129,23 +146,14 @@ export function TeamsList({ links, filterVBTriage = true, onCopy, isCopied }: Te
 
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center justify-between px-1">
-        {lastUpdated && (
+      {lastUpdated && (
+        <div className="px-1">
           <span className="text-xs text-slate-500 uppercase">Last Updated: {lastUpdated}</span>
-        )}
-        {hasAnyDialInInfo && (
-          <button
-            onClick={() => setShowDialIn(!showDialIn)}
-            className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-300 transition-colors"
-          >
-            {showDialIn ? <EyeSlash className={iconSize.sm} /> : <Eye className={iconSize.sm} />}
-            <span>{showDialIn ? 'Hide dial-in' : 'Show dial-in'}</span>
-          </button>
-        )}
-      </div>
+        </div>
+      )}
       
       {filteredLinks.map((link) => (
-        <TeamsCard key={link.id} link={link} showDialIn={showDialIn} onCopy={onCopy} isCopied={isCopied} />
+        <TeamsCard key={link.id} link={link} onCopy={onCopy} isCopied={isCopied} />
       ))}
     </div>
   );
