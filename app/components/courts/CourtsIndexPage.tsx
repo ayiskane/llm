@@ -372,7 +372,7 @@ function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProps) {
   return (
     <div 
       ref={containerRef}
-      className="absolute top-0 bottom-0 right-0 z-20 flex flex-col justify-center py-2 px-1.5 touch-none select-none"
+      className="fixed top-1/2 -translate-y-1/2 right-1 z-50 flex flex-col justify-center py-2 px-1.5 touch-none select-none"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
