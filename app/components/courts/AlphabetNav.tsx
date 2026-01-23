@@ -138,7 +138,7 @@ export function AlphabetNav({
                 {currentLetter}
               </span>
             </div>
-            <div className={alphabetNav.pointer} />
+            <div className={alphabetNav.pointer} style={{ borderTop: "12px solid transparent", borderBottom: "12px solid transparent", borderLeft: "12px solid rgb(30, 41, 59)" }} />
           </div>
         </div>
       )}
