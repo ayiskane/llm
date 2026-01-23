@@ -53,18 +53,14 @@ export function CourtDetailPage({ courtDetails, onBack }: CourtDetailPageProps) 
     };
     
     const ref = section ? refs[section] : null;
-    const scrollContainer = scrollRef.current;
     
-    if (ref?.current && scrollContainer) {
-      setTimeout(() => {
-        const element = ref.current;
-        if (element) {
-          const containerRect = scrollContainer.getBoundingClientRect();
-          const elementRect = element.getBoundingClientRect();
-          const offsetTop = elementRect.top - containerRect.top + scrollContainer.scrollTop;
-          scrollContainer.scrollTo({ top: Math.max(0, offsetTop - 10), behavior: 'smooth' });
-        }
-      }, 100);
+    if (ref?.current) {
+      // Use requestAnimationFrame to wait for DOM update after section expands
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
     }
   }, []);
 
@@ -106,7 +102,7 @@ export function CourtDetailPage({ courtDetails, onBack }: CourtDetailPageProps) 
       </StickyHeader>
 
       {/* Scrollable content */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto" onScroll={handleScroll}>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto scroll-smooth" onScroll={handleScroll}>
         <div className="p-3 space-y-2.5 pb-20">
           {/* Circuit court notice */}
           {court.is_circuit && court.contact_hub_name && (
