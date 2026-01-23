@@ -391,7 +391,6 @@ export function CourtsIndexPage() {
     setFilters({ region: 0, courtType: 'all', courtLevel: 'all' });
     setSearchQuery('');
   }, []);
-  }, []);
 
   // Filter courts based on search and all filters
   const filteredCourts = useMemo(() => {
