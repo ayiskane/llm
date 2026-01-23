@@ -394,7 +394,7 @@ function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProps) {
   return (
     <div 
       ref={containerRef}
-      className="fixed top-1/2 -translate-y-1/2 right-0.5 z-50 flex flex-col justify-center py-1 px-1 touch-none select-none"
+      className="fixed top-1/2 -translate-y-1/2 right-1.5 z-50 flex flex-col justify-center py-2 px-2 touch-none select-none rounded-xl bg-slate-800/90 border border-slate-600/50 shadow-2xl backdrop-blur-sm"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -429,7 +429,7 @@ function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProps) {
           <div
             key={letter}
             className={cn(
-              'w-6 h-[18px] flex items-center justify-center text-[11px] font-semibold',
+              'w-6 h-5 flex items-center justify-center text-xs font-bold',
               isAvailable 
                 ? isActive 
                   ? 'text-blue-400' 
