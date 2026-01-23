@@ -47,7 +47,30 @@ export async function fetchCourtById(id: number): Promise<CourtWithRegion | null
     .single();
 
   if (error) throw error;
-  return data;
+  if (!data) return null;
+
+  // If this is a circuit court with a contact_hub, look up the hub court's ID and name
+  let contact_hub_id: number | null = null;
+  let contact_hub_name: string | null = data.contact_hub;
+
+  if (data.is_circuit && data.contact_hub) {
+    const { data: hubCourt } = await supabase
+      .from('courts')
+      .select('id, name')
+      .eq('name', data.contact_hub)
+      .single();
+    
+    if (hubCourt) {
+      contact_hub_id = hubCourt.id;
+      contact_hub_name = `${hubCourt.name} Law Courts`;
+    }
+  }
+
+  return {
+    ...data,
+    contact_hub_id,
+    contact_hub_name,
+  };
 }
 
 export async function fetchCourtsWithRegions(): Promise<CourtWithRegionName[]> {

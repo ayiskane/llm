@@ -136,7 +136,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
           {court.is_circuit && court.contact_hub_name && (
             <CircuitCourtAlert
               hubCourtName={court.contact_hub_name}
-              hubCourtId={court.contact_hub}
+              hubCourtId={court.contact_hub_id}
               onNavigateToHub={onNavigateToCourt}
             />
           )}

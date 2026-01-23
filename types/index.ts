@@ -17,7 +17,8 @@ export interface Court {
   is_circuit: boolean;
   is_staffed: boolean;
   contact_hub: string | null;
-  contact_hub_name?: string;
+  contact_hub_id?: number | null;
+  contact_hub_name?: string | null;
   address: string | null;
   phone: string | null;
   fax: string | null;

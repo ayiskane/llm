@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 interface CircuitCourtAlertProps {
   hubCourtName: string;
-  hubCourtId?: string | null;
+  hubCourtId?: number | null;
   onNavigateToHub?: (courtId: number) => void;
 }
 
@@ -22,7 +22,7 @@ export function CircuitCourtAlert({
   
   const handleClick = () => {
     if (canNavigate) {
-      onNavigateToHub(parseInt(hubCourtId, 10));
+      onNavigateToHub(hubCourtId);
     }
   };
 
