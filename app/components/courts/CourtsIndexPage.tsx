@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, X, Building, GeoAlt, Funnel, ChevronDown } from 'react-bootstrap-icons';
 import { AlphabetNav } from './AlphabetNav';
 import { cn, pill, text } from '@/lib/config/theme';
@@ -354,15 +354,16 @@ function LetterSection({ letter, courts, onCourtClick, sectionRef }: LetterSecti
 
 export function CourtsIndexPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { courts, isLoading, error } = useCourts();
   
-  // State
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState<Filters>({
-    region: 0,
-    courtType: 'all',
-    courtLevel: 'all',
-  });
+  // Initialize filters from URL params
+  const [filters, setFilters] = useState<Filters>(() => ({
+    region: Number(searchParams.get('region')) || 0,
+    courtType: (searchParams.get('type') as Filters['courtType']) || 'all',
+    courtLevel: (searchParams.get('level') as Filters['courtLevel']) || 'all',
+  }));
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeLetter, setActiveLetter] = useState<string | null>(null);
   
@@ -370,12 +371,26 @@ export function CourtsIndexPage() {
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
+  // Update URL when filters change (without adding history)
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (filters.region !== 0) params.set('region', String(filters.region));
+    if (filters.courtType !== 'all') params.set('type', filters.courtType);
+    if (filters.courtLevel !== 'all') params.set('level', filters.courtLevel);
+    if (searchQuery) params.set('q', searchQuery);
+    
+    const newUrl = params.toString() ? `?${params.toString()}` : '/';
+    router.replace(newUrl, { scroll: false });
+  }, [filters, searchQuery, router]);
+
   // Check if any filters are active (for indicator)
   const hasActiveFilters = filters.region !== 0 || filters.courtType !== 'all' || filters.courtLevel !== 'all';
 
   // Clear all filters
   const clearAllFilters = useCallback(() => {
     setFilters({ region: 0, courtType: 'all', courtLevel: 'all' });
+    setSearchQuery('');
+  }, []);
   }, []);
 
   // Filter courts based on search and all filters
@@ -499,13 +514,10 @@ export function CourtsIndexPage() {
         <div className="px-4 pt-4 pb-2">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-white">BC Courts</h1>
+              <h1 className="text-xl font-bold text-white">BC Court Index</h1>
               <p className="text-xs text-slate-500 mt-0.5">
                 {filteredCourts.length} {filteredCourts.length === 1 ? 'courthouse' : 'courthouses'}
               </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-slate-600 uppercase tracking-wider">LLM</span>
             </div>
           </div>
         </div>
