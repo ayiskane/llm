@@ -21,12 +21,12 @@ const REGIONS = [
   { id: 5, name: 'Northern', code: 'R5' },
 ] as const;
 
-const REGION_COLORS: Record<number, string> = {
-  1: 'bg-amber-500',
-  2: 'bg-blue-500',
-  3: 'bg-emerald-500',
-  4: 'bg-purple-500',
-  5: 'bg-cyan-500',
+const REGION_COLORS: Record<number, { dot: string; tag: string }> = {
+  1: { dot: 'bg-amber-500', tag: 'bg-amber-500/15 text-amber-400' },
+  2: { dot: 'bg-blue-500', tag: 'bg-blue-500/15 text-blue-400' },
+  3: { dot: 'bg-emerald-500', tag: 'bg-emerald-500/15 text-emerald-400' },
+  4: { dot: 'bg-purple-500', tag: 'bg-purple-500/15 text-purple-400' },
+  5: { dot: 'bg-cyan-500', tag: 'bg-cyan-500/15 text-cyan-400' },
 };
 
 // =============================================================================
@@ -210,7 +210,7 @@ function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: FilterPane
                 )}
               >
                 {region.id !== 0 && (
-                  <span className={cn('w-1.5 h-1.5 rounded-full', REGION_COLORS[region.id])} />
+                  <span className={cn('w-1.5 h-1.5 rounded-full', REGION_COLORS[region.id]?.dot)} />
                 )}
                 {region.name}
               </button>
@@ -281,29 +281,26 @@ interface CourtListItemProps {
 
 function CourtListItem({ court, onClick }: CourtListItemProps) {
   const displayName = getCourtDisplayName(court);
+  const regionStyle = REGION_COLORS[court.region_id];
   
   return (
     <button
       onClick={onClick}
       className={cn(
         'w-full text-left px-4 py-3',
-        'flex items-center justify-between gap-3',
         'border-b border-slate-700/30 last:border-b-0',
         'active:bg-blue-500/10 transition-colors'
       )}
     >
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-medium text-slate-200 truncate">
-            {displayName}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className={cn('w-1.5 h-1.5 rounded-full', REGION_COLORS[court.region_id] || 'bg-slate-500')} />
-          <span className="text-xs text-slate-500">{court.region_name}</span>
-        </div>
+      <div className="text-sm font-medium text-slate-200 mb-1.5">
+        {displayName}
       </div>
-      <div className="flex items-center gap-1.5 flex-shrink-0">
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {regionStyle && (
+          <span className={cn('px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide rounded', regionStyle.tag)}>
+            {court.region_name}
+          </span>
+        )}
         {court.has_provincial && (
           <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide rounded bg-emerald-500/15 text-emerald-400">
             PC
@@ -323,6 +320,7 @@ function CourtListItem({ court, onClick }: CourtListItemProps) {
     </button>
   );
 }
+
 
 interface LetterSectionProps {
   letter: string;
