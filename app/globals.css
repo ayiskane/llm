@@ -160,25 +160,25 @@
 }
 
 /* ============================================================================
-   ALPHABET NAVIGATION
+   ALPHABET NAVIGATION - PLAIN CSS (after Tailwind)
    ============================================================================ */
 
 .alphabet-nav-card {
-  background-color: rgba(30, 41, 59, 0.92);
-  border: 1px solid rgba(100, 116, 139, 0.5);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  background-color: rgba(30, 41, 59, 0.92) !important;
+  border: 1px solid rgba(100, 116, 139, 0.5) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
 
 .alphabet-nav-bubble {
-  background-color: rgba(30, 41, 59, 0.95);
-  border: 1px solid rgba(100, 116, 139, 0.5);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  background-color: rgba(30, 41, 59, 0.95) !important;
+  border: 1px solid rgba(100, 116, 139, 0.5) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
 }
 
 .alphabet-nav-pointer {
-  border-top: 12px solid transparent;
-  border-bottom: 12px solid transparent;
-  border-left: 12px solid rgba(30, 41, 59, 0.95);
+  border-top: 12px solid transparent !important;
+  border-bottom: 12px solid transparent !important;
+  border-left: 12px solid rgba(30, 41, 59, 0.95) !important;
 }
