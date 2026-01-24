@@ -1,15 +1,15 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { fetchCorrectionsCentresWithRegions } from '@/lib/api/queries';
-import type { CorrectionsCentreWithRegion } from '@/types';
+import { fetchCorrectionalCentres } from '@/lib/api/queries';
+import type { CorrectionalCentre } from '@/types';
 
-export type { CorrectionsCentreWithRegion };
+export type { CorrectionalCentre };
 
-export function useCorrectionsCentres() {
+export function useCorrectionalCentres() {
   const { data, isLoading, error } = useQuery({
-    queryKey: ['corrections-centres'],
-    queryFn: fetchCorrectionsCentresWithRegions,
+    queryKey: ['correctional-centres'],
+    queryFn: fetchCorrectionalCentres,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -19,3 +19,6 @@ export function useCorrectionsCentres() {
     error: error?.message || null,
   };
 }
+
+// Legacy alias
+export const useCorrectionsCentres = useCorrectionalCentres;
