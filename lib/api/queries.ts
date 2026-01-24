@@ -9,8 +9,7 @@ import type {
   BailContact,
   Program,
   CourtDetails,
-  CorrectionsCentre,
-  CorrectionsCentreWithRegion,
+  CorrectionalCentre,
 } from '@/types';
 
 const supabase = createClient();
@@ -323,12 +322,12 @@ export async function fetchSearchIndexData(): Promise<SearchIndexData> {
 }
 
 // =============================================================================
-// CORRECTIONS CENTRES
+// CORRECTIONAL CENTRES
 // =============================================================================
 
-export async function fetchCorrectionsCentres(): Promise<CorrectionsCentre[]> {
+export async function fetchCorrectionalCentres(): Promise<CorrectionalCentre[]> {
   const { data, error } = await supabase
-    .from('corrections_centres')
+    .from('correctional_centres')
     .select('*')
     .order('name');
 
@@ -336,41 +335,13 @@ export async function fetchCorrectionsCentres(): Promise<CorrectionsCentre[]> {
   return data || [];
 }
 
-export async function fetchCorrectionsCentresWithRegions(): Promise<CorrectionsCentreWithRegion[]> {
+export async function fetchCorrectionalCentreById(id: number): Promise<CorrectionalCentre | null> {
   const { data, error } = await supabase
-    .from('corrections_centres')
-    .select(`
-      *,
-      region:regions(id, name, code)
-    `)
-    .order('name');
-
-  if (error) throw error;
-  
-  // Map the joined data to a flat structure
-  return (data || []).map((centre: any) => ({
-    ...centre,
-    region_name: centre.region?.name ?? 'Unknown',
-    region_code: centre.region?.code ?? 'UNK',
-  }));
-}
-
-export async function fetchCorrectionsCentreById(id: number): Promise<CorrectionsCentreWithRegion | null> {
-  const { data, error } = await supabase
-    .from('corrections_centres')
-    .select(`
-      *,
-      region:regions(id, name, code)
-    `)
+    .from('correctional_centres')
+    .select('*')
     .eq('id', id)
     .single();
 
   if (error) throw error;
-  if (!data) return null;
-
-  return {
-    ...data,
-    region_name: data.region?.name ?? 'Unknown',
-    region_code: data.region?.code ?? 'UNK',
-  };
+  return data;
 }
