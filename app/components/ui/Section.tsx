@@ -1,7 +1,7 @@
 'use client';
 
 import { forwardRef, useState } from 'react';
-import { ChevronDown } from 'react-bootstrap-icons';
+import { FaChevronDown } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { section, getSectionColors, type SectionColor } from '@/lib/config/theme';
 
@@ -48,7 +48,7 @@ export const Section = forwardRef<HTMLDivElement, SectionProps>(
           )}
           
           {/* Chevron */}
-          <ChevronDown
+          <FaChevronDown
             className={cn(
               'w-4 h-4 text-slate-500 transition-transform duration-200',
               isOpen && 'rotate-180'
