@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Bank2, ChevronRight } from 'react-bootstrap-icons';
+import { Bank2, ChevronRight, GeoAlt } from 'react-bootstrap-icons';
 import { cn } from '@/lib/utils';
 import { card, text, iconSize, getScheduleLabelClass } from '@/lib/config/theme';
 import { TeamsList } from './TeamsCard';
@@ -82,7 +82,7 @@ export function BailSchedule({ bailCourt }: BailScheduleProps) {
 }
 
 // ============================================================================
-// BAIL HUB LINK COMPONENT
+// BAIL HUB LINK COMPONENT - Card style linking to hub court
 // ============================================================================
 
 interface BailHubLinkProps {
@@ -93,16 +93,46 @@ interface BailHubLinkProps {
 export function BailHubLink({ bailCourt, onNavigate }: BailHubLinkProps) {
   if (!bailCourt.court_id) return null;
 
+  const courtName = `${bailCourt.name.replace(' Virtual Bail', '')} Law Courts`;
+
   return (
     <button
       onClick={() => onNavigate(bailCourt.court_id!)}
-      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg card-base transition-colors hover:bg-slate-800/50"
+      className={cn(
+        "w-full rounded-xl overflow-hidden",
+        "bg-slate-800/40 border border-slate-700/50",
+        "hover:bg-slate-800/60 hover:border-slate-600/50",
+        "active:bg-slate-700/50",
+        "transition-all duration-200"
+      )}
     >
-      <Bank2 className={cn(iconSize.md, 'text-teal-400')} />
-      <span className="flex-1 text-left text-sm font-medium text-white">
-        {bailCourt.name.replace(' Virtual Bail', '')} Law Courts
-      </span>
-      <ChevronRight className={cn(iconSize.md, 'text-slate-500')} />
+      {/* Card header with label */}
+      <div className="px-3 py-1.5 border-b border-slate-700/30 bg-slate-800/30">
+        <span className="text-[9px] font-mono uppercase tracking-wider text-teal-400/70">
+          Bail Hub Court
+        </span>
+      </div>
+      
+      {/* Card content */}
+      <div className="flex items-center gap-3 px-3 py-3">
+        {/* Icon */}
+        <div className="w-10 h-10 rounded-lg bg-teal-500/15 flex items-center justify-center shrink-0">
+          <Bank2 className="w-5 h-5 text-teal-400" />
+        </div>
+        
+        {/* Court info */}
+        <div className="flex-1 min-w-0 text-left">
+          <div className="text-sm font-medium text-slate-200 truncate">
+            {courtName}
+          </div>
+          <div className="text-xs text-slate-500 mt-0.5">
+            Tap to view court details
+          </div>
+        </div>
+        
+        {/* Chevron */}
+        <ChevronRight className="w-5 h-5 text-slate-500 shrink-0" />
+      </div>
     </button>
   );
 }
