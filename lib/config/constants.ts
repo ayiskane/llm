@@ -7,6 +7,27 @@ export const APP_NAME = 'LLM: Legal Legends Manual';
 export const APP_DESCRIPTION = 'BC Court contacts and information directory';
 
 // ============================================================================
+// REGION CONFIGURATION
+// ============================================================================
+
+export const REGIONS = [
+  { id: 0, name: 'All Regions', code: 'ALL' },
+  { id: 1, name: 'Island', code: 'R1' },
+  { id: 2, name: 'Vancouver Coastal', code: 'R2' },
+  { id: 3, name: 'Fraser', code: 'R3' },
+  { id: 4, name: 'Interior', code: 'R4' },
+  { id: 5, name: 'Northern', code: 'R5' },
+] as const;
+
+export const REGION_COLORS: Record<number, { dot: string; tag: string }> = {
+  1: { dot: 'bg-amber-500', tag: 'bg-amber-500/15 text-amber-400' },
+  2: { dot: 'bg-blue-500', tag: 'bg-blue-500/15 text-blue-400' },
+  3: { dot: 'bg-emerald-500', tag: 'bg-emerald-500/15 text-emerald-400' },
+  4: { dot: 'bg-purple-500', tag: 'bg-purple-500/15 text-purple-400' },
+  5: { dot: 'bg-cyan-500', tag: 'bg-cyan-500/15 text-cyan-400' },
+};
+
+// ============================================================================
 // UI CONFIGURATION
 // ============================================================================
 
