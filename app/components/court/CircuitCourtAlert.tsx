@@ -1,6 +1,6 @@
 'use client';
 
-import { InfoCircle, ChevronRight } from 'react-bootstrap-icons';
+import { FaCircleInfo, FaChevronRight } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 
 interface CircuitCourtAlertProps {
@@ -37,7 +37,7 @@ export function CircuitCourtAlert({
     >
       {/* Icon container */}
       <div className="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center flex-shrink-0">
-        <InfoCircle className="w-4 h-4 text-amber-500" />
+        <FaCircleInfo className="w-4 h-4 text-amber-500" />
       </div>
       
       {/* Text */}
@@ -58,7 +58,7 @@ export function CircuitCourtAlert({
       
       {/* Chevron if navigable */}
       {canNavigate && (
-        <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
+        <FaChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
       )}
     </div>
   );
