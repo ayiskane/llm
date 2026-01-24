@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { QueryProvider } from './providers/QueryProvider';
+import { BottomNav } from './components/ui';
 import { APP_NAME, APP_DESCRIPTION } from '@/lib/config/constants';
 import './globals.css';
 
@@ -44,9 +45,10 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} bg-slate-900 antialiased`}>
         <QueryProvider>
-          <main className="min-h-screen">
+          <main className="min-h-screen pb-16">
             {children}
           </main>
+          <BottomNav />
         </QueryProvider>
       </body>
     </html>
