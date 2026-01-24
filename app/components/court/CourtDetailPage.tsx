@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { ArrowLeft, EnvelopeAt, ShieldCheck, Bank2, CameraVideo } from 'react-bootstrap-icons';
+import { FaArrowLeft, FaAt, FaBuildingShield, FaBuildingColumns, FaVideo } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { StickyHeader } from '../layouts/StickyHeader';
 import { Section, PillButton, Toast } from '../ui';
@@ -79,10 +79,10 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
   };
 
   const navButtons = [
-    { key: 'contacts', label: 'Contacts', icon: <EnvelopeAt className="w-4 h-4" />, count: contacts.length, show: contacts.length > 0 },
-    { key: 'cells', label: 'Cells', icon: <ShieldCheck className="w-4 h-4" />, count: cells.length, show: cells.length > 0 },
-    { key: 'bail', label: 'Bail', icon: <Bank2 className="w-4 h-4" />, count: '', show: !!bailCourt },
-    { key: 'teams', label: 'Teams', icon: <CameraVideo className="w-4 h-4" />, count: teamsLinks.length, show: teamsLinks.length > 0 },
+    { key: 'contacts', label: 'Contacts', icon: <FaAt className="w-4 h-4" />, count: contacts.length, show: contacts.length > 0 },
+    { key: 'cells', label: 'Cells', icon: <FaBuildingShield className="w-4 h-4" />, count: cells.length, show: cells.length > 0 },
+    { key: 'bail', label: 'Bail', icon: <FaBuildingColumns className="w-4 h-4" />, count: '', show: !!bailCourt },
+    { key: 'teams', label: 'Teams', icon: <FaVideo className="w-4 h-4" />, count: teamsLinks.length, show: teamsLinks.length > 0 },
   ];
 
   return (
@@ -94,7 +94,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
             onClick={onBack}
             className="p-2 -ml-1 text-slate-400 hover:text-white transition-colors shrink-0"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <FaArrowLeft className="w-5 h-5" />
           </button>
           
           <SearchBar
