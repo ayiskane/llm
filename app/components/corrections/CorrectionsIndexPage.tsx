@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { FaBuildingShield, FaLocationDot, FaPhone } from '@/lib/icons';
 import { cn } from '@/lib/config/theme';
+import { REGION_COLORS } from '@/lib/config/constants';
 import { useCorrectionalCentres } from '@/lib/hooks/useCorrectionsCentres';
 import type { CorrectionalCentre } from '@/lib/hooks/useCorrectionsCentres';
 import {
@@ -16,90 +17,93 @@ import {
 } from '@/app/components/ui';
 
 // =============================================================================
+// REGION MAPPING
+// =============================================================================
+
+const LOCATION_TO_REGION: Record<string, number> = {
+  'Victoria': 1,
+  'Nanaimo': 1,
+  'Oliver': 4,
+  'Kamloops': 4,
+  'Prince George': 5,
+  'Surrey': 3,
+  'Port Coquitlam': 3,
+  'Maple Ridge': 3,
+  'Chilliwack': 3,
+  'Abbotsford': 3,
+  'Agassiz': 3,
+  'Mission': 3,
+};
+
+const REGIONS = [
+  { id: 0, name: 'All Regions' },
+  { id: 1, name: 'Island' },
+  { id: 3, name: 'Fraser' },
+  { id: 4, name: 'Interior' },
+  { id: 5, name: 'Northern' },
+] as const;
+
+function getRegionId(location: string): number {
+  return LOCATION_TO_REGION[location] ?? 0;
+}
+
+function getRegionName(location: string): string {
+  const regionId = getRegionId(location);
+  return REGIONS.find(r => r.id === regionId)?.name ?? 'Unknown';
+}
+
+// =============================================================================
 // TYPES
 // =============================================================================
 
 type JurisdictionFilter = 'all' | 'provincial' | 'federal';
-type TypeFilter = 'all' | 'pretrial' | 'sentenced' | 'women';
 
 interface Filters {
   jurisdiction: JurisdictionFilter;
-  type: TypeFilter;
+  region: number;
 }
 
 // =============================================================================
 // CENTRE CARD
 // =============================================================================
 
-interface CentreCardProps {
-  centre: CorrectionalCentre;
-}
-
-function CentreCard({ centre }: CentreCardProps) {
+function CentreCard({ centre }: { centre: CorrectionalCentre }) {
   const phoneLink = centre.general_phone.replace(/[^0-9]/g, '');
-  
-  // Determine tag color based on type
-  const getTypeTag = () => {
-    if (centre.is_federal) {
-      return { text: 'Federal', class: 'bg-rose-500/15 text-rose-400' };
-    }
-    if (centre.centre_type === 'pretrial') {
-      return { text: 'Pretrial', class: 'bg-amber-500/15 text-amber-400' };
-    }
-    if (centre.centre_type === 'women') {
-      return { text: 'Women', class: 'bg-pink-500/15 text-pink-400' };
-    }
-    return { text: 'Provincial', class: 'bg-emerald-500/15 text-emerald-400' };
-  };
-
-  const typeTag = getTypeTag();
+  const regionId = getRegionId(centre.location);
+  const regionColors = REGION_COLORS[regionId] || { tag: 'bg-slate-500/15 text-slate-400' };
 
   return (
-    <div className="px-4 py-3 border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
-      <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-800/80 flex items-center justify-center">
-          <FaBuildingShield className="w-5 h-5 text-slate-400" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start gap-2 mb-1">
-            <h3 className="text-sm font-medium text-slate-100 flex-1">
-              {centre.name}
-            </h3>
-            {centre.short_name && (
-              <span className="text-[10px] font-mono text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">
-                {centre.short_name}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
-            <FaLocationDot className="w-3 h-3 flex-shrink-0" />
-            <span>{centre.location}</span>
-            <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-medium', typeTag.class)}>
-              {typeTag.text}
-            </span>
-            {centre.security_level && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-700/50 text-slate-400">
-                {centre.security_level}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <a 
-              href={`tel:+1${phoneLink}`}
-              className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-            >
-              <FaPhone className="w-3 h-3" />
-              {centre.general_phone}
-              {centre.general_phone_option && (
-                <span className="text-slate-500">({centre.general_phone_option})</span>
-              )}
-            </a>
-            {centre.has_bc_gc_link && (
-              <span className="text-[10px] text-emerald-400">BC GC Link</span>
-            )}
-          </div>
-        </div>
+    <div className="px-4 py-3 border-b border-slate-800/50">
+      <div className="flex items-start justify-between gap-2 mb-1.5">
+        <h3 className="text-sm font-medium text-slate-100">{centre.name}</h3>
+        {centre.short_name && (
+          <span className="text-[10px] font-mono text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded flex-shrink-0">
+            {centre.short_name}
+          </span>
+        )}
       </div>
+      <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
+        <FaLocationDot className="w-3 h-3" />
+        <span>{centre.location}</span>
+        <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-medium', regionColors.tag)}>
+          {getRegionName(centre.location)}
+        </span>
+        {centre.is_federal && (
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-rose-500/15 text-rose-400">
+            Federal
+          </span>
+        )}
+      </div>
+      <a 
+        href={`tel:+1${phoneLink}`}
+        className="inline-flex items-center gap-1.5 text-xs text-blue-400"
+      >
+        <FaPhone className="w-3 h-3" />
+        {centre.general_phone}
+        {centre.general_phone_option && (
+          <span className="text-slate-500">({centre.general_phone_option})</span>
+        )}
+      </a>
     </div>
   );
 }
@@ -112,64 +116,39 @@ export function CorrectionsIndexPage() {
   const { centres, isLoading, error } = useCorrectionalCentres();
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [filters, setFilters] = useState<Filters>({
-    jurisdiction: 'all',
-    type: 'all',
-  });
+  const [filters, setFilters] = useState<Filters>({ jurisdiction: 'all', region: 0 });
 
-  const hasActiveFilters = filters.jurisdiction !== 'all' || filters.type !== 'all';
+  const hasActiveFilters = filters.jurisdiction !== 'all' || filters.region !== 0;
 
   const clearAllFilters = useCallback(() => {
-    setFilters({ jurisdiction: 'all', type: 'all' });
+    setFilters({ jurisdiction: 'all', region: 0 });
     setSearchQuery('');
   }, []);
 
-  // Filter centres
   const filteredCentres = useMemo(() => {
     let result = centres;
 
-    // Filter by jurisdiction
     if (filters.jurisdiction === 'provincial') {
       result = result.filter(c => !c.is_federal);
     } else if (filters.jurisdiction === 'federal') {
       result = result.filter(c => c.is_federal);
     }
 
-    // Filter by type
-    if (filters.type === 'pretrial') {
-      result = result.filter(c => c.centre_type === 'pretrial');
-    } else if (filters.type === 'women') {
-      result = result.filter(c => c.centre_type === 'women');
-    } else if (filters.type === 'sentenced') {
-      result = result.filter(c => c.centre_type === 'provincial' || c.centre_type === 'federal');
+    if (filters.region !== 0) {
+      result = result.filter(c => getRegionId(c.location) === filters.region);
     }
 
-    // Filter by search
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+      const q = searchQuery.toLowerCase();
       result = result.filter(c => 
-        c.name.toLowerCase().includes(query) ||
-        c.location.toLowerCase().includes(query) ||
-        (c.short_name?.toLowerCase().includes(query) ?? false)
+        c.name.toLowerCase().includes(q) ||
+        c.location.toLowerCase().includes(q) ||
+        c.short_name?.toLowerCase().includes(q)
       );
     }
 
     return result;
   }, [centres, filters, searchQuery]);
-
-  // Filter options
-  const jurisdictionOptions: { value: JurisdictionFilter; label: string }[] = [
-    { value: 'all', label: 'All' },
-    { value: 'provincial', label: 'Provincial' },
-    { value: 'federal', label: 'Federal' },
-  ];
-
-  const typeOptions: { value: TypeFilter; label: string }[] = [
-    { value: 'all', label: 'All' },
-    { value: 'pretrial', label: 'Pretrial' },
-    { value: 'sentenced', label: 'Sentenced' },
-    { value: 'women', label: 'Women' },
-  ];
 
   return (
     <IndexPageShell
@@ -188,30 +167,27 @@ export function CorrectionsIndexPage() {
             hasActiveFilters={hasActiveFilters}
             placeholder="Search centres..."
           />
-          <FilterPanel
-            isOpen={isFilterOpen}
-            hasFilters={hasActiveFilters}
-            onClearAll={clearAllFilters}
-          >
+          <FilterPanel isOpen={isFilterOpen} hasFilters={hasActiveFilters} onClearAll={clearAllFilters}>
             <FilterGroup label="Jurisdiction">
-              {jurisdictionOptions.map((opt) => (
+              {(['all', 'provincial', 'federal'] as const).map(v => (
                 <FilterChip
-                  key={opt.value}
-                  isActive={filters.jurisdiction === opt.value}
-                  onClick={() => setFilters({ ...filters, jurisdiction: opt.value })}
+                  key={v}
+                  isActive={filters.jurisdiction === v}
+                  onClick={() => setFilters({ ...filters, jurisdiction: v })}
                 >
-                  {opt.label}
+                  {v === 'all' ? 'All' : v.charAt(0).toUpperCase() + v.slice(1)}
                 </FilterChip>
               ))}
             </FilterGroup>
-            <FilterGroup label="Type">
-              {typeOptions.map((opt) => (
+            <FilterGroup label="Region">
+              {REGIONS.map(r => (
                 <FilterChip
-                  key={opt.value}
-                  isActive={filters.type === opt.value}
-                  onClick={() => setFilters({ ...filters, type: opt.value })}
+                  key={r.id}
+                  isActive={filters.region === r.id}
+                  onClick={() => setFilters({ ...filters, region: r.id })}
+                  dotColor={r.id !== 0 ? REGION_COLORS[r.id]?.dot : undefined}
                 >
-                  {opt.label}
+                  {r.name}
                 </FilterChip>
               ))}
             </FilterGroup>
@@ -222,23 +198,13 @@ export function CorrectionsIndexPage() {
       {filteredCentres.length === 0 ? (
         <EmptyState
           icon={<FaBuildingShield className="w-full h-full" />}
-          message={
-            searchQuery 
-              ? `No centres found for "${searchQuery}"`
-              : 'No centres match your filters'
-          }
+          message={searchQuery ? `No centres found for "${searchQuery}"` : 'No centres match your filters'}
           onClear={(searchQuery || hasActiveFilters) ? clearAllFilters : undefined}
         />
       ) : (
         <>
-          {filteredCentres.map((centre) => (
-            <CentreCard key={centre.id} centre={centre} />
-          ))}
-          <ResultsCount
-            count={filteredCentres.length}
-            singular="centre"
-            plural="centres"
-          />
+          {filteredCentres.map(c => <CentreCard key={c.id} centre={c} />)}
+          <ResultsCount count={filteredCentres.length} singular="centre" plural="centres" />
         </>
       )}
     </IndexPageShell>
