@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { MicrosoftTeams, Eye, EyeSlash, Clipboard, ClipboardCheck, Telephone, TelephoneOutbound, Hash } from 'react-bootstrap-icons';
+import { FaMicrosoftTeams, FaEye, FaEyeSlash, FaCopy, FaClipboardCheck, FaPhone, FaHashtag } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { text, iconSize } from '@/lib/config/theme';
 import { Button } from '@/app/components/ui/Button';
@@ -40,7 +40,7 @@ export function TeamsCard({ link, onCopy, isCopied }: TeamsCardProps) {
     <div className="py-2.5 px-3 rounded-lg bg-slate-800/30">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <MicrosoftTeams className={cn(iconSize.md, 'text-slate-400 flex-shrink-0')} />
+          <FaMicrosoftTeams className={cn(iconSize.md, 'text-slate-400 flex-shrink-0')} />
           <span className={cn(text.secondary, 'text-sm font-medium truncate')}>{displayName}</span>
         </div>
         
@@ -55,14 +55,14 @@ export function TeamsCard({ link, onCopy, isCopied }: TeamsCardProps) {
                   : 'text-slate-500 hover:text-slate-300 hover:bg-slate-700/30'
               )}
             >
-              {showDialIn ? <EyeSlash className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              {showDialIn ? <FaEyeSlash className="w-3.5 h-3.5" /> : <FaEye className="w-3.5 h-3.5" />}
               <span>{showDialIn ? 'Hide' : 'Dial-in'}</span>
             </button>
           )}
           
           {link.teams_link && (
             <Button variant="join" size="sm" onClick={() => joinTeamsMeeting(link.teams_link)}>
-              <MicrosoftTeams className="w-3.5 h-3.5" />
+              <FaMicrosoftTeams className="w-3.5 h-3.5" />
               Join
             </Button>
           )}
@@ -78,28 +78,28 @@ export function TeamsCard({ link, onCopy, isCopied }: TeamsCardProps) {
             <div className="flex-1 min-w-0 space-y-1 font-mono text-xs">
               {link.phone && (
                 <div className="flex items-center gap-2 text-slate-300">
-                  <Telephone className={cn(iconSize.sm, 'text-slate-500 shrink-0')} />
+                  <FaPhone className={cn(iconSize.sm, 'text-slate-500 shrink-0')} />
                   <span>{link.phone}</span>
                 </div>
               )}
               {link.phone_toll_free && (
                 <div className="flex items-center gap-2 text-slate-400">
-                  <TelephoneOutbound className={cn(iconSize.sm, 'text-slate-500 shrink-0')} />
+                  <FaPhone className={cn(iconSize.sm, 'text-slate-500 shrink-0')} />
                   <span>{link.phone_toll_free}</span>
                 </div>
               )}
               {link.conference_id && (
                 <div className="flex items-center gap-2 text-slate-400">
-                  <Hash className={cn(iconSize.sm, 'text-slate-500 shrink-0')} />
+                  <FaHashtag className={cn(iconSize.sm, 'text-slate-500 shrink-0')} />
                   <span>Conference ID: {link.conference_id}</span>
                 </div>
               )}
             </div>
             
             {isCopied?.(`teams-${link.id}`) ? (
-              <ClipboardCheck className={cn(iconSize.md, 'text-emerald-400 flex-shrink-0')} />
+              <FaClipboardCheck className={cn(iconSize.md, 'text-emerald-400 flex-shrink-0')} />
             ) : (
-              <Clipboard className={cn(iconSize.md, 'text-slate-500 flex-shrink-0')} />
+              <FaCopy className={cn(iconSize.md, 'text-slate-500 flex-shrink-0')} />
             )}
           </div>
         </div>
