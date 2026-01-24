@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Bank2, ChevronRight, GeoAlt } from 'react-bootstrap-icons';
+import { Bank2, ChevronRight } from 'react-bootstrap-icons';
 import { cn } from '@/lib/utils';
 import { card, text, iconSize, getScheduleLabelClass } from '@/lib/config/theme';
 import { TeamsList } from './TeamsCard';
@@ -106,13 +106,6 @@ export function BailHubLink({ bailCourt, onNavigate }: BailHubLinkProps) {
         "transition-all duration-200"
       )}
     >
-      {/* Card header with label */}
-      <div className="px-3 py-1.5 border-b border-slate-700/30 bg-slate-800/30">
-        <span className="text-[9px] font-mono uppercase tracking-wider text-teal-400/70">
-          Bail Hub Court
-        </span>
-      </div>
-      
       {/* Card content */}
       <div className="flex items-center gap-3 px-3 py-3">
         {/* Icon */}
