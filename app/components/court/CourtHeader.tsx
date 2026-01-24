@@ -55,7 +55,7 @@ export function CourtHeader({ court, collapsed = false, className }: CourtHeader
       <div className="flex items-center gap-2">
         <h1 
           className={cn(
-            'font-semibold text-white uppercase tracking-wide flex-1 truncate',
+            'font-semibold text-white uppercase tracking-wide flex-1 truncate text-left',
             'transition-all duration-300 ease-out',
             collapsed ? 'text-sm' : 'text-lg'
           )}
@@ -91,20 +91,20 @@ export function CourtHeader({ court, collapsed = false, className }: CourtHeader
           collapsed ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'
         )}
       >
-        <div className="overflow-hidden">
-          {/* Address */}
+        <div className="overflow-hidden text-left">
+          {/* Address - explicitly left aligned */}
           {court.address && (
             <button
               onClick={() => openInMaps(court.address)}
-              className="flex items-center gap-1 text-xs mt-1 text-slate-500 hover:text-blue-400 transition-colors"
+              className="flex items-center justify-start gap-1 text-xs mt-1 text-slate-500 hover:text-blue-400 transition-colors text-left"
             >
-              <GeoAlt className="w-3 h-3" />
-              <span>{court.address}</span>
+              <GeoAlt className="w-3 h-3 shrink-0" />
+              <span className="text-left">{court.address}</span>
             </button>
           )}
           
           {/* Region and tags row */}
-          <div className="flex flex-wrap items-center gap-1.5 mt-2 pb-1">
+          <div className="flex flex-wrap items-center justify-start gap-1.5 mt-2 pb-1">
             {region && (
               <span className="px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
                 <span>{region.code}</span>
