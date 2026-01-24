@@ -287,7 +287,16 @@ export function FaArrowsRotate(props: IconProps) {
 // LEGACY ALIASES (for backward compatibility)
 // =============================================================================
 
-export const FaAt = FaEnvelopeCircleUser;
+// At symbol - jelly regular - 560×560 → scaled to 512×512
+export function FaAt(props: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" {...props}>
+      <g transform="scale(0.914)">
+        <path d="M280 0C125.4 0 0 125.4 0 280S125.4 560 280 560c48.6 0 94.3-12.3 134.1-34c13.5-7.4 18.5-24.3 11.1-37.8s-24.3-18.5-37.8-11.1c-30.2 16.5-64.9 25.8-101.3 25.8c0 0 0 0 0 0l-6.1 0c-123.7 0-224-100.3-224-224s100.3-224 224-224l6.1 0c68.4 0 129.4 30.6 170.5 78.9 41.1 48.3 62.5 112.5 55 178.2-3.9 34.5-33.5 60-68.2 60l-35.5 0c-27.8 0-51.6-17.4-61-41.9 0-.1-.1-.3-.1-.4-2.9-7.8-4.5-16.3-4.5-25.1l0-3.2 0-105.5c0-15.5-12.5-28-28-28s-28 12.5-28 28l0 2.5c-22.2-19.3-51.3-31-83-31-70.5 0-126 57.1-126 126s55.5 126 126 126c43.6 0 81.9-21.5 105.2-54.4 20.8 33.1 57.3 55 99.1 55l35.5 0c60.5 0 111.8-44.5 118.8-104.5 8.7-76.5-16-151.2-64-207.6C441.9 36 369.1 0 286.1 0L280 0zm0 350c-38.9 0-70-32.8-70-70s31.1-70 70-70 70 32.8 70 70-31.1 70-70 70z"/>
+      </g>
+    </svg>
+  );
+}
 export const FaBuildingShield = FaUserPoliceTie;
 export const FaCircleInfo = FaCircleExclamation;
 export const FaFilter = FaSliders;
