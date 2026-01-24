@@ -1,6 +1,6 @@
 'use client';
 
-import { FaPhone, FaPhoneSolid, FaClipboard, FaCheck } from '@/lib/icons';
+import { FaPhone, FaPhoneSolid, FaCopy, FaCheck } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import type { ShellCell } from '@/types';
 import { useState, useCallback } from 'react';
@@ -50,7 +50,7 @@ function CopyButton({ text, className }: CopyButtonProps) {
       {copied ? (
         <FaCheck className="w-3 h-3 text-green-400" />
       ) : (
-        <FaClipboard className="w-3 h-3 text-slate-400" />
+        <FaCopy className="w-3 h-3 text-slate-400" />
       )}
     </button>
   );
