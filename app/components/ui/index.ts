@@ -10,5 +10,6 @@ export { SearchBar } from './SearchBar';
 export { SearchBarWithFilter } from './SearchBarWithFilter';
 export { FilterChip, FilterGroup, FilterPanel } from './FilterChip';
 export { IndexPageShell, EmptyState, ResultsCount } from './IndexPageShell';
+export { BottomNav } from './BottomNav';
 export { Input } from './Input';
 export { Toast } from './Toast';
