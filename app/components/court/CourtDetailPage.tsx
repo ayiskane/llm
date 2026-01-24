@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { FaArrowLeft, FaAt, FaBuildingShield, FaBuildingColumns, FaVideo } from '@/lib/icons';
+import { FaArrowLeft, FaEnvelopeCircleUser, FaUserPoliceTie, FaBuildingColumns, FaVideo } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { StickyHeader } from '../layouts/StickyHeader';
 import { Section, PillButton, Toast } from '../ui';
@@ -79,8 +79,8 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
   };
 
   const navButtons = [
-    { key: 'contacts', label: 'Contacts', icon: <FaAt className="w-4 h-4" />, count: contacts.length, show: contacts.length > 0 },
-    { key: 'cells', label: 'Cells', icon: <FaBuildingShield className="w-4 h-4" />, count: cells.length, show: cells.length > 0 },
+    { key: 'contacts', label: 'Contacts', icon: <FaEnvelopeCircleUser className="w-4 h-4" />, count: contacts.length, show: contacts.length > 0 },
+    { key: 'cells', label: 'Cells', icon: <FaUserPoliceTie className="w-4 h-4" />, count: cells.length, show: cells.length > 0 },
     { key: 'bail', label: 'Bail', icon: <FaBuildingColumns className="w-4 h-4" />, count: '', show: !!bailCourt },
     { key: 'teams', label: 'Teams', icon: <FaVideo className="w-4 h-4" />, count: teamsLinks.length, show: teamsLinks.length > 0 },
   ];
