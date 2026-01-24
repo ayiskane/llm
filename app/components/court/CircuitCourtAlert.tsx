@@ -1,6 +1,6 @@
 'use client';
 
-import { FaCircleInfo, FaChevronRight } from '@/lib/icons';
+import { FaCircleExclamation, FaChevronRight } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 
 interface CircuitCourtAlertProps {
@@ -37,7 +37,7 @@ export function CircuitCourtAlert({
     >
       {/* Icon container */}
       <div className="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center flex-shrink-0">
-        <FaCircleInfo className="w-4 h-4 text-amber-500" />
+        <FaCircleExclamation className="w-4 h-4 text-amber-500" />
       </div>
       
       {/* Text */}
