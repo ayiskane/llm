@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, X, Building, GeoAlt, Funnel, ChevronDown } from 'react-bootstrap-icons';
+import { FaMagnifyingGlass, FaXmark, FaBuilding, FaLocationDot, FaSliders, FaChevronDown } from '@/lib/icons';
 import { AlphabetNav } from './AlphabetNav';
 import { cn, pill, text } from '@/lib/config/theme';
 import { useCourts } from '@/lib/hooks/useCourts';
@@ -124,7 +124,7 @@ function SearchBar({ value, onChange, onClear, onFilterClick, hasActiveFilters }
     <div className="flex gap-2">
       <div className="relative flex-1">
         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-          <Search className="w-4 h-4" />
+          <FaMagnifyingGlass className="w-4 h-4" />
         </div>
         <input
           type="text"
@@ -144,7 +144,7 @@ function SearchBar({ value, onChange, onClear, onFilterClick, hasActiveFilters }
             onClick={onClear}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
           >
-            <X className="w-4 h-4" />
+            <FaXmark className="w-4 h-4" />
           </button>
         )}
       </div>
@@ -157,7 +157,7 @@ function SearchBar({ value, onChange, onClear, onFilterClick, hasActiveFilters }
             : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:text-slate-200'
         )}
       >
-        <Funnel className="w-4 h-4" />
+        <FaSliders className="w-4 h-4" />
         {hasActiveFilters && (
           <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full" />
         )}
@@ -554,7 +554,7 @@ export function CourtsIndexPage() {
         <div className="pb-4">
           {groupedCourts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 px-4">
-              <GeoAlt className="w-12 h-12 text-slate-700 mb-4" />
+              <FaLocationDot className="w-12 h-12 text-slate-700 mb-4" />
               <p className="text-slate-400 text-center">
                 {searchQuery 
                   ? `No courts found for "${searchQuery}"`
