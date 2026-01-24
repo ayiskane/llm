@@ -1,6 +1,6 @@
 'use client';
 
-import { GeoAlt, ChevronRight } from 'react-bootstrap-icons';
+import { FaLocationDot, FaChevronRight } from '@/lib/icons';
 import { cn, iconSize } from '@/lib/config/theme';
 import { openInMaps } from '@/lib/utils';
 import type { Court, CourtWithRegion } from '@/types';
@@ -34,7 +34,7 @@ export function CourtCard({ court, onClick, contactCount, cellCount, teamsCount 
           
           {court.address && (
             <div className="flex items-start gap-1 mt-1">
-              <GeoAlt className={cn(iconSize.xs, 'text-slate-500 mt-0.5 shrink-0')} />
+              <FaLocationDot className={cn(iconSize.xs, 'text-slate-500 mt-0.5 shrink-0')} />
               <span className="text-xs text-slate-400 line-clamp-2">
                 {court.address}
               </span>
@@ -62,7 +62,7 @@ export function CourtCard({ court, onClick, contactCount, cellCount, teamsCount 
           </div>
         </div>
         
-        <ChevronRight className={cn(iconSize.md, 'text-slate-500 shrink-0 mt-1')} />
+        <FaChevronRight className={cn(iconSize.md, 'text-slate-500 shrink-0 mt-1')} />
       </div>
       
       {(contactCount || cellCount || teamsCount) && (
@@ -104,7 +104,7 @@ export function CourtHeader({ court }: CourtHeaderProps) {
           onClick={() => openInMaps(court.address)}
           className="flex items-start gap-1 text-left group"
         >
-          <GeoAlt className={cn(iconSize.sm, 'text-slate-500 mt-0.5 shrink-0 group-hover:text-blue-400 transition-colors')} />
+          <FaLocationDot className={cn(iconSize.sm, 'text-slate-500 mt-0.5 shrink-0 group-hover:text-blue-400 transition-colors')} />
           <span className="text-sm text-slate-400 group-hover:text-blue-400 transition-colors">
             {court.address}
           </span>
