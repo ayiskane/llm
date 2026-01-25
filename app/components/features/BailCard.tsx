@@ -1,9 +1,9 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { FaBuildingColumns, FaChevronRight } from '@/lib/icons';
 import { cn } from '@/lib/utils';
-import { card, text, iconSize, getScheduleLabelClass } from '@/lib/config/theme';
+import { card, text, getScheduleLabelClass } from '@/lib/config/theme';
 import { TeamsList } from './TeamsCard';
 import { isVBTriageLink, getBailHubTag } from '@/lib/config/constants';
 import type { BailCourt, BailTeam, TeamsLink, WeekendBailCourtWithTeams } from '@/types';
@@ -42,7 +42,8 @@ interface BailScheduleProps {
 
 export function BailSchedule({ bailCourt }: BailScheduleProps) {
   const hasSchedule = bailCourt.triage_time_am || bailCourt.triage_time_pm || 
-                      bailCourt.court_start_am || bailCourt.cutoff_new_arrests;
+                      bailCourt.court_start_am || bailCourt.cutoff_new_arrests ||
+                      (bailCourt.youth_custody_day && bailCourt.youth_custody_time);
   
   if (!hasSchedule) return null;
 
@@ -82,7 +83,7 @@ export function BailSchedule({ bailCourt }: BailScheduleProps) {
 }
 
 // ============================================================================
-// BAIL HUB LINK COMPONENT - Card style linking to hub court
+// BAIL HUB LINK COMPONENT
 // ============================================================================
 
 interface BailHubLinkProps {
@@ -106,24 +107,14 @@ export function BailHubLink({ bailCourt, onNavigate }: BailHubLinkProps) {
         "transition-all duration-200"
       )}
     >
-      {/* Card content */}
       <div className="flex items-center gap-3 px-3 py-3">
-        {/* Icon */}
         <div className="w-10 h-10 rounded-lg bg-teal-500/15 flex items-center justify-center shrink-0">
           <FaBuildingColumns className="w-5 h-5 text-teal-400" />
         </div>
-        
-        {/* Court info */}
         <div className="flex-1 min-w-0 text-left">
-          <div className="text-sm font-medium text-slate-200 truncate">
-            {courtName}
-          </div>
-          <div className="text-xs text-slate-500 mt-0.5">
-            Tap to view court details
-          </div>
+          <div className="text-sm font-medium text-slate-200 truncate">{courtName}</div>
+          <div className="text-xs text-slate-500 mt-0.5">Tap to view court details</div>
         </div>
-        
-        {/* Chevron */}
         <FaChevronRight className="w-5 h-5 text-slate-500 shrink-0" />
       </div>
     </button>
@@ -131,42 +122,129 @@ export function BailHubLink({ bailCourt, onNavigate }: BailHubLinkProps) {
 }
 
 // ============================================================================
-// WEEKEND BAIL COURT CARD - Shows a single weekend bail court with its teams
+// BAIL TAB BUTTON
 // ============================================================================
 
-interface WeekendBailCardProps {
-  weekendCourt: WeekendBailCourtWithTeams;
+interface BailTabProps {
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+function BailTab({ label, isActive, onClick }: BailTabProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-all",
+        isActive
+          ? "bg-teal-500/20 text-teal-300 border border-teal-500/30"
+          : "text-slate-400 hover:text-slate-300 hover:bg-slate-800/50"
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+// ============================================================================
+// WEEKDAY BAIL CONTENT
+// ============================================================================
+
+interface WeekdayBailContentProps {
+  bailCourt: BailCourt;
+  currentCourtId: number;
+  bailTeams: TeamsLink[];
+  courtTeams: TeamsLink[];
+  onNavigateToHub?: (courtId: number) => void;
   onCopy?: (text: string, id: string) => void;
   isCopied?: (id: string) => boolean;
 }
 
-function WeekendBailCard({ weekendCourt, onCopy, isCopied }: WeekendBailCardProps) {
-  const { court, teams } = weekendCourt;
+function WeekdayBailContent({
+  bailCourt,
+  currentCourtId,
+  bailTeams,
+  courtTeams,
+  onNavigateToHub,
+  onCopy,
+  isCopied,
+}: WeekdayBailContentProps) {
+  const isHub = bailCourt.court_id === currentCourtId;
   
-  if (teams.length === 0) return null;
-  
+  const allBailTeams = useMemo(() => {
+    const vbTriageFromCourt = courtTeams.filter(t => isVBTriageLink(t.name || t.courtroom));
+    const combined = [...bailTeams, ...vbTriageFromCourt];
+    
+    const seen = new Set<number>();
+    const unique = combined.filter(t => {
+      if (seen.has(t.id)) return false;
+      seen.add(t.id);
+      return true;
+    });
+    
+    return unique.sort((a, b) => {
+      const aIsTriage = isVBTriageLink(a.name || a.courtroom);
+      const bIsTriage = isVBTriageLink(b.name || b.courtroom);
+      if (aIsTriage && !bIsTriage) return -1;
+      if (!aIsTriage && bIsTriage) return 1;
+      return (a.name || a.courtroom || '').localeCompare(b.name || b.courtroom || '');
+    });
+  }, [bailTeams, courtTeams]);
+
   return (
-    <div className="space-y-2">
-      <div className="text-xs font-medium text-purple-400/80 uppercase tracking-wider">
-        {court.name}
-      </div>
-      {court.notes && (
-        <div className="text-xs text-slate-500 -mt-1">
-          {court.notes}
-        </div>
+    <div className="space-y-3">
+      {!isHub && bailCourt.court_id && onNavigateToHub && (
+        <BailHubLink bailCourt={bailCourt} onNavigate={onNavigateToHub} />
       )}
-      <TeamsList
-        links={teams}
-        filterVBTriage={false}
-        onCopy={onCopy}
-        isCopied={isCopied}
-      />
+      <BailSchedule bailCourt={bailCourt} />
+      {allBailTeams.length > 0 && (
+        <TeamsList links={allBailTeams} filterVBTriage={false} onCopy={onCopy} isCopied={isCopied} />
+      )}
     </div>
   );
 }
 
 // ============================================================================
-// BAIL SECTION CONTENT COMPONENT
+// WEEKEND BAIL CONTENT
+// ============================================================================
+
+interface WeekendBailContentProps {
+  weekendBailCourts: WeekendBailCourtWithTeams[];
+  onCopy?: (text: string, id: string) => void;
+  isCopied?: (id: string) => boolean;
+}
+
+function WeekendBailContent({ weekendBailCourts, onCopy, isCopied }: WeekendBailContentProps) {
+  const courtsWithTeams = weekendBailCourts.filter(wc => wc.teams.length > 0);
+  
+  if (courtsWithTeams.length === 0) {
+    return (
+      <div className="text-sm text-slate-500 text-center py-4">
+        No evening/weekend bail information available
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {courtsWithTeams.map(({ court, teams }) => (
+        <div key={court.id} className="space-y-2">
+          <div className="text-xs font-medium text-purple-400/80 uppercase tracking-wider">
+            {court.name}
+          </div>
+          {court.notes && (
+            <div className="text-xs text-slate-500 -mt-1">{court.notes}</div>
+          )}
+          <TeamsList links={teams} filterVBTriage={false} onCopy={onCopy} isCopied={isCopied} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================================
+// BAIL SECTION CONTENT - TABBED
 // ============================================================================
 
 interface BailSectionContentProps {
@@ -190,73 +268,43 @@ export function BailSectionContent({
   onCopy,
   isCopied,
 }: BailSectionContentProps) {
-  const isHub = bailCourt.court_id === currentCourtId;
+  const [activeTab, setActiveTab] = useState<'weekday' | 'weekend'>('weekday');
   
-  // Combine and sort bail teams: VB Triage links first, then courtroom links
-  const allBailTeams = useMemo(() => {
-    // Get VB triage links from court teams
-    const vbTriageFromCourt = courtTeams.filter(t => isVBTriageLink(t.name || t.courtroom));
-    
-    // Combine all teams
-    const combined = [...bailTeams, ...vbTriageFromCourt];
-    
-    // Deduplicate by id
-    const seen = new Set<number>();
-    const unique = combined.filter(t => {
-      if (seen.has(t.id)) return false;
-      seen.add(t.id);
-      return true;
-    });
-    
-    // Sort: VB Triage links first, then others
-    return unique.sort((a, b) => {
-      const aIsTriage = isVBTriageLink(a.name || a.courtroom);
-      const bIsTriage = isVBTriageLink(b.name || b.courtroom);
-      
-      // Triage links come first
-      if (aIsTriage && !bIsTriage) return -1;
-      if (!aIsTriage && bIsTriage) return 1;
-      
-      // Within same type, sort alphabetically by name
-      const aName = a.name || a.courtroom || '';
-      const bName = b.name || b.courtroom || '';
-      return aName.localeCompare(bName);
-    });
-  }, [bailTeams, courtTeams]);
-
-  // Filter weekend bail courts that have teams
-  const weekendCourtsWithTeams = weekendBailCourts.filter(wc => wc.teams.length > 0);
+  const hasWeekendBail = weekendBailCourts.some(wc => wc.teams.length > 0);
 
   return (
     <div className="space-y-3">
-      {!isHub && bailCourt.court_id && onNavigateToHub && (
-        <BailHubLink bailCourt={bailCourt} onNavigate={onNavigateToHub} />
-      )}
-      
-      <BailSchedule bailCourt={bailCourt} />
-      
-      {allBailTeams.length > 0 && (
-        <TeamsList
-          links={allBailTeams}
-          filterVBTriage={false}
+      {/* Tabs */}
+      <div className="flex gap-2">
+        <BailTab 
+          label="Weekday" 
+          isActive={activeTab === 'weekday'} 
+          onClick={() => setActiveTab('weekday')} 
+        />
+        <BailTab 
+          label="Evening / Weekend" 
+          isActive={activeTab === 'weekend'} 
+          onClick={() => setActiveTab('weekend')} 
+        />
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'weekday' ? (
+        <WeekdayBailContent
+          bailCourt={bailCourt}
+          currentCourtId={currentCourtId}
+          bailTeams={bailTeams}
+          courtTeams={courtTeams}
+          onNavigateToHub={onNavigateToHub}
           onCopy={onCopy}
           isCopied={isCopied}
         />
-      )}
-      
-      {/* Weekend/Evening Bail Section - handles multiple bail courts */}
-      {weekendCourtsWithTeams.length > 0 && (
-        <div className="space-y-3">
-          <h4 className={text.sectionHeader}>Weekend / Evening Bail</h4>
-          {weekendCourtsWithTeams.map((wc) => (
-            <WeekendBailCard
-              key={wc.court.id}
-              weekendCourt={wc}
-              onCopy={onCopy}
-              isCopied={isCopied}
-            />
-          ))}
-        </div>
+      ) : (
+        <WeekendBailContent
+          weekendBailCourts={weekendBailCourts}
+          onCopy={onCopy}
+          isCopied={isCopied}
+        />
       )}
     </div>
   );
