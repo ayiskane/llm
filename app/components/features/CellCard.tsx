@@ -48,9 +48,9 @@ function CopyButton({ text, className }: CopyButtonProps) {
       title="Copy to clipboard"
     >
       {copied ? (
-        <FaCheck className="w-3 h-3 text-green-400" />
+        <FaCheck className="w-4 h-4 text-green-400" />
       ) : (
-        <FaCopy className="w-3 h-3 text-slate-400" />
+        <FaCopy className="w-4 h-4 text-slate-400" />
       )}
     </button>
   );
@@ -79,7 +79,7 @@ function CallButton({ phone, className }: CallButtonProps) {
       )}
       title="Call"
     >
-      <FaPhoneSolid className="w-3 h-3 text-green-400" />
+      <FaPhoneSolid className="w-4 h-4 text-green-400" />
     </button>
   );
 }
@@ -252,3 +252,4 @@ export function CellList({ cells, maxDisplay = 20 }: CellListProps) {
     </div>
   );
 }
+
