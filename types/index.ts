@@ -115,6 +115,7 @@ export interface BailCourt {
   cutoff_new_arrests: string | null;
   youth_custody_day: string | null;
   youth_custody_time: string | null;
+  notes: string | null;
 }
 
 export interface BailContact {
