@@ -137,6 +137,8 @@ export interface CorrectionalCentre {
   name: string;
   short_name: string | null;
   location: string;
+  address: string | null;
+  mailing_address: string | null;
   is_federal: boolean;
   centre_type: 'provincial' | 'pretrial' | 'women' | 'federal';
   security_level: 'minimum' | 'medium' | 'maximum' | 'multi' | null;
