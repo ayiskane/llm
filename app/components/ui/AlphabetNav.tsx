@@ -153,9 +153,14 @@ export function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProp
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseLeave}
       >
-        {ALL_LETTERS.map((letter) => {
+        {ALL_LETTERS.map((letter, index) => {
           const isAvailable = letters.includes(letter);
           const isActive = activeLetter === letter || scrubLetter === letter;
+          
+          // Collapse consecutive unavailable letters into single dot
+          if (!isAvailable && index > 0 && !letters.includes(ALL_LETTERS[index - 1])) {
+            return null;
+          }
 
           return (
             <span
