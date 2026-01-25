@@ -58,9 +58,9 @@ function CopyButton({ text, className }: { text: string; className?: string }) {
       title="Copy to clipboard"
     >
       {copied ? (
-        <FaCheck className="w-3 h-3 text-green-400" />
+        <FaCheck className="w-4 h-4 text-green-400" />
       ) : (
-        <FaCopy className="w-3 h-3 text-slate-400" />
+        <FaCopy className="w-4 h-4 text-slate-400" />
       )}
     </button>
   );
@@ -84,7 +84,7 @@ function CallButton({ phone, className }: { phone: string; className?: string })
       )}
       title="Call"
     >
-      <FaPhone className="w-3 h-3 text-green-400" />
+      <FaPhone className="w-4 h-4 text-green-400" />
     </button>
   );
 }
