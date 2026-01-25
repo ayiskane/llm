@@ -155,7 +155,7 @@ function CentreListItem({ centre }: { centre: CorrectionalCentre }) {
           <span className="text-slate-600">|</span>
           <span>{region.name}</span>
         </span>
-        <span className={cn('px-1.5 py-1 text-[9px] font-bold uppercase tracking-wide rounded', centre.is_federal ? 'bg-rose-500/15 text-rose-400' : 'bg-emerald-500/15 text-emerald-400')}>
+        <span className={cn('px-1.5 py-1 text-[9px] font-bold uppercase tracking-wide rounded', centre.is_federal ? 'bg-purple-500/15 text-purple-400' : 'bg-emerald-500/15 text-emerald-400')}>
           {centre.is_federal ? 'Federal' : 'Provincial'}
         </span>
         {centre.short_name && (
