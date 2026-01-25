@@ -192,7 +192,6 @@ export async function handleMessage(msg: MessageData) {
         temp_data: null
       });
       return sendTextMessage(pid, from, 
-        `✅ Referrer verified: *${referrer.full_name}*\n\n` +
         'Please enter your *articling end date* (actual work period only).\n\n' +
         'Format: YYYY-MM-DD\nExample: 2026-06-30'
       );
@@ -218,7 +217,7 @@ export async function handleMessage(msg: MessageData) {
       const updated = await getUser(from);
 
       await sendTextMessage(pid, from,
-        `✅ *Registration Complete!*\n\n🔐 Your PIN: *${pin}*\n📅 Access expires: ${formatDate(expiry)}\n\n⏳ *Status: PENDING VERIFICATION*\n\nYour PIN will remain *INACTIVE* until your principal verifies you.\n\nType "menu" to return.`
+        `✅ *Registration Complete!*\n\n🔐 Your PIN: *${pin}*\n📅 Access expires: ${formatDate(expiry)}\n\n⏳ *Status: PENDING VERIFICATION*\n\nYour PIN will remain *INACTIVE* until your referrer verifies you.\n\nType "menu" to return.`
       );
 
       // Notify referrer (the verified lawyer)
