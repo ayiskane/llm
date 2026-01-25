@@ -171,7 +171,7 @@ function LetterSection({ letter, centres, sectionRef }: {
 }) {
   return (
     <div ref={sectionRef} id={`section-${letter}`}>
-      <div className="sticky top-0 z-10 px-4 py-2 bg-[hsl(222.2,84%,4.9%)] border-b border-blue-500/20">
+      <div className="sticky top-0 z-10 px-4 py-2 bg-slate-950 border-b border-slate-800/50">
         <span className="text-sm font-bold text-blue-400">{letter}</span>
       </div>
       <div className="bg-slate-800/20">
@@ -238,7 +238,7 @@ export function CorrectionsIndexPage() {
 
   if (isLoading) {
     return (
-      <div className="h-[calc(100vh-4rem)] bg-[hsl(222.2,84%,4.9%)] flex items-center justify-center">
+      <div className="h-[calc(100vh-4rem)] bg-slate-950 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
           <p className="text-slate-400 text-sm">Loading centres...</p>
@@ -249,7 +249,7 @@ export function CorrectionsIndexPage() {
 
   if (error) {
     return (
-      <div className="h-[calc(100vh-4rem)] bg-[hsl(222.2,84%,4.9%)] flex items-center justify-center p-4">
+      <div className="h-[calc(100vh-4rem)] bg-slate-950 flex items-center justify-center p-4">
         <div className="text-center">
           <p className="text-red-400 mb-2">Failed to load centres</p>
           <p className="text-slate-500 text-sm">{error}</p>
@@ -259,8 +259,8 @@ export function CorrectionsIndexPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-[hsl(222.2,84%,4.9%)] overflow-hidden">
-      <div className="flex-shrink-0 bg-[rgba(8,11,18,0.98)] border-b border-blue-500/10">
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-slate-950 overflow-hidden">
+      <div className="flex-shrink-0 bg-slate-950 border-b border-slate-800/50">
         <div className="px-4 pt-4 pb-2">
           <h1 className="text-xl font-bold text-white">BC Corrections Index</h1>
         </div>
