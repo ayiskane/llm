@@ -38,7 +38,7 @@ export const Section = forwardRef<HTMLDivElement, SectionProps>(
           
           {/* Count badge - unified subtle color */}
           {count !== undefined && count !== '' && (
-            <span className="px-1.5 py-0.5 rounded text-xs font-mono bg-slate-700/50 text-slate-400">
+            <span className="px-1.5 py-0.5 rounded text-xs font-mono bg-sky-500/15 text-sky-400/80">
               {count}
             </span>
           )}
