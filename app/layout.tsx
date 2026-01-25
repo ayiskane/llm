@@ -36,21 +36,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark h-full">
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body className={`${inter.className} bg-slate-900 antialiased h-screen overflow-hidden`}>
+      <body className={`${inter.className} bg-slate-900 antialiased h-dvh flex flex-col`}>
         <QueryProvider>
-          <div className="h-full flex flex-col">
-            <main className="flex-1 overflow-hidden">
-              {children}
-            </main>
-            <BottomNav />
-          </div>
+          <main className="flex-1 min-h-0">
+            {children}
+          </main>
+          <BottomNav />
         </QueryProvider>
       </body>
     </html>
