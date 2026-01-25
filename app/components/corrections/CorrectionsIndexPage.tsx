@@ -171,7 +171,7 @@ function LetterSection({ letter, centres, sectionRef }: {
 }) {
   return (
     <div ref={sectionRef} id={`section-${letter}`}>
-      <div className="sticky top-0 z-10 px-4 py-2 bg-slate-900 border-b border-blue-500/20 shadow-[0_-10px_0_0_hsl(222.2,84%,4.9%)]">
+      <div className="sticky top-0 z-10 px-4 py-2 bg-[hsl(222.2,84%,4.9%)] border-b border-blue-500/20">
         <span className="text-sm font-bold text-blue-400">{letter}</span>
       </div>
       <div className="bg-slate-800/20">
@@ -272,24 +272,24 @@ export function CorrectionsIndexPage() {
 
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto relative">
         {!searchQuery && <AlphabetNav letters={availableLetters} activeLetter={activeLetter} onSelect={handleLetterClick} />}
-        <div className="pb-4">
-          {groupedCentres.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 px-4">
-              <FaBuildingShield className="w-12 h-12 text-slate-700 mb-4" />
-              <p className="text-slate-400 text-center">{searchQuery ? `No centres found for "${searchQuery}"` : 'No centres match your filters'}</p>
-              {(searchQuery || hasActiveFilters) && (
-                <button onClick={clearAllFilters} className="mt-4 text-blue-400 text-sm hover:text-blue-300">Clear filters</button>
-              )}
-            </div>
-          ) : (
-            groupedCentres.map((group) => (
-              <LetterSection key={group.letter} letter={group.letter} centres={group.centres} sectionRef={(el) => { sectionRefs.current[group.letter] = el; }} />
-            ))
-          )}
-          <div className="py-2 text-center">
-            <span className="text-xs text-slate-500">{filteredCentres.length} {filteredCentres.length === 1 ? 'centre' : 'centres'}</span>
+        {groupedCentres.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 px-4">
+            <FaBuildingShield className="w-12 h-12 text-slate-700 mb-4" />
+            <p className="text-slate-400 text-center">{searchQuery ? `No centres found for "${searchQuery}"` : 'No centres match your filters'}</p>
+            {(searchQuery || hasActiveFilters) && (
+              <button onClick={clearAllFilters} className="mt-4 text-blue-400 text-sm hover:text-blue-300">Clear filters</button>
+            )}
           </div>
-        </div>
+        ) : (
+          <>
+            {groupedCentres.map((group) => (
+              <LetterSection key={group.letter} letter={group.letter} centres={group.centres} sectionRef={(el) => { sectionRefs.current[group.letter] = el; }} />
+            ))}
+            <div className="py-3 text-center">
+              <span className="text-xs text-slate-500">{filteredCentres.length} {filteredCentres.length === 1 ? 'centre' : 'centres'}</span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
