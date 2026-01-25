@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { FaArrowLeft, FaPhone, FaClock, FaUsers, FaCheck, FaXmark, FaCopy, FaLocationDot } from '@/lib/icons';
+import { FaArrowLeft, FaPhone, FaClock, FaUsers, FaCheck, FaXmark, FaCopy, FaLocationDot, FaFax, FaPenLine } from '@/lib/icons';
 import { cn, openInMaps } from '@/lib/utils';
 import { StickyHeader } from '../layouts/StickyHeader';
 import { Section, PillButton } from '../ui';
@@ -90,76 +90,115 @@ function CallButton({ phone, className }: { phone: string; className?: string })
 }
 
 // =============================================================================
-// CENTRE HEADER
+// CENTRE HEADER - Matching Court Header Style
 // =============================================================================
 
 function CentreHeader({ centre, collapsed }: { centre: CorrectionalCentre; collapsed: boolean }) {
   const region = LOCATION_TO_REGION[centre.location];
   
-  if (collapsed) {
-    return (
-      <div className="px-4 py-2 border-t border-slate-700/30">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-white truncate">{centre.name}</span>
-          {centre.short_name && (
-            <Tag color="blue" size="sm">{centre.short_name}</Tag>
-          )}
-        </div>
-      </div>
-    );
-  }
-  
   return (
-    <div className="px-4 pt-2 pb-3">
-      {/* Name with acronym tag */}
+    <div className="px-4 py-2">
+      {/* Title row - always visible, changes size */}
       <div className="flex items-center gap-2">
-        <h1 className="text-lg font-semibold text-white uppercase tracking-wide truncate">
+        <h1 
+          className={cn(
+            'font-semibold text-white uppercase tracking-wide flex-1 truncate text-left',
+            'transition-all duration-300 ease-out',
+            collapsed ? 'text-sm' : 'text-lg'
+          )}
+        >
           {centre.name}
         </h1>
-        {centre.short_name && (
-          <Tag color="blue" size="sm">{centre.short_name}</Tag>
+        
+        {/* Tags - compact when collapsed */}
+        <div className={cn(
+          'flex items-center gap-1 shrink-0 transition-opacity duration-300',
+          collapsed ? 'opacity-100' : 'opacity-0 hidden'
+        )}>
+          {centre.short_name && <Tag color="blue" size="sm">{centre.short_name}</Tag>}
+        </div>
+        
+        {/* Map button - only in collapsed */}
+        {centre.address && collapsed && (
+          <button
+            onClick={() => openInMaps(centre.address)}
+            className="p-1.5 rounded-md bg-slate-800/50 hover:bg-slate-700/50 transition-colors shrink-0"
+          >
+            <FaLocationDot className="w-4 h-4 text-blue-400" />
+          </button>
         )}
       </div>
       
-      {/* Address - clickable to open in maps */}
-      {centre.address && (
-        <button
-          onClick={() => openInMaps(centre.address)}
-          className="flex items-center justify-start gap-1 text-xs mt-1 text-slate-500 hover:text-blue-400 transition-colors text-left"
-        >
-          <FaLocationDot className="w-3 h-3 shrink-0" />
-          <span className="text-left">{centre.address}</span>
-        </button>
+      {/* Collapsed: show tags row */}
+      {collapsed && (
+        <div className="flex flex-wrap items-center justify-start gap-1.5 mt-1">
+          {centre.centre_type && centre.centre_type !== 'provincial' && centre.centre_type !== 'federal' && (
+            <Tag color="amber" size="sm">{centre.centre_type.toUpperCase()}</Tag>
+          )}
+          <span className="text-slate-600">|</span>
+          {region && (
+            <span className="px-2 py-1 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
+              <span>{region.code}</span>
+              <span className="text-slate-600">|</span>
+              <span>{region.name}</span>
+            </span>
+          )}
+          <Tag color={centre.is_federal ? 'purple' : 'emerald'} size="sm">
+            {centre.is_federal ? 'FEDERAL' : 'PROVINCIAL'}
+          </Tag>
+        </div>
       )}
       
-      {/* Region and tags row - matching court details */}
-      <div className="flex flex-wrap items-center justify-start gap-1.5 mt-2 pb-1">
-        {region && (
-          <span className="px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
-            <span>{region.code}</span>
+      {/* Expandable content - uses grid for smooth height animation */}
+      <div 
+        className={cn(
+          'grid transition-all duration-300 ease-out',
+          collapsed ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'
+        )}
+      >
+        <div className="overflow-hidden text-left">
+          {/* Address - explicitly left aligned */}
+          {centre.address && (
+            <button
+              onClick={() => openInMaps(centre.address)}
+              className="flex items-center justify-start gap-1 text-xs mt-1 text-slate-500 hover:text-blue-400 transition-colors text-left"
+            >
+              <FaLocationDot className="w-3 h-3 shrink-0" />
+              <span className="text-left">{centre.address}</span>
+            </button>
+          )}
+          
+          {/* Tags row: [Short form][Women] | [Region][Provincial] */}
+          <div className="flex flex-wrap items-center justify-start gap-1.5 mt-2 pb-1">
+            {centre.short_name && (
+              <Tag color="blue">{centre.short_name}</Tag>
+            )}
+            {centre.centre_type && centre.centre_type !== 'provincial' && centre.centre_type !== 'federal' && (
+              <Tag color="amber">{centre.centre_type.toUpperCase()}</Tag>
+            )}
             <span className="text-slate-600">|</span>
-            <span>{region.name}</span>
-          </span>
-        )}
-        <Tag color={centre.is_federal ? 'purple' : 'emerald'}>
-          {centre.is_federal ? 'FEDERAL' : 'PROVINCIAL'}
-        </Tag>
-        {centre.centre_type && centre.centre_type !== 'provincial' && centre.centre_type !== 'federal' && (
-          <Tag color="amber">{centre.centre_type.toUpperCase()}</Tag>
-        )}
-        {centre.has_bc_gc_link && (
-          <Tag color="blue">GC LINK</Tag>
-        )}
-        {centre.security_level && (
-          <Tag color="teal">{centre.security_level.toUpperCase()}</Tag>
-        )}
+            {region && (
+              <span className="px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
+                <span>{region.code}</span>
+                <span className="text-slate-600">|</span>
+                <span>{region.name}</span>
+              </span>
+            )}
+            <Tag color={centre.is_federal ? 'purple' : 'emerald'}>
+              {centre.is_federal ? 'FEDERAL' : 'PROVINCIAL'}
+            </Tag>
+            {centre.security_level && (
+              <Tag color="teal">{centre.security_level.toUpperCase()}</Tag>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
 // =============================================================================
-// CONTACT SECTION - Matching Sheriff Cells Style
+// CONTACT SECTION - Matching Sheriff Cells Style + GC Link
 // =============================================================================
 
 function ContactSection({ centre }: { centre: CorrectionalCentre }) {
@@ -170,6 +209,22 @@ function ContactSection({ centre }: { centre: CorrectionalCentre }) {
 
   return (
     <div className="bg-slate-900/20">
+      {/* GC Link Row - if available */}
+      {centre.has_bc_gc_link && (
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
+          <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+            <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium text-slate-200">BC Government Calling Link</div>
+            <div className="text-xs text-blue-400">Available for this centre</div>
+          </div>
+          <Tag color="blue" size="sm">GC LINK</Tag>
+        </div>
+      )}
+
       {/* Phone Row */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
         <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
@@ -185,13 +240,11 @@ function ContactSection({ centre }: { centre: CorrectionalCentre }) {
         </div>
       </div>
 
-      {/* CDN Fax Row - only if dedicated CDN fax exists */}
+      {/* CDN Fax Row - uses FaPenLine icon */}
       {centre.cdn_fax && (
         <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
           <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-            <svg className="w-5 h-5 text-purple-400" fill="currentColor" viewBox="0 0 512 512">
-              <path d="M128 64v96h64V64H128zM64 0H256V192H64V0zM128 256v96h64V256H128zM64 192H256V384H64V192zM320 64v96h64V64H320zm-64-64H448V192H256V0z"/>
-            </svg>
+            <FaPenLine className="w-5 h-5 text-purple-400" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-slate-200">
@@ -208,13 +261,11 @@ function ContactSection({ centre }: { centre: CorrectionalCentre }) {
         </div>
       )}
 
-      {/* General Fax Row - with CDN tag if accepts CDN but no dedicated CDN fax */}
+      {/* General Fax Row - uses FaFax icon */}
       {centre.general_fax && (
         <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
           <div className="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center">
-            <svg className="w-5 h-5 text-slate-400" fill="currentColor" viewBox="0 0 512 512">
-              <path d="M128 64v96h64V64H128zM64 0H256V192H64V0zM128 256v96h64V256H128zM64 192H256V384H64V192zM320 64v96h64V64H320zm-64-64H448V192H256V0z"/>
-            </svg>
+            <FaFax className="w-5 h-5 text-slate-400" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-slate-200 flex items-center gap-2">
