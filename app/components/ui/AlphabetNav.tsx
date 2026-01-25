@@ -8,8 +8,9 @@ const ALL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#'.split('');
 
 function DotIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" className={className}>
-      <path d="M256 512a256 256 0 1 0 0-512 256 256 0 1 0 0 512zm0-352a96 96 0 1 1 0 192 96 96 0 1 1 0-192z"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 512" fill="currentColor" className={className}>
+      <path opacity=".4" d="M16 256c0 26.5 21.5 48 48 48s48-21.5 48-48-21.5-48-48-48-48 21.5-48 48z"/>
+      <path d="M64 192c35.3 0 64 28.7 64 64s-28.7 64-64 64-64-28.7-64-64 28.7-64 64-64zm0 16c-26.5 0-48 21.5-48 48s21.5 48 48 48 48-21.5 48-48-21.5-48-48-48z"/>
     </svg>
   );
 }
@@ -115,7 +116,7 @@ export function AlphabetNav({ letters, activeLetter, onSelect }: AlphabetNavProp
           if (item.type === 'dot') {
             return (
               <span key={`dot-${idx}`} className="w-5 h-4 flex items-center justify-center">
-                <DotIcon className="w-2 h-2 text-slate-600" />
+                <DotIcon className="w-1.5 h-1.5 text-slate-600" />
               </span>
             );
           }
