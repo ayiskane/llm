@@ -3,14 +3,15 @@
 import { forwardRef, useState } from 'react';
 import { FaChevronDown } from '@/lib/icons';
 import { cn } from '@/lib/utils';
-import { section, getSectionColors, type SectionColor } from '@/lib/config/theme';
+import { section } from '@/lib/config/theme';
 
-export type { SectionColor };
+// Kept for backward compatibility - color no longer affects styling
+export type SectionColor = 'emerald' | 'amber' | 'teal' | 'indigo' | 'blue' | 'purple';
 
 interface SectionProps {
   title: string;
   count?: number | string;
-  color?: SectionColor;
+  color?: SectionColor; // kept for API compatibility but no longer affects styling
   defaultOpen?: boolean;
   isExpanded?: boolean;
   onToggle?: () => void;
@@ -19,13 +20,11 @@ interface SectionProps {
 }
 
 export const Section = forwardRef<HTMLDivElement, SectionProps>(
-  ({ title, count, color = 'blue', defaultOpen = false, isExpanded, onToggle, children, className }, ref) => {
+  ({ title, count, defaultOpen = false, isExpanded, onToggle, children, className }, ref) => {
     const [internalOpen, setInternalOpen] = useState(defaultOpen);
     
     const isOpen = isExpanded !== undefined ? isExpanded : internalOpen;
     const handleToggle = onToggle ?? (() => setInternalOpen(!internalOpen));
-    
-    const colors = getSectionColors(color);
 
     return (
       <div ref={ref} className={cn(section.container, className)}>
@@ -34,15 +33,12 @@ export const Section = forwardRef<HTMLDivElement, SectionProps>(
           onClick={handleToggle}
           className={cn(section.header, isOpen && section.headerExpanded)}
         >
-          {/* Dot indicator */}
-          <span className={cn('text-[6px]', colors.dot)}>●</span>
-          
           {/* Title */}
           <span className={section.title}>{title}</span>
           
-          {/* Count badge - styled inline */}
+          {/* Count badge - unified subtle color */}
           {count !== undefined && count !== '' && (
-            <span className={cn('px-1.5 py-0.5 rounded text-xs font-mono', colors.badge)}>
+            <span className="px-1.5 py-0.5 rounded text-xs font-mono bg-slate-700/50 text-slate-400">
               {count}
             </span>
           )}
