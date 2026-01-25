@@ -8,15 +8,17 @@ CREATE TABLE IF NOT EXISTS whatsapp_users (
   email VARCHAR(255) UNIQUE,
   full_name VARCHAR(255),
   pin VARCHAR(6),
-  pin_expires_at TIMESTAMP WITH TIME ZONE, -- NULL for lawyers (never expires), set for A/S
-  principal_phone VARCHAR(20), -- Phone number of supervising lawyer for A/S
-  is_verified BOOLEAN DEFAULT FALSE,
+  pin_expires_at TIMESTAMP WITH TIME ZONE,      -- NULL for lawyers (never expires), capped at 9 months for A/S
+  articling_end_date TIMESTAMP WITH TIME ZONE,  -- A/S articling period end date
+  principal_phone VARCHAR(20),                   -- Phone number of supervising lawyer for A/S
+  is_verified BOOLEAN DEFAULT FALSE,             -- PIN is inactive until verified
   registration_step VARCHAR(30) DEFAULT 'idle' CHECK (
     registration_step IN (
       'idle',
       'awaiting_email',
       'awaiting_name',
       'awaiting_principal_phone',
+      'awaiting_articling_end_date',
       'complete'
     )
   ),
@@ -42,6 +44,7 @@ CREATE POLICY "Service role has full access" ON whatsapp_users
 -- Comments
 COMMENT ON TABLE whatsapp_users IS 'WhatsApp bot registration for LLM app';
 COMMENT ON COLUMN whatsapp_users.user_type IS 'Either lawyer or articling_student';
-COMMENT ON COLUMN whatsapp_users.pin_expires_at IS 'PIN expiry date - NULL for lawyers (never expires), set for articling students';
+COMMENT ON COLUMN whatsapp_users.pin_expires_at IS 'PIN expiry - NULL for lawyers, capped at 9 months from registration for A/S';
+COMMENT ON COLUMN whatsapp_users.articling_end_date IS 'End date of articling period (A/S only)';
 COMMENT ON COLUMN whatsapp_users.principal_phone IS 'Phone number of supervising lawyer for articling students';
-COMMENT ON COLUMN whatsapp_users.is_verified IS 'Lawyers are auto-verified, A/S need principal verification';
+COMMENT ON COLUMN whatsapp_users.is_verified IS 'Lawyers auto-verified, A/S need principal verification. PIN inactive until verified.';

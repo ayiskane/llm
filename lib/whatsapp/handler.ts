@@ -12,7 +12,7 @@ const supabase = createClient(
 );
 
 // Configuration
-const AS_PIN_EXPIRY_DAYS = 365; // Articling students PIN expires after 1 year
+const MAX_ACCESS_MONTHS = 9; // Maximum 9 months access from registration
 
 // User types
 type UserType = 'lawyer' | 'articling_student';
@@ -21,6 +21,7 @@ type RegistrationStep =
   | 'awaiting_email'
   | 'awaiting_name'
   | 'awaiting_principal_phone'
+  | 'awaiting_articling_end_date'
   | 'complete';
 
 interface WhatsAppUser {
@@ -31,6 +32,7 @@ interface WhatsAppUser {
   full_name: string | null;
   pin: string | null;
   pin_expires_at: string | null;
+  articling_end_date: string | null;
   principal_phone: string | null;
   is_verified: boolean;
   registration_step: RegistrationStep;
@@ -48,11 +50,11 @@ function generatePin(): string {
   return pin;
 }
 
-// Calculate PIN expiry date
-function getPinExpiryDate(days: number): string {
+// Get max allowed expiry date (9 months from now)
+function getMaxExpiryDate(): Date {
   const date = new Date();
-  date.setDate(date.getDate() + days);
-  return date.toISOString();
+  date.setMonth(date.getMonth() + MAX_ACCESS_MONTHS);
+  return date;
 }
 
 // Check if PIN is expired
@@ -69,6 +71,30 @@ function formatDate(dateStr: string): string {
     month: 'short',
     day: 'numeric',
   });
+}
+
+// Parse date from various formats (YYYY-MM-DD, MM/DD/YYYY, etc.)
+function parseDate(input: string): Date | null {
+  const trimmed = input.trim();
+  
+  // Try YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const date = new Date(trimmed + 'T00:00:00');
+    if (!isNaN(date.getTime())) return date;
+  }
+  
+  // Try MM/DD/YYYY or MM-DD-YYYY
+  if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(trimmed)) {
+    const parts = trimmed.split(/[\/\-]/);
+    const date = new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]));
+    if (!isNaN(date.getTime())) return date;
+  }
+  
+  // Try natural language like "June 30, 2025" or "30 June 2025"
+  const naturalDate = new Date(trimmed);
+  if (!isNaN(naturalDate.getTime())) return naturalDate;
+  
+  return null;
 }
 
 // Validate email format
@@ -320,6 +346,7 @@ async function handleTextInput(
           '✅ Name saved!\n\nNow enter your *principal\'s phone number* (the lawyer who will verify you):\n\nFormat: 604-555-1234 or 6045551234'
         );
       } else {
+        // Lawyer - complete registration (no expiry)
         const pin = generatePin();
         await updateUser(phoneNumber, {
           full_name: text,
@@ -350,22 +377,55 @@ async function handleTextInput(
 
       const normalizedPrincipalPhone = normalizePhone(text);
 
-      const { data: principal } = await supabase
-        .from('whatsapp_users')
-        .select('*')
-        .eq('phone_number', normalizedPrincipalPhone)
-        .eq('user_type', 'lawyer')
-        .eq('is_verified', true)
-        .single();
-
-      const pin = generatePin();
-      const expiryDate = getPinExpiryDate(AS_PIN_EXPIRY_DAYS);
-
       await updateUser(phoneNumber, {
         principal_phone: normalizedPrincipalPhone,
+        registration_step: 'awaiting_articling_end_date',
+      });
+
+      const maxDate = getMaxExpiryDate();
+      await sendTextMessage(
+        phoneNumber,
+        `✅ Principal's phone saved!\n\n` +
+          `When does your articling period end?\n\n` +
+          `⚠️ *Maximum access: ${formatDate(maxDate.toISOString())}* (9 months from today)\n\n` +
+          `Enter date as: YYYY-MM-DD (e.g., 2025-09-30)`
+      );
+      break;
+
+    case 'awaiting_articling_end_date':
+      const endDate = parseDate(text);
+      
+      if (!endDate) {
+        await sendTextMessage(
+          phoneNumber,
+          '❌ Invalid date format.\n\nPlease enter the date as: YYYY-MM-DD (e.g., 2025-09-30)'
+        );
+        return;
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (endDate <= today) {
+        await sendTextMessage(
+          phoneNumber,
+          '❌ The articling end date must be in the future.\n\nPlease enter a valid future date:'
+        );
+        return;
+      }
+
+      const maxAllowedDate = getMaxExpiryDate();
+      
+      // Cap the expiry at 9 months from registration
+      const actualExpiryDate = endDate > maxAllowedDate ? maxAllowedDate : endDate;
+
+      const pin = generatePin();
+
+      await updateUser(phoneNumber, {
+        articling_end_date: endDate.toISOString(),
         pin: pin,
-        pin_expires_at: expiryDate,
-        is_verified: false,
+        pin_expires_at: actualExpiryDate.toISOString(),
+        is_verified: false, // Pending verification - PIN inactive until verified
         registration_step: 'complete',
       });
 
@@ -376,12 +436,22 @@ async function handleTextInput(
         .eq('phone_number', phoneNumber)
         .single();
 
+      // Check if principal is a registered lawyer
+      const { data: principal } = await supabase
+        .from('whatsapp_users')
+        .select('*')
+        .eq('phone_number', user.principal_phone)
+        .eq('user_type', 'lawyer')
+        .eq('is_verified', true)
+        .single();
+
       if (principal && updatedUser) {
         await sendButtonMessage(
-          normalizedPrincipalPhone,
+          user.principal_phone!,
           `📋 *New Verification Request*\n\n` +
             `${updatedUser.full_name} has registered as your articling student.\n\n` +
-            `📧 ${updatedUser.email}\n\n` +
+            `📧 ${updatedUser.email}\n` +
+            `📅 Articling ends: ${formatDate(endDate.toISOString())}\n\n` +
             `Do you want to verify them?`,
           [
             { id: `verify_${updatedUser.id}`, title: '✅ Verify' },
@@ -390,16 +460,24 @@ async function handleTextInput(
         );
       }
 
+      let expiryNote = '';
+      if (endDate > maxAllowedDate) {
+        expiryNote = `\n\n⚠️ Your articling period extends beyond the 9-month maximum. Access will expire on ${formatDate(actualExpiryDate.toISOString())}.`;
+      }
+
       await sendTextMessage(
         phoneNumber,
         `✅ *Registration Complete!*\n\n` +
-          `👤 ${user.full_name || text}\n` +
-          `📧 ${user.email}\n\n` +
+          `👤 ${updatedUser?.full_name || user.full_name}\n` +
+          `📧 ${user.email}\n` +
+          `📅 Articling ends: ${formatDate(endDate.toISOString())}\n\n` +
           `🔐 *Your PIN: ${pin}*\n` +
-          `📅 Expires: ${formatDate(expiryDate)}\n\n` +
+          `📅 Access expires: ${formatDate(actualExpiryDate.toISOString())}\n\n` +
           `⏳ *Status: Pending Verification*\n` +
-          `${principal ? 'Your principal has been notified.' : 'Your principal must register first, then verify you.'}\n\n` +
-          `Type "menu" to see options.`
+          `Your PIN will be *inactive* until your principal verifies you.\n` +
+          `${principal ? 'Your principal has been notified.' : 'Your principal must register first, then verify you.'}` +
+          expiryNote +
+          `\n\nType "menu" to see options.`
       );
       break;
 
@@ -416,13 +494,11 @@ async function handleButtonPress(
 ): Promise<void> {
   if (buttonId.startsWith('verify_')) {
     const asId = buttonId.replace('verify_', '');
-    const newExpiryDate = getPinExpiryDate(AS_PIN_EXPIRY_DAYS);
 
     const { data: asUser, error } = await supabase
       .from('whatsapp_users')
       .update({
         is_verified: true,
-        pin_expires_at: newExpiryDate,
         updated_at: new Date().toISOString(),
       })
       .eq('id', asId)
@@ -436,15 +512,19 @@ async function handleButtonPress(
 
     await sendTextMessage(
       phoneNumber,
-      `✅ *Verification Complete!*\n\n${asUser.full_name} has been verified and can now access LLM.\n\nTheir PIN expires: ${formatDate(newExpiryDate)}\n\nType "menu" to see options.`
+      `✅ *Verification Complete!*\n\n` +
+        `${asUser.full_name} has been verified and can now access LLM.\n\n` +
+        `Their access expires: ${asUser.pin_expires_at ? formatDate(asUser.pin_expires_at) : 'N/A'}\n\n` +
+        `Type "menu" to see options.`
     );
 
+    // Notify the articling student
     await sendTextMessage(
       asUser.phone_number,
       `🎉 *You've been verified!*\n\n` +
-        `Your principal has verified your account.\n\n` +
+        `Your principal has verified your account. Your PIN is now *active*!\n\n` +
         `🔐 Your PIN: *${asUser.pin}*\n` +
-        `📅 Expires: ${formatDate(newExpiryDate)}\n\n` +
+        `📅 Access expires: ${asUser.pin_expires_at ? formatDate(asUser.pin_expires_at) : 'N/A'}\n\n` +
         `You can now login to LLM!`
     );
     return;
@@ -452,49 +532,6 @@ async function handleButtonPress(
 
   if (buttonId === 'cancel_verify') {
     await sendTextMessage(phoneNumber, 'Verification declined.\n\nType "menu" to see options.');
-    return;
-  }
-
-  if (buttonId === 'renew_pin') {
-    const newPin = generatePin();
-    const newExpiryDate = getPinExpiryDate(AS_PIN_EXPIRY_DAYS);
-
-    await updateUser(phoneNumber, {
-      pin: newPin,
-      pin_expires_at: newExpiryDate,
-      is_verified: false,
-    });
-
-    if (user.principal_phone) {
-      const { data: principal } = await supabase
-        .from('whatsapp_users')
-        .select('*')
-        .eq('phone_number', user.principal_phone)
-        .single();
-
-      if (principal) {
-        await sendButtonMessage(
-          user.principal_phone,
-          `📋 *PIN Renewal Request*\n\n` +
-            `${user.full_name} has renewed their PIN and needs re-verification.\n\n` +
-            `Do you want to verify them?`,
-          [
-            { id: `verify_${user.id}`, title: '✅ Verify' },
-            { id: 'cancel_verify', title: '❌ Decline' },
-          ]
-        );
-      }
-    }
-
-    await sendTextMessage(
-      phoneNumber,
-      `🔄 *PIN Renewed!*\n\n` +
-        `🔐 New PIN: *${newPin}*\n` +
-        `📅 Expires: ${formatDate(newExpiryDate)}\n\n` +
-        `⏳ Status: Pending Verification\n` +
-        `Your principal has been notified.\n\n` +
-        `Type "menu" to see options.`
-    );
     return;
   }
 
@@ -533,7 +570,11 @@ async function handleVerifyASRequest(
     const as = pendingAS[0];
     await sendButtonMessage(
       phoneNumber,
-      `📋 *Pending Verification*\n\n👤 ${as.full_name}\n📧 ${as.email}\n\nDo you want to verify this articling student?`,
+      `📋 *Pending Verification*\n\n` +
+        `👤 ${as.full_name}\n` +
+        `📧 ${as.email}\n` +
+        `📅 Articling ends: ${as.articling_end_date ? formatDate(as.articling_end_date) : 'N/A'}\n\n` +
+        `Do you want to verify this articling student?`,
       [
         { id: `verify_${as.id}`, title: '✅ Verify' },
         { id: 'cancel_verify', title: '❌ Cancel' },
@@ -572,28 +613,41 @@ async function handleFetchPin(
     return;
   }
 
-  if (user.user_type === 'articling_student' && isPinExpired(user.pin_expires_at)) {
-    await sendButtonMessage(
+  // Check verification status first (for A/S)
+  if (user.user_type === 'articling_student' && !user.is_verified) {
+    await sendTextMessage(
       phoneNumber,
-      `⚠️ *Your PIN has expired!*\n\n` +
+      `⏳ *Pending Verification*\n\n` +
         `👤 ${user.full_name}\n` +
-        `📧 ${user.email}\n` +
-        `🔐 PIN: ${user.pin} (EXPIRED)\n\n` +
-        `Would you like to renew your PIN?`,
-      [
-        { id: 'renew_pin', title: '🔄 Renew PIN' },
-        { id: 'cancel_verify', title: '❌ Cancel' },
-      ]
+        `📧 ${user.email}\n\n` +
+        `🔐 PIN: ${user.pin} (*INACTIVE*)\n` +
+        `📅 Access expires: ${user.pin_expires_at ? formatDate(user.pin_expires_at) : 'N/A'}\n\n` +
+        `Your PIN will be active once your principal verifies you.\n\n` +
+        `Type "menu" to see options.`
     );
     return;
   }
 
-  const verificationStatus = user.is_verified ? '✅ Verified' : '⏳ Pending Verification';
+  // Check if PIN is expired (only for articling students)
+  if (user.user_type === 'articling_student' && isPinExpired(user.pin_expires_at)) {
+    await sendTextMessage(
+      phoneNumber,
+      `⚠️ *Your access has expired!*\n\n` +
+        `👤 ${user.full_name}\n` +
+        `📧 ${user.email}\n` +
+        `🔐 PIN: ${user.pin} (*EXPIRED*)\n\n` +
+        `Your 9-month access period has ended. Please contact your principal or re-register.\n\n` +
+        `Type "menu" to see options.`
+    );
+    return;
+  }
 
   let expiryText = '';
   if (user.user_type === 'articling_student' && user.pin_expires_at) {
-    expiryText = `\n📅 Expires: ${formatDate(user.pin_expires_at)}`;
+    expiryText = `\n📅 Access expires: ${formatDate(user.pin_expires_at)}`;
   }
+
+  const statusText = user.is_verified ? '✅ Active' : '⏳ Pending Verification';
 
   await sendTextMessage(
     phoneNumber,
@@ -602,7 +656,7 @@ async function handleFetchPin(
       `📧 ${user.email}\n` +
       `🏷️ Type: ${user.user_type === 'lawyer' ? 'Lawyer' : 'Articling Student'}\n\n` +
       `🔐 *PIN: ${user.pin}*${expiryText}\n` +
-      `📊 Status: ${verificationStatus}\n\n` +
+      `📊 Status: ${statusText}\n\n` +
       `Type "menu" to see options.`
   );
 }
