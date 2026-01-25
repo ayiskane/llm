@@ -11,26 +11,27 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Configuration
+const AS_PIN_EXPIRY_DAYS = 365; // Articling students PIN expires after 1 year
+
 // User types
 type UserType = 'lawyer' | 'articling_student';
 type RegistrationStep =
   | 'idle'
-  | 'awaiting_law_society_number'
   | 'awaiting_email'
   | 'awaiting_name'
-  | 'awaiting_principal_lsbc'
-  | 'awaiting_verification_selection'
+  | 'awaiting_principal_phone'
   | 'complete';
 
 interface WhatsAppUser {
   id: string;
   phone_number: string;
   user_type: UserType | null;
-  law_society_number: string | null;
   email: string | null;
   full_name: string | null;
   pin: string | null;
-  principal_lsbc: string | null;
+  pin_expires_at: string | null;
+  principal_phone: string | null;
   is_verified: boolean;
   registration_step: RegistrationStep;
   created_at: string;
@@ -47,16 +48,48 @@ function generatePin(): string {
   return pin;
 }
 
+// Calculate PIN expiry date
+function getPinExpiryDate(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString();
+}
+
+// Check if PIN is expired
+function isPinExpired(expiresAt: string | null): boolean {
+  if (!expiresAt) return false;
+  return new Date(expiresAt) < new Date();
+}
+
+// Format date for display
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-CA', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
 // Validate email format
 function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
-// Validate LSBC number (basic format check)
-function isValidLSBC(lsbc: string): boolean {
-  // LSBC numbers are typically 5-6 digits
-  return /^\d{5,6}$/.test(lsbc.trim());
+// Validate phone number (basic check)
+function isValidPhone(phone: string): boolean {
+  const digits = phone.replace(/\D/g, '');
+  return digits.length >= 10 && digits.length <= 15;
+}
+
+// Normalize phone number to digits only with country code
+function normalizePhone(phone: string): string {
+  let digits = phone.replace(/\D/g, '');
+  if (digits.length === 10) {
+    digits = '1' + digits;
+  }
+  return digits;
 }
 
 // Get or create user session
@@ -158,7 +191,6 @@ export async function handleMessage(data: MessageData): Promise<void> {
     return;
   }
 
-  // Handle menu button press or "menu" command
   const isMenuRequest =
     data.type === 'text' &&
     ['hi', 'hello', 'menu', 'start', 'hey'].includes(data.text?.toLowerCase().trim() || '');
@@ -168,25 +200,21 @@ export async function handleMessage(data: MessageData): Promise<void> {
     return;
   }
 
-  // Handle list selection (main menu)
   if (data.type === 'interactive' && data.listId) {
     await handleMenuSelection(phoneNumber, user, data.listId);
     return;
   }
 
-  // Handle button press (confirmations)
   if (data.type === 'button' && data.buttonId) {
     await handleButtonPress(phoneNumber, user, data.buttonId);
     return;
   }
 
-  // Handle text input based on current step
   if (data.type === 'text' && data.text) {
     await handleTextInput(phoneNumber, user, data.text.trim());
     return;
   }
 
-  // Default: show menu
   await sendMainMenu(phoneNumber);
 }
 
@@ -200,11 +228,11 @@ async function handleMenuSelection(
     case 'register_lawyer':
       await updateUser(phoneNumber, {
         user_type: 'lawyer',
-        registration_step: 'awaiting_law_society_number',
+        registration_step: 'awaiting_email',
       });
       await sendTextMessage(
         phoneNumber,
-        '👔 *Lawyer Registration*\n\nPlease enter your *Law Society of BC number* (5-6 digits):'
+        '👔 *Lawyer Registration*\n\nPlease enter your *email address*:'
       );
       break;
 
@@ -238,7 +266,6 @@ async function handleTextInput(
   user: WhatsAppUser,
   text: string
 ): Promise<void> {
-  // Allow "cancel" at any point
   if (text.toLowerCase() === 'cancel' || text.toLowerCase() === 'menu') {
     await updateUser(phoneNumber, { registration_step: 'idle' });
     await sendMainMenu(phoneNumber);
@@ -246,48 +273,15 @@ async function handleTextInput(
   }
 
   switch (user.registration_step) {
-    case 'awaiting_law_society_number':
-      if (!isValidLSBC(text)) {
-        await sendTextMessage(
-          phoneNumber,
-          '❌ Invalid LSBC number. Please enter a valid 5-6 digit Law Society number:'
-        );
-        return;
-      }
-
-      // Check if LSBC already registered
-      const { data: existingLSBC } = await supabase
-        .from('whatsapp_users')
-        .select('phone_number')
-        .eq('law_society_number', text)
-        .neq('phone_number', phoneNumber)
-        .single();
-
-      if (existingLSBC) {
-        await sendTextMessage(
-          phoneNumber,
-          '❌ This LSBC number is already registered.\n\nType "menu" to go back.'
-        );
-        return;
-      }
-
-      await updateUser(phoneNumber, {
-        law_society_number: text,
-        registration_step: 'awaiting_email',
-      });
-      await sendTextMessage(phoneNumber, '✅ LSBC saved!\n\nNow enter your *email address*:');
-      break;
-
     case 'awaiting_email':
       if (!isValidEmail(text)) {
         await sendTextMessage(
           phoneNumber,
-          '❌ Invalid email format. Please enter a valid email address:'
+          '❌ That doesn\'t look like a valid email address.\n\nPlease send a valid email (e.g., john@example.com)'
         );
         return;
       }
 
-      // Check if email already registered
       const { data: existingEmail } = await supabase
         .from('whatsapp_users')
         .select('phone_number')
@@ -298,7 +292,7 @@ async function handleTextInput(
       if (existingEmail) {
         await sendTextMessage(
           phoneNumber,
-          '❌ This email is already registered.\n\nType "menu" to go back.'
+          '❌ This email is already registered with another phone number.\n\nPlease use a different email address.'
         );
         return;
       }
@@ -319,18 +313,18 @@ async function handleTextInput(
       if (user.user_type === 'articling_student') {
         await updateUser(phoneNumber, {
           full_name: text,
-          registration_step: 'awaiting_principal_lsbc',
+          registration_step: 'awaiting_principal_phone',
         });
         await sendTextMessage(
           phoneNumber,
-          '✅ Name saved!\n\nNow enter your *principal\'s LSBC number* (the lawyer who will verify you):'
+          '✅ Name saved!\n\nNow enter your *principal\'s phone number* (the lawyer who will verify you):\n\nFormat: 604-555-1234 or 6045551234'
         );
       } else {
-        // Lawyer - complete registration
         const pin = generatePin();
         await updateUser(phoneNumber, {
           full_name: text,
           pin: pin,
+          pin_expires_at: null,
           is_verified: true,
           registration_step: 'complete',
         });
@@ -338,39 +332,73 @@ async function handleTextInput(
           phoneNumber,
           `✅ *Registration Complete!*\n\n` +
             `👤 ${text}\n` +
-            `📧 ${user.email}\n` +
-            `🏛️ LSBC: ${user.law_society_number}\n\n` +
+            `📧 ${user.email}\n\n` +
             `🔐 *Your PIN: ${pin}*\n\n` +
             `Use this PIN to login to LLM.\n\nType "menu" to see options.`
         );
       }
       break;
 
-    case 'awaiting_principal_lsbc':
-      if (!isValidLSBC(text)) {
+    case 'awaiting_principal_phone':
+      if (!isValidPhone(text)) {
         await sendTextMessage(
           phoneNumber,
-          '❌ Invalid LSBC number. Please enter your principal\'s 5-6 digit Law Society number:'
+          '❌ Invalid phone number. Please enter a valid 10-digit phone number:\n\nFormat: 604-555-1234 or 6045551234'
         );
         return;
       }
 
+      const normalizedPrincipalPhone = normalizePhone(text);
+
+      const { data: principal } = await supabase
+        .from('whatsapp_users')
+        .select('*')
+        .eq('phone_number', normalizedPrincipalPhone)
+        .eq('user_type', 'lawyer')
+        .eq('is_verified', true)
+        .single();
+
       const pin = generatePin();
+      const expiryDate = getPinExpiryDate(AS_PIN_EXPIRY_DAYS);
+
       await updateUser(phoneNumber, {
-        principal_lsbc: text,
+        principal_phone: normalizedPrincipalPhone,
         pin: pin,
-        is_verified: false, // Pending verification
+        pin_expires_at: expiryDate,
+        is_verified: false,
         registration_step: 'complete',
       });
+
+      // Get the updated user for the notification
+      const { data: updatedUser } = await supabase
+        .from('whatsapp_users')
+        .select('*')
+        .eq('phone_number', phoneNumber)
+        .single();
+
+      if (principal && updatedUser) {
+        await sendButtonMessage(
+          normalizedPrincipalPhone,
+          `📋 *New Verification Request*\n\n` +
+            `${updatedUser.full_name} has registered as your articling student.\n\n` +
+            `📧 ${updatedUser.email}\n\n` +
+            `Do you want to verify them?`,
+          [
+            { id: `verify_${updatedUser.id}`, title: '✅ Verify' },
+            { id: 'cancel_verify', title: '❌ Decline' },
+          ]
+        );
+      }
+
       await sendTextMessage(
         phoneNumber,
         `✅ *Registration Complete!*\n\n` +
-          `👤 ${user.full_name}\n` +
-          `📧 ${user.email}\n` +
-          `🏛️ Principal LSBC: ${text}\n\n` +
-          `🔐 *Your PIN: ${pin}*\n\n` +
+          `👤 ${user.full_name || text}\n` +
+          `📧 ${user.email}\n\n` +
+          `🔐 *Your PIN: ${pin}*\n` +
+          `📅 Expires: ${formatDate(expiryDate)}\n\n` +
           `⏳ *Status: Pending Verification*\n` +
-          `Your principal must verify you before you can access LLM.\n\n` +
+          `${principal ? 'Your principal has been notified.' : 'Your principal must register first, then verify you.'}\n\n` +
           `Type "menu" to see options.`
       );
       break;
@@ -386,13 +414,17 @@ async function handleButtonPress(
   user: WhatsAppUser,
   buttonId: string
 ): Promise<void> {
-  // Handle verification confirmation
   if (buttonId.startsWith('verify_')) {
     const asId = buttonId.replace('verify_', '');
-    
+    const newExpiryDate = getPinExpiryDate(AS_PIN_EXPIRY_DAYS);
+
     const { data: asUser, error } = await supabase
       .from('whatsapp_users')
-      .update({ is_verified: true, updated_at: new Date().toISOString() })
+      .update({
+        is_verified: true,
+        pin_expires_at: newExpiryDate,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', asId)
       .select()
       .single();
@@ -404,20 +436,65 @@ async function handleButtonPress(
 
     await sendTextMessage(
       phoneNumber,
-      `✅ *Verification Complete!*\n\n${asUser.full_name} has been verified and can now access LLM.\n\nType "menu" to see options.`
+      `✅ *Verification Complete!*\n\n${asUser.full_name} has been verified and can now access LLM.\n\nTheir PIN expires: ${formatDate(newExpiryDate)}\n\nType "menu" to see options.`
     );
 
-    // Notify the articling student
     await sendTextMessage(
       asUser.phone_number,
-      `🎉 *You've been verified!*\n\nYour principal has verified your account. You can now login to LLM with your PIN: *${asUser.pin}*`
+      `🎉 *You've been verified!*\n\n` +
+        `Your principal has verified your account.\n\n` +
+        `🔐 Your PIN: *${asUser.pin}*\n` +
+        `📅 Expires: ${formatDate(newExpiryDate)}\n\n` +
+        `You can now login to LLM!`
     );
     return;
   }
 
   if (buttonId === 'cancel_verify') {
-    await updateUser(phoneNumber, { registration_step: 'idle' });
-    await sendTextMessage(phoneNumber, 'Verification cancelled.\n\nType "menu" to see options.');
+    await sendTextMessage(phoneNumber, 'Verification declined.\n\nType "menu" to see options.');
+    return;
+  }
+
+  if (buttonId === 'renew_pin') {
+    const newPin = generatePin();
+    const newExpiryDate = getPinExpiryDate(AS_PIN_EXPIRY_DAYS);
+
+    await updateUser(phoneNumber, {
+      pin: newPin,
+      pin_expires_at: newExpiryDate,
+      is_verified: false,
+    });
+
+    if (user.principal_phone) {
+      const { data: principal } = await supabase
+        .from('whatsapp_users')
+        .select('*')
+        .eq('phone_number', user.principal_phone)
+        .single();
+
+      if (principal) {
+        await sendButtonMessage(
+          user.principal_phone,
+          `📋 *PIN Renewal Request*\n\n` +
+            `${user.full_name} has renewed their PIN and needs re-verification.\n\n` +
+            `Do you want to verify them?`,
+          [
+            { id: `verify_${user.id}`, title: '✅ Verify' },
+            { id: 'cancel_verify', title: '❌ Decline' },
+          ]
+        );
+      }
+    }
+
+    await sendTextMessage(
+      phoneNumber,
+      `🔄 *PIN Renewed!*\n\n` +
+        `🔐 New PIN: *${newPin}*\n` +
+        `📅 Expires: ${formatDate(newExpiryDate)}\n\n` +
+        `⏳ Status: Pending Verification\n` +
+        `Your principal has been notified.\n\n` +
+        `Type "menu" to see options.`
+    );
     return;
   }
 
@@ -429,7 +506,6 @@ async function handleVerifyASRequest(
   phoneNumber: string,
   user: WhatsAppUser
 ): Promise<void> {
-  // Check if user is a verified lawyer
   if (user.user_type !== 'lawyer' || !user.is_verified) {
     await sendTextMessage(
       phoneNumber,
@@ -438,23 +514,21 @@ async function handleVerifyASRequest(
     return;
   }
 
-  // Find pending articling students linked to this lawyer
   const { data: pendingAS, error } = await supabase
     .from('whatsapp_users')
     .select('*')
-    .eq('principal_lsbc', user.law_society_number)
+    .eq('principal_phone', phoneNumber)
     .eq('is_verified', false)
     .eq('user_type', 'articling_student');
 
   if (error || !pendingAS || pendingAS.length === 0) {
     await sendTextMessage(
       phoneNumber,
-      '📭 No pending articling students found.\n\nArticling students must register with your LSBC number first.\n\nType "menu" to see options.'
+      '📭 No pending articling students found.\n\nArticling students must register with your phone number first.\n\nType "menu" to see options.'
     );
     return;
   }
 
-  // Show list of pending students
   if (pendingAS.length === 1) {
     const as = pendingAS[0];
     await sendButtonMessage(
@@ -466,7 +540,6 @@ async function handleVerifyASRequest(
       ]
     );
   } else {
-    // Multiple pending - use list
     await sendListMessage(
       phoneNumber,
       '📋 Pending Verifications',
@@ -499,18 +572,37 @@ async function handleFetchPin(
     return;
   }
 
-  const statusText = user.is_verified
-    ? '✅ Verified'
-    : '⏳ Pending Verification';
+  if (user.user_type === 'articling_student' && isPinExpired(user.pin_expires_at)) {
+    await sendButtonMessage(
+      phoneNumber,
+      `⚠️ *Your PIN has expired!*\n\n` +
+        `👤 ${user.full_name}\n` +
+        `📧 ${user.email}\n` +
+        `🔐 PIN: ${user.pin} (EXPIRED)\n\n` +
+        `Would you like to renew your PIN?`,
+      [
+        { id: 'renew_pin', title: '🔄 Renew PIN' },
+        { id: 'cancel_verify', title: '❌ Cancel' },
+      ]
+    );
+    return;
+  }
+
+  const verificationStatus = user.is_verified ? '✅ Verified' : '⏳ Pending Verification';
+
+  let expiryText = '';
+  if (user.user_type === 'articling_student' && user.pin_expires_at) {
+    expiryText = `\n📅 Expires: ${formatDate(user.pin_expires_at)}`;
+  }
 
   await sendTextMessage(
     phoneNumber,
     `🔐 *Your Account Details*\n\n` +
       `👤 ${user.full_name}\n` +
       `📧 ${user.email}\n` +
-      `${user.user_type === 'lawyer' ? `🏛️ LSBC: ${user.law_society_number}` : `🏛️ Principal: ${user.principal_lsbc}`}\n\n` +
-      `🔐 *PIN: ${user.pin}*\n` +
-      `📊 Status: ${statusText}\n\n` +
+      `🏷️ Type: ${user.user_type === 'lawyer' ? 'Lawyer' : 'Articling Student'}\n\n` +
+      `🔐 *PIN: ${user.pin}*${expiryText}\n` +
+      `📊 Status: ${verificationStatus}\n\n` +
       `Type "menu" to see options.`
   );
 }
