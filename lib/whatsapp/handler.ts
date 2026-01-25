@@ -12,16 +12,35 @@ const supabase = createClient(
 );
 
 // Configuration
-const MAX_ACCESS_MONTHS = 9; // Maximum 9 months access from registration
+const MAX_ACCESS_MONTHS = 9;
 
-// User types
+// Types
 type UserType = 'lawyer' | 'articling_student';
 type RegistrationStep =
   | 'idle'
-  | 'awaiting_email'
-  | 'awaiting_name'
-  | 'awaiting_principal_phone'
-  | 'awaiting_articling_end_date'
+  // Lawyer registration
+  | 'lawyer_awaiting_name'
+  | 'lawyer_awaiting_email'
+  | 'lawyer_awaiting_lsbc_confirm'
+  // A/S registration
+  | 'as_awaiting_name'
+  | 'as_awaiting_email'
+  | 'as_awaiting_firm'
+  | 'as_awaiting_principal_name'
+  | 'as_awaiting_principal_phone'
+  | 'as_awaiting_end_date'
+  // Lawyer verifying A/S
+  | 'verify_awaiting_student_name'
+  | 'verify_awaiting_student_phone'
+  | 'verify_awaiting_firm'
+  | 'verify_awaiting_end_date'
+  | 'verify_awaiting_lsbc_confirm'
+  // A/S upgrade to lawyer
+  | 'upgrade_awaiting_name'
+  | 'upgrade_awaiting_email'
+  | 'upgrade_awaiting_call_date'
+  | 'upgrade_awaiting_oath_confirm'
+  | 'upgrade_awaiting_lsbc_confirm'
   | 'complete';
 
 interface WhatsAppUser {
@@ -33,9 +52,17 @@ interface WhatsAppUser {
   pin: string | null;
   pin_expires_at: string | null;
   articling_end_date: string | null;
+  firm_name: string | null;
+  principal_name: string | null;
   principal_phone: string | null;
+  call_to_bar_date: string | null;
   is_verified: boolean;
   registration_step: RegistrationStep;
+  // Temp fields for verification flow
+  temp_student_name: string | null;
+  temp_student_phone: string | null;
+  temp_firm_name: string | null;
+  temp_end_date: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -73,7 +100,16 @@ function formatDate(dateStr: string): string {
   });
 }
 
-// Parse date from various formats (YYYY-MM-DD, MM/DD/YYYY, etc.)
+// Format month/year
+function formatMonthYear(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-CA', {
+    year: 'numeric',
+    month: 'long',
+  });
+}
+
+// Parse date from various formats
 function parseDate(input: string): Date | null {
   const trimmed = input.trim();
   
@@ -90,8 +126,33 @@ function parseDate(input: string): Date | null {
     if (!isNaN(date.getTime())) return date;
   }
   
-  // Try natural language like "June 30, 2025" or "30 June 2025"
+  // Try natural language
   const naturalDate = new Date(trimmed);
+  if (!isNaN(naturalDate.getTime())) return naturalDate;
+  
+  return null;
+}
+
+// Parse month/year (e.g., "January 2025", "01/2025", "2025-01")
+function parseMonthYear(input: string): Date | null {
+  const trimmed = input.trim();
+  
+  // Try YYYY-MM
+  if (/^\d{4}-\d{2}$/.test(trimmed)) {
+    const [year, month] = trimmed.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+    if (!isNaN(date.getTime())) return date;
+  }
+  
+  // Try MM/YYYY
+  if (/^\d{1,2}\/\d{4}$/.test(trimmed)) {
+    const [month, year] = trimmed.split('/');
+    const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+    if (!isNaN(date.getTime())) return date;
+  }
+  
+  // Try natural language like "January 2025"
+  const naturalDate = new Date(trimmed + ' 1');
   if (!isNaN(naturalDate.getTime())) return naturalDate;
   
   return null;
@@ -103,13 +164,13 @@ function isValidEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
-// Validate phone number (basic check)
+// Validate phone number
 function isValidPhone(phone: string): boolean {
   const digits = phone.replace(/\D/g, '');
   return digits.length >= 10 && digits.length <= 15;
 }
 
-// Normalize phone number to digits only with country code
+// Normalize phone number
 function normalizePhone(phone: string): string {
   let digits = phone.replace(/\D/g, '');
   if (digits.length === 10) {
@@ -120,7 +181,7 @@ function normalizePhone(phone: string): string {
 
 // Get or create user session
 async function getOrCreateUser(phoneNumber: string): Promise<WhatsAppUser | null> {
-  const { data: existingUser, error: fetchError } = await supabase
+  const { data: existingUser } = await supabase
     .from('whatsapp_users')
     .select('*')
     .eq('phone_number', phoneNumber)
@@ -165,26 +226,41 @@ async function updateUser(
   return true;
 }
 
-// Send main menu
+// Send main menu with button for Fetch PIN
 async function sendMainMenu(phoneNumber: string): Promise<void> {
   await sendListMessage(
     phoneNumber,
     '⚖️ LLM Registration',
-    'Welcome to the Legal Legends Manual registration system.\n\nSelect an option below to get started.',
+    'Welcome to the Legal Legends Manual.\n\nSelect an option below.',
     'View Options',
     [
       {
-        title: 'Registration',
+        title: 'Lawyers',
         rows: [
           {
             id: 'register_lawyer',
-            title: '👔 Register as Lawyer',
-            description: 'For practicing lawyers only',
+            title: '👔 Lawyer Registration',
+            description: 'Register as a practicing lawyer',
           },
           {
+            id: 'verify_as',
+            title: '✅ Verify Articling Student',
+            description: 'Verify your articling student',
+          },
+        ],
+      },
+      {
+        title: 'Articling Students',
+        rows: [
+          {
             id: 'register_as',
-            title: '📚 Register as A/S',
-            description: 'For articling students only',
+            title: '📚 A/S Registration',
+            description: 'Register as an articling student',
+          },
+          {
+            id: 'upgrade_to_lawyer',
+            title: '⬆️ Upgrade to Lawyer',
+            description: 'Called to the Bar? Upgrade your account',
           },
         ],
       },
@@ -192,14 +268,9 @@ async function sendMainMenu(phoneNumber: string): Promise<void> {
         title: 'Account',
         rows: [
           {
-            id: 'verify_as',
-            title: '✅ Verify an A/S',
-            description: 'Lawyers: verify your articling student',
-          },
-          {
             id: 'fetch_pin',
-            title: '🔐 Fetch your PIN',
-            description: 'Retrieve your login PIN',
+            title: '🔐 Fetch my PIN',
+            description: 'Get your login PIN',
           },
         ],
       },
@@ -226,16 +297,19 @@ export async function handleMessage(data: MessageData): Promise<void> {
     return;
   }
 
+  // Handle list selection
   if (data.type === 'interactive' && data.listId) {
     await handleMenuSelection(phoneNumber, user, data.listId);
     return;
   }
 
+  // Handle button press
   if (data.type === 'button' && data.buttonId) {
     await handleButtonPress(phoneNumber, user, data.buttonId);
     return;
   }
 
+  // Handle text input
   if (data.type === 'text' && data.text) {
     await handleTextInput(phoneNumber, user, data.text.trim());
     return;
@@ -254,27 +328,50 @@ async function handleMenuSelection(
     case 'register_lawyer':
       await updateUser(phoneNumber, {
         user_type: 'lawyer',
-        registration_step: 'awaiting_email',
+        registration_step: 'lawyer_awaiting_name',
       });
       await sendTextMessage(
         phoneNumber,
-        '👔 *Lawyer Registration*\n\nPlease enter your *email address*:'
+        '👔 *Lawyer Registration*\n\nPlease enter your *full name*:'
       );
       break;
 
     case 'register_as':
       await updateUser(phoneNumber, {
         user_type: 'articling_student',
-        registration_step: 'awaiting_email',
+        registration_step: 'as_awaiting_name',
       });
       await sendTextMessage(
         phoneNumber,
-        '📚 *Articling Student Registration*\n\nPlease enter your *email address*:'
+        '📚 *Articling Student Registration*\n\nPlease enter your *full name*:'
       );
       break;
 
     case 'verify_as':
-      await handleVerifyASRequest(phoneNumber, user);
+      if (user.user_type !== 'lawyer' || !user.is_verified) {
+        await sendTextMessage(
+          phoneNumber,
+          '❌ Only registered lawyers can verify articling students.\n\nType "menu" to see options.'
+        );
+        return;
+      }
+      await updateUser(phoneNumber, {
+        registration_step: 'verify_awaiting_student_name',
+      });
+      await sendTextMessage(
+        phoneNumber,
+        '✅ *Verify Articling Student*\n\nEnter the *student\'s full name*:'
+      );
+      break;
+
+    case 'upgrade_to_lawyer':
+      await updateUser(phoneNumber, {
+        registration_step: 'upgrade_awaiting_name',
+      });
+      await sendTextMessage(
+        phoneNumber,
+        '⬆️ *Upgrade to Lawyer*\n\nPlease enter your *full name*:'
+      );
       break;
 
     case 'fetch_pin':
@@ -286,7 +383,7 @@ async function handleMenuSelection(
   }
 }
 
-// Handle text input based on registration step
+// Handle text input
 async function handleTextInput(
   phoneNumber: string,
   user: WhatsAppUser,
@@ -299,145 +396,162 @@ async function handleTextInput(
   }
 
   switch (user.registration_step) {
-    case 'awaiting_email':
-      if (!isValidEmail(text)) {
-        await sendTextMessage(
-          phoneNumber,
-          '❌ That doesn\'t look like a valid email address.\n\nPlease send a valid email (e.g., john@example.com)'
-        );
+    // ============ LAWYER REGISTRATION ============
+    case 'lawyer_awaiting_name':
+      if (text.length < 2) {
+        await sendTextMessage(phoneNumber, '❌ Please enter a valid name (at least 2 characters):');
         return;
       }
+      await updateUser(phoneNumber, {
+        full_name: text,
+        registration_step: 'lawyer_awaiting_email',
+      });
+      await sendTextMessage(phoneNumber, '✅ Name saved!\n\nNow enter your *email address*:');
+      break;
 
-      const { data: existingEmail } = await supabase
+    case 'lawyer_awaiting_email':
+      if (!isValidEmail(text)) {
+        await sendTextMessage(phoneNumber, '❌ Invalid email. Please enter a valid email address:');
+        return;
+      }
+      
+      const { data: existingLawyerEmail } = await supabase
         .from('whatsapp_users')
         .select('phone_number')
         .eq('email', text.toLowerCase())
         .neq('phone_number', phoneNumber)
         .single();
 
-      if (existingEmail) {
-        await sendTextMessage(
-          phoneNumber,
-          '❌ This email is already registered with another phone number.\n\nPlease use a different email address.'
-        );
+      if (existingLawyerEmail) {
+        await sendTextMessage(phoneNumber, '❌ This email is already registered.\n\nPlease use a different email:');
         return;
       }
 
       await updateUser(phoneNumber, {
         email: text.toLowerCase(),
-        registration_step: 'awaiting_name',
+        registration_step: 'lawyer_awaiting_lsbc_confirm',
       });
-      await sendTextMessage(phoneNumber, '✅ Email saved!\n\nNow enter your *full name*:');
+      await sendButtonMessage(
+        phoneNumber,
+        '⚖️ *LSBC Confirmation*\n\n' +
+          'Please confirm that you are an *active member in good standing* with the Law Society of British Columbia.\n\n' +
+          '⚠️ *Warning:* Your status will be verified through the LSBC Lawyer Directory at random intervals.',
+        [
+          { id: 'confirm_lsbc_lawyer', title: '✅ I Confirm' },
+          { id: 'cancel_registration', title: '❌ Cancel' },
+        ]
+      );
       break;
 
-    case 'awaiting_name':
+    // ============ A/S REGISTRATION ============
+    case 'as_awaiting_name':
       if (text.length < 2) {
         await sendTextMessage(phoneNumber, '❌ Please enter a valid name (at least 2 characters):');
         return;
       }
-
-      if (user.user_type === 'articling_student') {
-        await updateUser(phoneNumber, {
-          full_name: text,
-          registration_step: 'awaiting_principal_phone',
-        });
-        await sendTextMessage(
-          phoneNumber,
-          '✅ Name saved!\n\nNow enter your *principal\'s phone number* (the lawyer who will verify you):\n\nFormat: 604-555-1234 or 6045551234'
-        );
-      } else {
-        // Lawyer - complete registration (no expiry)
-        const pin = generatePin();
-        await updateUser(phoneNumber, {
-          full_name: text,
-          pin: pin,
-          pin_expires_at: null,
-          is_verified: true,
-          registration_step: 'complete',
-        });
-        await sendTextMessage(
-          phoneNumber,
-          `✅ *Registration Complete!*\n\n` +
-            `👤 ${text}\n` +
-            `📧 ${user.email}\n\n` +
-            `🔐 *Your PIN: ${pin}*\n\n` +
-            `Use this PIN to login to LLM.\n\nType "menu" to see options.`
-        );
-      }
+      await updateUser(phoneNumber, {
+        full_name: text,
+        registration_step: 'as_awaiting_email',
+      });
+      await sendTextMessage(phoneNumber, '✅ Name saved!\n\nNow enter your *email address*:');
       break;
 
-    case 'awaiting_principal_phone':
-      if (!isValidPhone(text)) {
-        await sendTextMessage(
-          phoneNumber,
-          '❌ Invalid phone number. Please enter a valid 10-digit phone number:\n\nFormat: 604-555-1234 or 6045551234'
-        );
+    case 'as_awaiting_email':
+      if (!isValidEmail(text)) {
+        await sendTextMessage(phoneNumber, '❌ Invalid email. Please enter a valid email address:');
         return;
       }
 
-      const normalizedPrincipalPhone = normalizePhone(text);
+      const { data: existingASEmail } = await supabase
+        .from('whatsapp_users')
+        .select('phone_number')
+        .eq('email', text.toLowerCase())
+        .neq('phone_number', phoneNumber)
+        .single();
+
+      if (existingASEmail) {
+        await sendTextMessage(phoneNumber, '❌ This email is already registered.\n\nPlease use a different email:');
+        return;
+      }
 
       await updateUser(phoneNumber, {
-        principal_phone: normalizedPrincipalPhone,
-        registration_step: 'awaiting_articling_end_date',
+        email: text.toLowerCase(),
+        registration_step: 'as_awaiting_firm',
       });
+      await sendTextMessage(phoneNumber, '✅ Email saved!\n\nNow enter your *articling firm name*:');
+      break;
 
-      const maxDate = getMaxExpiryDate();
+    case 'as_awaiting_firm':
+      if (text.length < 2) {
+        await sendTextMessage(phoneNumber, '❌ Please enter a valid firm name:');
+        return;
+      }
+      await updateUser(phoneNumber, {
+        firm_name: text,
+        registration_step: 'as_awaiting_principal_name',
+      });
+      await sendTextMessage(phoneNumber, '✅ Firm saved!\n\nNow enter your *principal/referrer\'s full name*:');
+      break;
+
+    case 'as_awaiting_principal_name':
+      if (text.length < 2) {
+        await sendTextMessage(phoneNumber, '❌ Please enter a valid name:');
+        return;
+      }
+      await updateUser(phoneNumber, {
+        principal_name: text,
+        registration_step: 'as_awaiting_principal_phone',
+      });
       await sendTextMessage(
         phoneNumber,
-        `✅ Principal's phone saved!\n\n` +
-          `When does your articling period end?\n\n` +
-          `⚠️ *Maximum access: ${formatDate(maxDate.toISOString())}* (9 months from today)\n\n` +
-          `Enter date as: YYYY-MM-DD (e.g., 2025-09-30)`
+        '✅ Principal\'s name saved!\n\nNow enter your *principal/referrer\'s phone number*:\n\nFormat: 604-555-1234'
       );
       break;
 
-    case 'awaiting_articling_end_date':
-      const endDate = parseDate(text);
-      
-      if (!endDate) {
-        await sendTextMessage(
-          phoneNumber,
-          '❌ Invalid date format.\n\nPlease enter the date as: YYYY-MM-DD (e.g., 2025-09-30)'
-        );
+    case 'as_awaiting_principal_phone':
+      if (!isValidPhone(text)) {
+        await sendTextMessage(phoneNumber, '❌ Invalid phone number.\n\nFormat: 604-555-1234 or 6045551234');
+        return;
+      }
+      await updateUser(phoneNumber, {
+        principal_phone: normalizePhone(text),
+        registration_step: 'as_awaiting_end_date',
+      });
+      await sendTextMessage(
+        phoneNumber,
+        '✅ Phone saved!\n\nWhen does your articling period end?\n\nEnter date as: YYYY-MM-DD (e.g., 2025-09-30)'
+      );
+      break;
+
+    case 'as_awaiting_end_date':
+      const asEndDate = parseDate(text);
+      if (!asEndDate) {
+        await sendTextMessage(phoneNumber, '❌ Invalid date.\n\nPlease enter as: YYYY-MM-DD (e.g., 2025-09-30)');
         return;
       }
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
-      if (endDate <= today) {
-        await sendTextMessage(
-          phoneNumber,
-          '❌ The articling end date must be in the future.\n\nPlease enter a valid future date:'
-        );
+      if (asEndDate <= today) {
+        await sendTextMessage(phoneNumber, '❌ The end date must be in the future.\n\nPlease enter a valid date:');
         return;
       }
 
-      const maxAllowedDate = getMaxExpiryDate();
-      
-      // Cap the expiry at 9 months from registration
-      const actualExpiryDate = endDate > maxAllowedDate ? maxAllowedDate : endDate;
+      // Cap at 9 months silently
+      const maxDate = getMaxExpiryDate();
+      const actualExpiry = asEndDate > maxDate ? maxDate : asEndDate;
 
-      const pin = generatePin();
-
+      const asPin = generatePin();
       await updateUser(phoneNumber, {
-        articling_end_date: endDate.toISOString(),
-        pin: pin,
-        pin_expires_at: actualExpiryDate.toISOString(),
-        is_verified: false, // Pending verification - PIN inactive until verified
+        articling_end_date: asEndDate.toISOString(),
+        pin: asPin,
+        pin_expires_at: actualExpiry.toISOString(),
+        is_verified: false,
         registration_step: 'complete',
       });
 
-      // Get the updated user for the notification
-      const { data: updatedUser } = await supabase
-        .from('whatsapp_users')
-        .select('*')
-        .eq('phone_number', phoneNumber)
-        .single();
-
-      // Check if principal is a registered lawyer
-      const { data: principal } = await supabase
+      // Notify principal if they're a registered lawyer
+      const { data: asPrincipal } = await supabase
         .from('whatsapp_users')
         .select('*')
         .eq('phone_number', user.principal_phone)
@@ -445,39 +559,160 @@ async function handleTextInput(
         .eq('is_verified', true)
         .single();
 
-      if (principal && updatedUser) {
-        await sendButtonMessage(
+      if (asPrincipal) {
+        await sendTextMessage(
           user.principal_phone!,
-          `📋 *New Verification Request*\n\n` +
-            `${updatedUser.full_name} has registered as your articling student.\n\n` +
-            `📧 ${updatedUser.email}\n` +
-            `📅 Articling ends: ${formatDate(endDate.toISOString())}\n\n` +
-            `Do you want to verify them?`,
-          [
-            { id: `verify_${updatedUser.id}`, title: '✅ Verify' },
-            { id: 'cancel_verify', title: '❌ Decline' },
-          ]
+          `📋 *New A/S Registration*\n\n` +
+            `${user.full_name} has registered as an articling student at ${user.firm_name} and listed you as their principal.\n\n` +
+            `Please use "Verify Articling Student" from the menu to verify them.`
         );
-      }
-
-      let expiryNote = '';
-      if (endDate > maxAllowedDate) {
-        expiryNote = `\n\n⚠️ Your articling period extends beyond the 9-month maximum. Access will expire on ${formatDate(actualExpiryDate.toISOString())}.`;
       }
 
       await sendTextMessage(
         phoneNumber,
         `✅ *Registration Complete!*\n\n` +
-          `👤 ${updatedUser?.full_name || user.full_name}\n` +
+          `👤 ${user.full_name}\n` +
           `📧 ${user.email}\n` +
-          `📅 Articling ends: ${formatDate(endDate.toISOString())}\n\n` +
-          `🔐 *Your PIN: ${pin}*\n` +
-          `📅 Access expires: ${formatDate(actualExpiryDate.toISOString())}\n\n` +
+          `🏢 ${user.firm_name}\n` +
+          `👨‍⚖️ Principal: ${user.principal_name}\n\n` +
+          `🔐 *Your PIN: ${asPin}*\n\n` +
           `⏳ *Status: Pending Verification*\n` +
-          `Your PIN will be *inactive* until your principal verifies you.\n` +
-          `${principal ? 'Your principal has been notified.' : 'Your principal must register first, then verify you.'}` +
-          expiryNote +
-          `\n\nType "menu" to see options.`
+          `Your PIN will be *inactive* until your principal verifies you.\n\n` +
+          `Type "menu" to see options.`
+      );
+      break;
+
+    // ============ LAWYER VERIFYING A/S ============
+    case 'verify_awaiting_student_name':
+      if (text.length < 2) {
+        await sendTextMessage(phoneNumber, '❌ Please enter a valid name:');
+        return;
+      }
+      await updateUser(phoneNumber, {
+        temp_student_name: text,
+        registration_step: 'verify_awaiting_student_phone',
+      });
+      await sendTextMessage(
+        phoneNumber,
+        '✅ Name noted.\n\nEnter the *student\'s phone number*:\n\nFormat: 604-555-1234'
+      );
+      break;
+
+    case 'verify_awaiting_student_phone':
+      if (!isValidPhone(text)) {
+        await sendTextMessage(phoneNumber, '❌ Invalid phone number.\n\nFormat: 604-555-1234');
+        return;
+      }
+      await updateUser(phoneNumber, {
+        temp_student_phone: normalizePhone(text),
+        registration_step: 'verify_awaiting_firm',
+      });
+      await sendTextMessage(phoneNumber, '✅ Phone noted.\n\nEnter the *firm name*:');
+      break;
+
+    case 'verify_awaiting_firm':
+      if (text.length < 2) {
+        await sendTextMessage(phoneNumber, '❌ Please enter a valid firm name:');
+        return;
+      }
+      await updateUser(phoneNumber, {
+        temp_firm_name: text,
+        registration_step: 'verify_awaiting_end_date',
+      });
+      await sendTextMessage(
+        phoneNumber,
+        '✅ Firm noted.\n\nEnter the *end of work period*:\n\nFormat: YYYY-MM-DD (e.g., 2025-09-30)'
+      );
+      break;
+
+    case 'verify_awaiting_end_date':
+      const verifyEndDate = parseDate(text);
+      if (!verifyEndDate) {
+        await sendTextMessage(phoneNumber, '❌ Invalid date.\n\nFormat: YYYY-MM-DD');
+        return;
+      }
+
+      const todayVerify = new Date();
+      todayVerify.setHours(0, 0, 0, 0);
+      if (verifyEndDate <= todayVerify) {
+        await sendTextMessage(phoneNumber, '❌ The end date must be in the future:');
+        return;
+      }
+
+      await updateUser(phoneNumber, {
+        temp_end_date: verifyEndDate.toISOString(),
+        registration_step: 'verify_awaiting_lsbc_confirm',
+      });
+      await sendButtonMessage(
+        phoneNumber,
+        `📋 *Confirm Verification*\n\n` +
+          `👤 Student: ${user.temp_student_name}\n` +
+          `📱 Phone: ${user.temp_student_phone}\n` +
+          `🏢 Firm: ${user.temp_firm_name}\n` +
+          `📅 End Date: ${formatDate(verifyEndDate.toISOString())}\n\n` +
+          `Please confirm this person is a *registered articling student* under the Law Society of BC.`,
+        [
+          { id: 'confirm_verify_as', title: '✅ Confirm & Verify' },
+          { id: 'cancel_registration', title: '❌ Cancel' },
+        ]
+      );
+      break;
+
+    // ============ A/S UPGRADE TO LAWYER ============
+    case 'upgrade_awaiting_name':
+      if (text.length < 2) {
+        await sendTextMessage(phoneNumber, '❌ Please enter a valid name:');
+        return;
+      }
+      await updateUser(phoneNumber, {
+        temp_student_name: text, // Reusing temp field
+        registration_step: 'upgrade_awaiting_email',
+      });
+      await sendTextMessage(phoneNumber, '✅ Name saved!\n\nNow enter your *email address*:');
+      break;
+
+    case 'upgrade_awaiting_email':
+      if (!isValidEmail(text)) {
+        await sendTextMessage(phoneNumber, '❌ Invalid email. Please enter a valid email:');
+        return;
+      }
+      await updateUser(phoneNumber, {
+        temp_firm_name: text.toLowerCase(), // Reusing temp field for email
+        registration_step: 'upgrade_awaiting_call_date',
+      });
+      await sendTextMessage(
+        phoneNumber,
+        '✅ Email saved!\n\nWhen were you *Called to the Bar*?\n\nEnter month and year (e.g., January 2025 or 01/2025):'
+      );
+      break;
+
+    case 'upgrade_awaiting_call_date':
+      const callDate = parseMonthYear(text);
+      if (!callDate) {
+        await sendTextMessage(
+          phoneNumber,
+          '❌ Invalid format.\n\nEnter month and year (e.g., January 2025 or 01/2025):'
+        );
+        return;
+      }
+
+      const now = new Date();
+      if (callDate > now) {
+        await sendTextMessage(phoneNumber, '❌ Call to Bar date cannot be in the future.\n\nPlease enter a valid date:');
+        return;
+      }
+
+      await updateUser(phoneNumber, {
+        temp_end_date: callDate.toISOString(), // Reusing for call date
+        registration_step: 'upgrade_awaiting_oath_confirm',
+      });
+      await sendButtonMessage(
+        phoneNumber,
+        '📜 *Oath Confirmation*\n\nPlease confirm that you have taken the *Barristers\' and Solicitors\' Oath*.',
+        [
+          { id: 'confirm_oath', title: '✅ I Have Taken the Oath' },
+          { id: 'cancel_registration', title: '❌ Cancel' },
+        ]
       );
       break;
 
@@ -492,111 +727,222 @@ async function handleButtonPress(
   user: WhatsAppUser,
   buttonId: string
 ): Promise<void> {
-  if (buttonId.startsWith('verify_')) {
-    const asId = buttonId.replace('verify_', '');
-
-    const { data: asUser, error } = await supabase
-      .from('whatsapp_users')
-      .update({
+  switch (buttonId) {
+    case 'confirm_lsbc_lawyer':
+      // Complete lawyer registration
+      const lawyerPin = generatePin();
+      await updateUser(phoneNumber, {
+        pin: lawyerPin,
+        pin_expires_at: null,
         is_verified: true,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', asId)
-      .select()
-      .single();
+        registration_step: 'complete',
+      });
+      await sendTextMessage(
+        phoneNumber,
+        `✅ *Registration Complete!*\n\n` +
+          `👤 ${user.full_name}\n` +
+          `📧 ${user.email}\n\n` +
+          `🔐 *Your PIN: ${lawyerPin}*\n\n` +
+          `⚠️ Your status will be verified through the LSBC Lawyer Directory at random intervals.\n\n` +
+          `Type "menu" to see options.`
+      );
+      break;
 
-    if (error || !asUser) {
-      await sendTextMessage(phoneNumber, '❌ Failed to verify. Please try again.');
-      return;
-    }
+    case 'confirm_verify_as':
+      // Find the A/S by phone number
+      const { data: studentToVerify } = await supabase
+        .from('whatsapp_users')
+        .select('*')
+        .eq('phone_number', user.temp_student_phone)
+        .eq('user_type', 'articling_student')
+        .single();
 
-    await sendTextMessage(
-      phoneNumber,
-      `✅ *Verification Complete!*\n\n` +
-        `${asUser.full_name} has been verified and can now access LLM.\n\n` +
-        `Their access expires: ${asUser.pin_expires_at ? formatDate(asUser.pin_expires_at) : 'N/A'}\n\n` +
-        `Type "menu" to see options.`
-    );
+      if (!studentToVerify) {
+        await sendTextMessage(
+          phoneNumber,
+          '❌ No articling student found with that phone number.\n\n' +
+            'The student must register first before you can verify them.\n\n' +
+            'Type "menu" to see options.'
+        );
+        await updateUser(phoneNumber, {
+          registration_step: 'idle',
+          temp_student_name: null,
+          temp_student_phone: null,
+          temp_firm_name: null,
+          temp_end_date: null,
+        });
+        return;
+      }
 
-    // Notify the articling student
-    await sendTextMessage(
-      asUser.phone_number,
-      `🎉 *You've been verified!*\n\n` +
-        `Your principal has verified your account. Your PIN is now *active*!\n\n` +
-        `🔐 Your PIN: *${asUser.pin}*\n` +
-        `📅 Access expires: ${asUser.pin_expires_at ? formatDate(asUser.pin_expires_at) : 'N/A'}\n\n` +
-        `You can now login to LLM!`
-    );
-    return;
-  }
+      // Calculate final expiry - use lawyer's date if earlier
+      const lawyerEndDate = new Date(user.temp_end_date!);
+      const maxExpiry = getMaxExpiryDate();
+      let studentExpiry = studentToVerify.pin_expires_at ? new Date(studentToVerify.pin_expires_at) : maxExpiry;
+      
+      // Use the earliest of: lawyer's date, student's date, max 9 months
+      const finalExpiry = new Date(Math.min(lawyerEndDate.getTime(), studentExpiry.getTime(), maxExpiry.getTime()));
 
-  if (buttonId === 'cancel_verify') {
-    await sendTextMessage(phoneNumber, 'Verification declined.\n\nType "menu" to see options.');
-    return;
-  }
+      // Update the student
+      await supabase
+        .from('whatsapp_users')
+        .update({
+          is_verified: true,
+          pin_expires_at: finalExpiry.toISOString(),
+          firm_name: user.temp_firm_name,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', studentToVerify.id);
 
-  await sendMainMenu(phoneNumber);
-}
+      // Clear temp fields
+      await updateUser(phoneNumber, {
+        registration_step: 'idle',
+        temp_student_name: null,
+        temp_student_phone: null,
+        temp_firm_name: null,
+        temp_end_date: null,
+      });
 
-// Handle verify articling student request
-async function handleVerifyASRequest(
-  phoneNumber: string,
-  user: WhatsAppUser
-): Promise<void> {
-  if (user.user_type !== 'lawyer' || !user.is_verified) {
-    await sendTextMessage(
-      phoneNumber,
-      '❌ Only verified lawyers can verify articling students.\n\nType "menu" to see options.'
-    );
-    return;
-  }
+      await sendTextMessage(
+        phoneNumber,
+        `✅ *Verification Complete!*\n\n` +
+          `${studentToVerify.full_name} has been verified.\n\n` +
+          `Their access expires: ${formatDate(finalExpiry.toISOString())}\n\n` +
+          `Type "menu" to see options.`
+      );
 
-  const { data: pendingAS, error } = await supabase
-    .from('whatsapp_users')
-    .select('*')
-    .eq('principal_phone', phoneNumber)
-    .eq('is_verified', false)
-    .eq('user_type', 'articling_student');
+      // Notify the student
+      await sendTextMessage(
+        studentToVerify.phone_number,
+        `🎉 *You've been verified!*\n\n` +
+          `Your account has been verified by ${user.full_name}.\n\n` +
+          `🔐 Your PIN: *${studentToVerify.pin}*\n` +
+          `📅 Access expires: ${formatDate(finalExpiry.toISOString())}\n\n` +
+          `You can now login to LLM!`
+      );
+      break;
 
-  if (error || !pendingAS || pendingAS.length === 0) {
-    await sendTextMessage(
-      phoneNumber,
-      '📭 No pending articling students found.\n\nArticling students must register with your phone number first.\n\nType "menu" to see options.'
-    );
-    return;
-  }
+    case 'confirm_oath':
+      await updateUser(phoneNumber, {
+        registration_step: 'upgrade_awaiting_lsbc_confirm',
+      });
+      await sendButtonMessage(
+        phoneNumber,
+        '⚖️ *LSBC Confirmation*\n\n' +
+          'Please confirm that you are now an *active member in good standing* with the Law Society of British Columbia.\n\n' +
+          '⚠️ *Warning:* Your status will be verified through the LSBC Lawyer Directory at random intervals.',
+        [
+          { id: 'confirm_upgrade_lsbc', title: '✅ I Confirm' },
+          { id: 'cancel_registration', title: '❌ Cancel' },
+        ]
+      );
+      break;
 
-  if (pendingAS.length === 1) {
-    const as = pendingAS[0];
-    await sendButtonMessage(
-      phoneNumber,
-      `📋 *Pending Verification*\n\n` +
-        `👤 ${as.full_name}\n` +
-        `📧 ${as.email}\n` +
-        `📅 Articling ends: ${as.articling_end_date ? formatDate(as.articling_end_date) : 'N/A'}\n\n` +
-        `Do you want to verify this articling student?`,
-      [
-        { id: `verify_${as.id}`, title: '✅ Verify' },
-        { id: 'cancel_verify', title: '❌ Cancel' },
-      ]
-    );
-  } else {
-    await sendListMessage(
-      phoneNumber,
-      '📋 Pending Verifications',
-      `You have ${pendingAS.length} articling students waiting for verification.`,
-      'Select Student',
-      [
-        {
-          title: 'Pending Students',
-          rows: pendingAS.map((as) => ({
-            id: `verify_${as.id}`,
-            title: as.full_name || 'Unknown',
-            description: as.email || '',
-          })),
-        },
-      ]
-    );
+    case 'confirm_upgrade_lsbc':
+      // Check if user exists with matching name and email
+      const upgradeName = user.temp_student_name;
+      const upgradeEmail = user.temp_firm_name; // We stored email here
+      const callToBarDate = user.temp_end_date;
+
+      // Check if current phone number has an A/S account OR matches by name+email
+      const { data: existingAS } = await supabase
+        .from('whatsapp_users')
+        .select('*')
+        .eq('phone_number', phoneNumber)
+        .eq('user_type', 'articling_student')
+        .single();
+
+      // Also check by name+email if not found by phone
+      let targetUser = existingAS;
+      if (!targetUser) {
+        const { data: matchByNameEmail } = await supabase
+          .from('whatsapp_users')
+          .select('*')
+          .ilike('full_name', upgradeName!)
+          .eq('email', upgradeEmail)
+          .single();
+        
+        targetUser = matchByNameEmail;
+      }
+
+      if (!targetUser) {
+        await sendTextMessage(
+          phoneNumber,
+          '❌ No existing account found with that name and email.\n\n' +
+            'Please register as a *Lawyer* or *Articling Student* first.\n\n' +
+            'Type "menu" to see options.'
+        );
+        await updateUser(phoneNumber, {
+          registration_step: 'idle',
+          temp_student_name: null,
+          temp_firm_name: null,
+          temp_end_date: null,
+        });
+        return;
+      }
+
+      // Upgrade the user
+      const upgradedPin = targetUser.pin || generatePin();
+      await supabase
+        .from('whatsapp_users')
+        .update({
+          user_type: 'lawyer',
+          full_name: upgradeName,
+          email: upgradeEmail,
+          call_to_bar_date: callToBarDate,
+          pin: upgradedPin,
+          pin_expires_at: null, // Lawyers don't expire
+          is_verified: true,
+          registration_step: 'complete',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', targetUser.id);
+
+      // Clear temp fields on current user if different
+      if (targetUser.phone_number !== phoneNumber) {
+        await updateUser(phoneNumber, {
+          registration_step: 'idle',
+          temp_student_name: null,
+          temp_firm_name: null,
+          temp_end_date: null,
+        });
+      }
+
+      await sendTextMessage(
+        targetUser.phone_number,
+        `🎉 *Congratulations, Counsel!*\n\n` +
+          `Your account has been upgraded to Lawyer status.\n\n` +
+          `👤 ${upgradeName}\n` +
+          `📧 ${upgradeEmail}\n` +
+          `📅 Called to Bar: ${formatMonthYear(callToBarDate!)}\n\n` +
+          `🔐 *Your PIN: ${upgradedPin}*\n\n` +
+          `⚠️ Your status will be verified through the LSBC Lawyer Directory at random intervals.\n\n` +
+          `Type "menu" to see options.`
+      );
+
+      // If upgrading from different phone, notify original phone too
+      if (targetUser.phone_number !== phoneNumber) {
+        await sendTextMessage(
+          phoneNumber,
+          `✅ Account upgraded successfully!\n\n` +
+            `The PIN has been sent to the registered phone number.\n\n` +
+            `Type "menu" to see options.`
+        );
+      }
+      break;
+
+    case 'cancel_registration':
+      await updateUser(phoneNumber, {
+        registration_step: 'idle',
+        temp_student_name: null,
+        temp_student_phone: null,
+        temp_firm_name: null,
+        temp_end_date: null,
+      });
+      await sendTextMessage(phoneNumber, 'Registration cancelled.\n\nType "menu" to see options.');
+      break;
+
+    default:
+      await sendMainMenu(phoneNumber);
   }
 }
 
@@ -608,55 +954,45 @@ async function handleFetchPin(
   if (!user.pin) {
     await sendTextMessage(
       phoneNumber,
-      '❌ You haven\'t registered yet.\n\nType "menu" to register.'
+      '❌ No PIN found for this phone number.\n\nPlease register first.\n\nType "menu" to see options.'
     );
     return;
   }
 
-  // Check verification status first (for A/S)
+  // Check verification status (for A/S)
   if (user.user_type === 'articling_student' && !user.is_verified) {
     await sendTextMessage(
       phoneNumber,
       `⏳ *Pending Verification*\n\n` +
-        `👤 ${user.full_name}\n` +
-        `📧 ${user.email}\n\n` +
-        `🔐 PIN: ${user.pin} (*INACTIVE*)\n` +
-        `📅 Access expires: ${user.pin_expires_at ? formatDate(user.pin_expires_at) : 'N/A'}\n\n` +
+        `🔐 PIN: ${user.pin} (*INACTIVE*)\n\n` +
         `Your PIN will be active once your principal verifies you.\n\n` +
         `Type "menu" to see options.`
     );
     return;
   }
 
-  // Check if PIN is expired (only for articling students)
+  // Check if expired (for A/S)
   if (user.user_type === 'articling_student' && isPinExpired(user.pin_expires_at)) {
     await sendTextMessage(
       phoneNumber,
-      `⚠️ *Your access has expired!*\n\n` +
-        `👤 ${user.full_name}\n` +
-        `📧 ${user.email}\n` +
+      `⚠️ *Access Expired*\n\n` +
         `🔐 PIN: ${user.pin} (*EXPIRED*)\n\n` +
-        `Your 9-month access period has ended. Please contact your principal or re-register.\n\n` +
+        `Your access period has ended.\n\n` +
         `Type "menu" to see options.`
     );
     return;
   }
 
+  // Show PIN
   let expiryText = '';
   if (user.user_type === 'articling_student' && user.pin_expires_at) {
-    expiryText = `\n📅 Access expires: ${formatDate(user.pin_expires_at)}`;
+    expiryText = `\n📅 Expires: ${formatDate(user.pin_expires_at)}`;
   }
-
-  const statusText = user.is_verified ? '✅ Active' : '⏳ Pending Verification';
 
   await sendTextMessage(
     phoneNumber,
-    `🔐 *Your Account Details*\n\n` +
-      `👤 ${user.full_name}\n` +
-      `📧 ${user.email}\n` +
-      `🏷️ Type: ${user.user_type === 'lawyer' ? 'Lawyer' : 'Articling Student'}\n\n` +
-      `🔐 *PIN: ${user.pin}*${expiryText}\n` +
-      `📊 Status: ${statusText}\n\n` +
+    `🔐 *Your PIN*\n\n` +
+      `${user.pin}${expiryText}\n\n` +
       `Type "menu" to see options.`
   );
 }
