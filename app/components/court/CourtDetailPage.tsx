@@ -86,7 +86,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
   ];
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-full flex flex-col">
       <StickyHeader>
         {/* Back button + Search bar row */}
         <div className="flex items-center gap-2 px-3 py-2">
@@ -130,7 +130,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
       </StickyHeader>
 
       {/* Scrollable content */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto scroll-smooth" onScroll={handleScroll}>
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto scroll-smooth" onScroll={handleScroll}>
         <div className="p-3 space-y-2.5 pb-20">
           {/* Circuit court alert - Design 4: Compact Minimal */}
           {court.is_circuit && court.contact_hub_name && (
