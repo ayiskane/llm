@@ -272,7 +272,9 @@ interface CorrectionDetailPageProps {
 }
 
 export function CorrectionDetailPage({ centre, onBack, onSearch }: CorrectionDetailPageProps) {
-  const [expandedSection, setExpandedSection] = useState<AccordionSection>('contact');
+  const [expandedSections, setExpandedSections] = useState<Set<AccordionSection>>(
+    new Set(['contact', 'callback', 'visits', 'disclosure'])
+  );
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -294,13 +296,20 @@ export function CorrectionDetailPage({ centre, onBack, onSearch }: CorrectionDet
   }, [isHeaderCollapsed]);
 
   const navigateToSection = useCallback((section: AccordionSection) => {
-    setExpandedSection(section);
+    if (!section) return;
+    
+    // Ensure section is expanded
+    setExpandedSections(prev => {
+      const next = new Set(prev);
+      next.add(section);
+      return next;
+    });
     
     const refs: Record<string, React.RefObject<HTMLDivElement | null>> = {
       contact: contactRef, callback: callbackRef, visits: visitsRef, disclosure: disclosureRef,
     };
     
-    const ref = section ? refs[section] : null;
+    const ref = refs[section];
     
     if (ref?.current) {
       requestAnimationFrame(() => {
@@ -312,7 +321,16 @@ export function CorrectionDetailPage({ centre, onBack, onSearch }: CorrectionDet
   }, []);
 
   const toggleSection = useCallback((section: AccordionSection) => {
-    setExpandedSection(prev => prev === section ? null : section);
+    if (!section) return;
+    setExpandedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(section)) {
+        next.delete(section);
+      } else {
+        next.add(section);
+      }
+      return next;
+    });
   }, []);
 
   const handleSearchSubmit = () => {
@@ -361,13 +379,13 @@ export function CorrectionDetailPage({ centre, onBack, onSearch }: CorrectionDet
             <PillButton 
               className="flex-1 justify-center" 
               key={btn.key} 
-              isActive={expandedSection === btn.key} 
+              isActive={expandedSections.has(btn.key as AccordionSection)} 
               onClick={() => navigateToSection(btn.key as AccordionSection)}
             >
               {btn.icon}
               <span>{btn.label}</span>
               {btn.count !== '' && (
-                <span className={expandedSection === btn.key ? 'text-white/70' : 'text-slate-500'}>
+                <span className={expandedSections.has(btn.key as AccordionSection) ? 'text-white/70' : 'text-slate-500'}>
                   {btn.count}
                 </span>
               )}
@@ -388,7 +406,7 @@ export function CorrectionDetailPage({ centre, onBack, onSearch }: CorrectionDet
             ref={contactRef}
             title="Contact"
             color="blue"
-            isExpanded={expandedSection === 'contact'}
+            isExpanded={expandedSections.has('contact')}
             onToggle={() => toggleSection('contact')}
           >
             <ContactSection centre={centre} />
@@ -400,7 +418,7 @@ export function CorrectionDetailPage({ centre, onBack, onSearch }: CorrectionDet
             title="Lawyer Callback"
             count={callbackCount || undefined}
             color="purple"
-            isExpanded={expandedSection === 'callback'}
+            isExpanded={expandedSections.has('callback')}
             onToggle={() => toggleSection('callback')}
           >
             <CallbackSection centre={centre} />
@@ -411,7 +429,7 @@ export function CorrectionDetailPage({ centre, onBack, onSearch }: CorrectionDet
             ref={visitsRef}
             title="Visits"
             color="amber"
-            isExpanded={expandedSection === 'visits'}
+            isExpanded={expandedSections.has('visits')}
             onToggle={() => toggleSection('visits')}
           >
             <VisitsSection centre={centre} />
@@ -422,7 +440,7 @@ export function CorrectionDetailPage({ centre, onBack, onSearch }: CorrectionDet
             ref={disclosureRef}
             title="Disclosure"
             color="cyan"
-            isExpanded={expandedSection === 'disclosure'}
+            isExpanded={expandedSections.has('disclosure')}
             onToggle={() => toggleSection('disclosure')}
           >
             <DisclosureSection centre={centre} />
