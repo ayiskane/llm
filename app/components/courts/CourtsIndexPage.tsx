@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaMagnifyingGlass, FaXmark, FaBuilding, FaLocationDot, FaSliders, FaChevronDown } from '@/lib/icons';
-import { AlphabetNav } from './AlphabetNav';
+import { AlphabetNav } from '@/app/components/ui/AlphabetNav';
 import { cn, pill, text } from '@/lib/config/theme';
 import { useCourts } from '@/lib/hooks/useCourts';
 import type { CourtWithRegionName } from '@/lib/hooks/useCourts';
