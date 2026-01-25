@@ -1,109 +1,182 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
-import { FaBuildingShield, FaLocationDot, FaPhone } from '@/lib/icons';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import { FaMagnifyingGlass, FaXmark, FaSliders, FaBuildingShield } from '@/lib/icons';
+import { AlphabetNav } from '@/app/components/ui/AlphabetNav';
 import { cn } from '@/lib/config/theme';
 import { REGION_COLORS } from '@/lib/config/constants';
 import { useCorrectionalCentres } from '@/lib/hooks/useCorrectionsCentres';
 import type { CorrectionalCentre } from '@/lib/hooks/useCorrectionsCentres';
-import {
-  IndexPageShell,
-  EmptyState,
-  ResultsCount,
-  SearchBarWithFilter,
-  FilterPanel,
-  FilterGroup,
-  FilterChip,
-} from '@/app/components/ui';
 
 // =============================================================================
-// REGION MAPPING
+// CONSTANTS
 // =============================================================================
 
-const LOCATION_TO_REGION: Record<string, number> = {
-  'Victoria': 1,
-  'Nanaimo': 1,
-  'Oliver': 4,
-  'Kamloops': 4,
-  'Prince George': 5,
-  'Surrey': 3,
-  'Port Coquitlam': 3,
-  'Maple Ridge': 3,
-  'Chilliwack': 3,
-  'Abbotsford': 3,
-  'Agassiz': 3,
-  'Mission': 3,
+const LOCATION_TO_REGION: Record<string, { id: number; code: string; name: string }> = {
+  'Victoria': { id: 1, code: 'R1', name: 'Island' },
+  'Nanaimo': { id: 1, code: 'R1', name: 'Island' },
+  'Oliver': { id: 4, code: 'R4', name: 'Interior' },
+  'Kamloops': { id: 4, code: 'R4', name: 'Interior' },
+  'Prince George': { id: 5, code: 'R5', name: 'Northern' },
+  'Surrey': { id: 3, code: 'R3', name: 'Fraser' },
+  'Port Coquitlam': { id: 3, code: 'R3', name: 'Fraser' },
+  'Maple Ridge': { id: 3, code: 'R3', name: 'Fraser' },
+  'Chilliwack': { id: 3, code: 'R3', name: 'Fraser' },
+  'Abbotsford': { id: 3, code: 'R3', name: 'Fraser' },
+  'Agassiz': { id: 3, code: 'R3', name: 'Fraser' },
+  'Mission': { id: 3, code: 'R3', name: 'Fraser' },
 };
 
 const REGIONS = [
-  { id: 0, name: 'All Regions' },
-  { id: 1, name: 'Island' },
-  { id: 3, name: 'Fraser' },
-  { id: 4, name: 'Interior' },
-  { id: 5, name: 'Northern' },
+  { id: 0, name: 'All Regions', code: 'ALL' },
+  { id: 1, name: 'Island', code: 'R1' },
+  { id: 3, name: 'Fraser', code: 'R3' },
+  { id: 4, name: 'Interior', code: 'R4' },
+  { id: 5, name: 'Northern', code: 'R5' },
 ] as const;
 
-function getRegionId(location: string): number {
-  return LOCATION_TO_REGION[location] ?? 0;
-}
-
-function getRegionName(location: string): string {
-  const regionId = getRegionId(location);
-  return REGIONS.find(r => r.id === regionId)?.name ?? 'Unknown';
-}
+const getRegion = (location: string) => LOCATION_TO_REGION[location] ?? { id: 0, code: 'UNK', name: 'Unknown' };
 
 // =============================================================================
-// TYPES
+// TYPES & HELPERS
 // =============================================================================
 
 type JurisdictionFilter = 'all' | 'provincial' | 'federal';
+interface Filters { region: number; jurisdiction: JurisdictionFilter; }
 
-interface Filters {
-  jurisdiction: JurisdictionFilter;
-  region: number;
+function groupByLetter(centres: CorrectionalCentre[]) {
+  const grouped = centres.reduce((acc, c) => {
+    const letter = /[A-Z]/.test(c.name[0]) ? c.name[0].toUpperCase() : '#';
+    (acc[letter] ??= []).push(c);
+    return acc;
+  }, {} as Record<string, CorrectionalCentre[]>);
+
+  return Object.entries(grouped)
+    .sort(([a], [b]) => (a === '#' ? 1 : b === '#' ? -1 : a.localeCompare(b)))
+    .map(([letter, centres]) => ({ letter, centres }));
 }
 
 // =============================================================================
-// CENTRE CARD
+// SUB-COMPONENTS
 // =============================================================================
 
-function CentreCard({ centre }: { centre: CorrectionalCentre }) {
-  const phoneLink = centre.general_phone.replace(/[^0-9]/g, '');
-  const regionId = getRegionId(centre.location);
-  const regionColors = REGION_COLORS[regionId] || { tag: 'bg-slate-500/15 text-slate-400' };
+function SearchBar({ value, onChange, onClear, onFilterClick, hasActiveFilters }: {
+  value: string; onChange: (v: string) => void; onClear: () => void; onFilterClick: () => void; hasActiveFilters: boolean;
+}) {
+  return (
+    <div className="flex gap-2">
+      <div className="relative flex-1">
+        <FaMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Search centres..."
+          className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl pl-11 pr-10 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+        />
+        {value && (
+          <button onClick={onClear} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+            <FaXmark className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+      <button
+        onClick={onFilterClick}
+        className={cn(
+          'relative flex items-center justify-center w-12 rounded-xl border transition-all',
+          hasActiveFilters ? 'bg-blue-500/20 border-blue-500/50 text-blue-400' : 'bg-slate-800/50 border-slate-700/50 text-slate-400'
+        )}
+      >
+        <FaSliders className="w-4 h-4" />
+        {hasActiveFilters && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full" />}
+      </button>
+    </div>
+  );
+}
+
+function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: {
+  isOpen: boolean; filters: Filters; onFilterChange: (f: Filters) => void; onClearAll: () => void;
+}) {
+  if (!isOpen) return null;
+  const hasFilters = filters.region !== 0 || filters.jurisdiction !== 'all';
 
   return (
-    <div className="px-4 py-3 border-b border-slate-800/50">
-      <div className="flex items-start justify-between gap-2 mb-1.5">
-        <h3 className="text-sm font-medium text-slate-100">{centre.name}</h3>
-        {centre.short_name && (
-          <span className="text-[10px] font-mono text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded flex-shrink-0">
-            {centre.short_name}
-          </span>
-        )}
+    <div className="border-t border-slate-700/30 bg-slate-900/50 px-4 py-3 space-y-3">
+      <div>
+        <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">Region</label>
+        <div className="flex flex-wrap gap-1.5">
+          {REGIONS.map((r) => (
+            <button
+              key={r.id}
+              onClick={() => onFilterChange({ ...filters, region: r.id })}
+              className={cn(
+                'px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5',
+                filters.region === r.id ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800/50 text-slate-400 border border-slate-700/50'
+              )}
+            >
+              {r.id !== 0 && <span className={cn('w-1.5 h-1.5 rounded-full', REGION_COLORS[r.id]?.dot)} />}
+              {r.name}
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
-        <FaLocationDot className="w-3 h-3" />
-        <span>{centre.location}</span>
-        <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-medium', regionColors.tag)}>
-          {getRegionName(centre.location)}
+      <div>
+        <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">Jurisdiction</label>
+        <div className="flex gap-1.5">
+          {(['all', 'provincial', 'federal'] as const).map((j) => (
+            <button
+              key={j}
+              onClick={() => onFilterChange({ ...filters, jurisdiction: j })}
+              className={cn(
+                'px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
+                filters.jurisdiction === j ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800/50 text-slate-400 border border-slate-700/50'
+              )}
+            >
+              {j === 'all' ? 'All' : j.charAt(0).toUpperCase() + j.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
+      {hasFilters && (
+        <button onClick={onClearAll} className="text-xs text-slate-500 hover:text-slate-300">Clear all filters</button>
+      )}
+    </div>
+  );
+}
+
+function CentreListItem({ centre }: { centre: CorrectionalCentre }) {
+  const region = getRegion(centre.location);
+  return (
+    <div className="w-full text-left px-4 py-3 border-b border-slate-700/30 last:border-b-0">
+      <div className="text-sm font-medium text-slate-200 mb-1.5">{centre.name}</div>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="px-2 py-1 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
+          <span>{region.code}</span>
+          <span className="text-slate-600">|</span>
+          <span>{region.name}</span>
         </span>
-        {centre.is_federal && (
-          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-rose-500/15 text-rose-400">
-            Federal
-          </span>
+        <span className={cn('px-1.5 py-1 text-[9px] font-bold uppercase tracking-wide rounded', centre.is_federal ? 'bg-rose-500/15 text-rose-400' : 'bg-emerald-500/15 text-emerald-400')}>
+          {centre.is_federal ? 'Federal' : 'Provincial'}
+        </span>
+        {centre.short_name && (
+          <span className="px-1.5 py-1 text-[9px] font-mono uppercase tracking-wide rounded bg-slate-700/50 text-slate-400">{centre.short_name}</span>
         )}
       </div>
-      <a 
-        href={`tel:+1${phoneLink}`}
-        className="inline-flex items-center gap-1.5 text-xs text-blue-400"
-      >
-        <FaPhone className="w-3 h-3" />
-        {centre.general_phone}
-        {centre.general_phone_option && (
-          <span className="text-slate-500">({centre.general_phone_option})</span>
-        )}
-      </a>
+    </div>
+  );
+}
+
+function LetterSection({ letter, centres, sectionRef }: {
+  letter: string; centres: CorrectionalCentre[]; sectionRef: (el: HTMLDivElement | null) => void;
+}) {
+  return (
+    <div ref={sectionRef} id={`section-${letter}`}>
+      <div className="sticky top-0 z-10 px-4 py-2 bg-slate-900/95 backdrop-blur-sm border-b border-blue-500/20">
+        <span className="text-sm font-bold text-blue-400">{letter}</span>
+      </div>
+      <div className="bg-slate-800/20">
+        {centres.map((c) => <CentreListItem key={c.id} centre={c} />)}
+      </div>
     </div>
   );
 }
@@ -114,99 +187,110 @@ function CentreCard({ centre }: { centre: CorrectionalCentre }) {
 
 export function CorrectionsIndexPage() {
   const { centres, isLoading, error } = useCorrectionalCentres();
+  const [filters, setFilters] = useState<Filters>({ region: 0, jurisdiction: 'all' });
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [filters, setFilters] = useState<Filters>({ jurisdiction: 'all', region: 0 });
+  const [activeLetter, setActiveLetter] = useState<string | null>(null);
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const hasActiveFilters = filters.jurisdiction !== 'all' || filters.region !== 0;
-
-  const clearAllFilters = useCallback(() => {
-    setFilters({ jurisdiction: 'all', region: 0 });
-    setSearchQuery('');
-  }, []);
+  const hasActiveFilters = filters.region !== 0 || filters.jurisdiction !== 'all';
+  const clearAllFilters = useCallback(() => { setFilters({ region: 0, jurisdiction: 'all' }); setSearchQuery(''); }, []);
 
   const filteredCentres = useMemo(() => {
     let result = centres;
-
-    if (filters.jurisdiction === 'provincial') {
-      result = result.filter(c => !c.is_federal);
-    } else if (filters.jurisdiction === 'federal') {
-      result = result.filter(c => c.is_federal);
-    }
-
-    if (filters.region !== 0) {
-      result = result.filter(c => getRegionId(c.location) === filters.region);
-    }
-
+    if (filters.region !== 0) result = result.filter(c => getRegion(c.location).id === filters.region);
+    if (filters.jurisdiction === 'provincial') result = result.filter(c => !c.is_federal);
+    else if (filters.jurisdiction === 'federal') result = result.filter(c => c.is_federal);
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      result = result.filter(c => 
-        c.name.toLowerCase().includes(q) ||
-        c.location.toLowerCase().includes(q) ||
-        c.short_name?.toLowerCase().includes(q)
-      );
+      result = result.filter(c => c.name.toLowerCase().includes(q) || c.location.toLowerCase().includes(q) || c.short_name?.toLowerCase().includes(q));
     }
-
     return result;
   }, [centres, filters, searchQuery]);
 
-  return (
-    <IndexPageShell
-      title="BC Corrections Index"
-      subtitle="Provincial & federal correctional centres"
-      isLoading={isLoading}
-      loadingText="Loading correctional centres..."
-      error={error}
-      headerContent={
-        <>
-          <SearchBarWithFilter
-            value={searchQuery}
-            onChange={setSearchQuery}
-            onClear={() => setSearchQuery('')}
-            onFilterClick={() => setIsFilterOpen(!isFilterOpen)}
-            hasActiveFilters={hasActiveFilters}
-            placeholder="Search centres..."
-          />
-          <FilterPanel isOpen={isFilterOpen} hasFilters={hasActiveFilters} onClearAll={clearAllFilters}>
-            <FilterGroup label="Jurisdiction">
-              {(['all', 'provincial', 'federal'] as const).map(v => (
-                <FilterChip
-                  key={v}
-                  isActive={filters.jurisdiction === v}
-                  onClick={() => setFilters({ ...filters, jurisdiction: v })}
-                >
-                  {v === 'all' ? 'All' : v.charAt(0).toUpperCase() + v.slice(1)}
-                </FilterChip>
-              ))}
-            </FilterGroup>
-            <FilterGroup label="Region">
-              {REGIONS.map(r => (
-                <FilterChip
-                  key={r.id}
-                  isActive={filters.region === r.id}
-                  onClick={() => setFilters({ ...filters, region: r.id })}
-                  dotColor={r.id !== 0 ? REGION_COLORS[r.id]?.dot : undefined}
-                >
-                  {r.name}
-                </FilterChip>
-              ))}
-            </FilterGroup>
-          </FilterPanel>
-        </>
+  const groupedCentres = useMemo(() => groupByLetter(filteredCentres), [filteredCentres]);
+  const availableLetters = useMemo(() => groupedCentres.map(g => g.letter), [groupedCentres]);
+
+  const handleLetterClick = useCallback((letter: string) => {
+    setActiveLetter(letter);
+    const section = sectionRefs.current[letter];
+    const container = scrollContainerRef.current;
+    if (section && container) container.scrollTo({ top: section.offsetTop, behavior: 'instant' });
+  }, []);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const handleScroll = () => {
+      const scrollTop = container.scrollTop;
+      for (const group of groupedCentres) {
+        const section = sectionRefs.current[group.letter];
+        if (section && scrollTop >= section.offsetTop - 10 && scrollTop < section.offsetTop + section.offsetHeight - 10) {
+          setActiveLetter(group.letter);
+          break;
+        }
       }
-    >
-      {filteredCentres.length === 0 ? (
-        <EmptyState
-          icon={<FaBuildingShield className="w-full h-full" />}
-          message={searchQuery ? `No centres found for "${searchQuery}"` : 'No centres match your filters'}
-          onClear={(searchQuery || hasActiveFilters) ? clearAllFilters : undefined}
-        />
-      ) : (
-        <>
-          {filteredCentres.map(c => <CentreCard key={c.id} centre={c} />)}
-          <ResultsCount count={filteredCentres.length} singular="centre" plural="centres" />
-        </>
-      )}
-    </IndexPageShell>
+    };
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [groupedCentres]);
+
+  if (isLoading) {
+    return (
+      <div className="h-[calc(100vh-4rem)] bg-[hsl(222.2,84%,4.9%)] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+          <p className="text-slate-400 text-sm">Loading centres...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-[calc(100vh-4rem)] bg-[hsl(222.2,84%,4.9%)] flex items-center justify-center p-4">
+        <div className="text-center">
+          <p className="text-red-400 mb-2">Failed to load centres</p>
+          <p className="text-slate-500 text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-[hsl(222.2,84%,4.9%)] overflow-hidden">
+      <div className="flex-shrink-0 bg-[rgba(8,11,18,0.98)] border-b border-blue-500/10">
+        <div className="px-4 pt-4 pb-2">
+          <h1 className="text-xl font-bold text-white">BC Corrections Index</h1>
+        </div>
+        <div className="px-4 pb-3">
+          <SearchBar value={searchQuery} onChange={setSearchQuery} onClear={() => setSearchQuery('')} onFilterClick={() => setIsFilterOpen(!isFilterOpen)} hasActiveFilters={hasActiveFilters} />
+        </div>
+        <FilterPanel isOpen={isFilterOpen} filters={filters} onFilterChange={setFilters} onClearAll={clearAllFilters} />
+      </div>
+
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto relative">
+        {!searchQuery && <AlphabetNav letters={availableLetters} activeLetter={activeLetter} onSelect={handleLetterClick} />}
+        <div className="pb-4">
+          {groupedCentres.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 px-4">
+              <FaBuildingShield className="w-12 h-12 text-slate-700 mb-4" />
+              <p className="text-slate-400 text-center">{searchQuery ? `No centres found for "${searchQuery}"` : 'No centres match your filters'}</p>
+              {(searchQuery || hasActiveFilters) && (
+                <button onClick={clearAllFilters} className="mt-4 text-blue-400 text-sm hover:text-blue-300">Clear filters</button>
+              )}
+            </div>
+          ) : (
+            groupedCentres.map((group) => (
+              <LetterSection key={group.letter} letter={group.letter} centres={group.centres} sectionRef={(el) => { sectionRefs.current[group.letter] = el; }} />
+            ))
+          )}
+          <div className="py-2 text-center">
+            <span className="text-xs text-slate-500">{filteredCentres.length} {filteredCentres.length === 1 ? 'centre' : 'centres'}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
