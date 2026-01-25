@@ -217,8 +217,10 @@ export async function handleMessage(msg: MessageData) {
       const updated = await getUser(from);
 
       await sendTextMessage(pid, from,
-        `✅ *Registration Complete!*\n\n🔐 Your PIN: *${pin}*\n📅 Access expires: ${formatDate(expiry)}\n\n⏳ *Status: PENDING VERIFICATION*\n\nYour PIN will remain *INACTIVE* until your referrer verifies you.\n\nType "menu" to return.`
+        `✅ *Registration Complete!*\n\n📅 Access expires: ${formatDate(expiry)}\n\n⏳ *Status: PENDING VERIFICATION*\n\nYour PIN will remain *INACTIVE* until your referrer verifies you.`
       );
+      await sendTextMessage(pid, from, `🔐 Your PIN:\n\n${pin}`);
+      await sendTextMessage(pid, from, 'Type "menu" to return.');
 
       // Notify referrer (the verified lawyer)
       if (updated?.referrer_phone) {
@@ -304,7 +306,9 @@ async function handleFetchPin(pid: string, from: string, user: any) {
     : isExpired ? '❌ Status: *EXPIRED*\n\nSelect "Upgrade to Lawyer" if called to the bar.'
     : `✅ Status: *ACTIVE*\n📅 Expires: ${formatDate(expiry!)}`;
 
-  return sendTextMessage(pid, from, `🔐 *Your PIN*\n\nPIN: *${user.pin}*\n\n${status}\n\nType "menu" to return.`);
+  await sendTextMessage(pid, from, `🔐 *Your PIN*\n\n${status}`);
+  await sendTextMessage(pid, from, user.pin);
+  return sendTextMessage(pid, from, 'Type "menu" to return.');
 }
 
 async function handleLawyerConfirm(pid: string, from: string, confirmed: boolean) {
@@ -314,9 +318,11 @@ async function handleLawyerConfirm(pid: string, from: string, confirmed: boolean
   }
   const pin = generatePin();
   await upsertUser(from, { registration_step: 'idle', pin, is_verified: true, pin_expires_at: null });
-  return sendTextMessage(pid, from,
-    `✅ *Registration Complete!*\n\n🔐 Your PIN: *${pin}*\n\nYour account is now *ACTIVE* with no expiry.\n\n⚠️ Your LSBC status will be verified at random intervals.\n\nType "menu" to return.`
+  await sendTextMessage(pid, from,
+    `✅ *Registration Complete!*\n\nYour account is now *ACTIVE* with no expiry.\n\n⚠️ Your LSBC status will be verified at random intervals.`
   );
+  await sendTextMessage(pid, from, `🔐 Your PIN:\n\n${pin}`);
+  return sendTextMessage(pid, from, 'Type "menu" to return.');
 }
 
 async function handleASVerifyConfirm(pid: string, from: string, user: any, confirmed: boolean) {
@@ -345,9 +351,10 @@ async function handleASVerifyConfirm(pid: string, from: string, user: any, confi
 
   await upsertUser(from, { registration_step: 'idle', temp_data: null });
   await sendTextMessage(pid, from, `✅ *Verification Complete!*\n\n${temp.student_name}'s account is active.\n📅 Expires: ${formatDate(finalExpiry)}\n\nType "menu" to return.`);
-  return sendTextMessage(pid, student.phone_number,
-    `🎉 *Account Activated!*\n\nYour principal has verified you.\n\n🔐 PIN: *${student.pin}*\n📅 Expires: ${formatDate(finalExpiry)}\n\nYour account is now *ACTIVE*.`
+  await sendTextMessage(pid, student.phone_number,
+    `🎉 *Account Activated!*\n\nYour principal has verified you.\n\n📅 Expires: ${formatDate(finalExpiry)}\n\nYour account is now *ACTIVE*.`
   );
+  return sendTextMessage(pid, student.phone_number, `🔐 Your PIN:\n\n${student.pin}`);
 }
 
 async function handleOathConfirm(pid: string, from: string, user: any, confirmed: boolean) {
@@ -383,7 +390,9 @@ async function handleUpgradeLSBCConfirm(pid: string, from: string, user: any, co
 
   if (existingAS.phone_number !== from) await upsertUser(from, { registration_step: 'idle', temp_data: null });
 
-  return sendTextMessage(pid, from,
-    `🎉 *Congratulations!*\n\nUpgraded to *Lawyer* status.\n\n🔐 PIN: *${existingAS.pin}*\n📅 Expiry: *None*\n\n⚠️ Your LSBC status will be verified at random intervals.\n\nType "menu" to return.`
+  await sendTextMessage(pid, from,
+    `🎉 *Congratulations!*\n\nUpgraded to *Lawyer* status.\n\n📅 Expiry: *None*\n\n⚠️ Your LSBC status will be verified at random intervals.`
   );
+  await sendTextMessage(pid, from, `🔐 Your PIN:\n\n${existingAS.pin}`);
+  return sendTextMessage(pid, from, 'Type "menu" to return.');
 }
