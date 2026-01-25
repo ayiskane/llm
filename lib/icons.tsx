@@ -290,6 +290,33 @@ export function FaMicrosoftTeams(props: IconProps) {
   );
 }
 
+// Clock (FA Sharp Solid) - 512×512
+export function FaClock(props: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" {...props}>
+      <path d="M256 0a256 256 0 1 1 0 512 256 256 0 1 1 0-512zM232 120l0 148.8 10.7 7.1 96 64 20 13.3 26.6-39.9c-2.4-1.6-37.5-25-105.3-70.2l0-147.2-48 0 0 24z"/>
+    </svg>
+  );
+}
+
+// Users (FA Sharp Solid) - 640×512
+export function FaUsers(props: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" fill="currentColor" {...props}>
+      <path d="M320 16a104 104 0 1 1 0 208 104 104 0 1 1 0-208zM96 88a72 72 0 1 1 0 144 72 72 0 1 1 0-144zm14.7 392l-110.7 0 48-192 107 0-41.8 181.2-2.5 10.8zm418.5 0l-2.5-10.8-41.8-181.2 107 0 48 192-110.7 0zM472 160a72 72 0 1 1 144 0 72 72 0 1 1 -144 0zM208 272l224 0 48 208-320 0 48-208z"/>
+    </svg>
+  );
+}
+
+// Folder (FA Sharp Solid) - 512×512
+export function FaFolder(props: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" {...props}>
+      <path d="M0 448l512 0 0-368-224 0-64-48-224 0 0 416z"/>
+    </svg>
+  );
+}
+
 // =============================================================================
 // LEGACY ALIASES (for backward compatibility)
 // =============================================================================
