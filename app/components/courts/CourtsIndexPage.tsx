@@ -507,7 +507,7 @@ export function CourtsIndexPage() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-slate-950 overflow-hidden">
+    <div className="h-full flex flex-col bg-slate-950">
       {/* Fixed Header */}
       <div className="flex-shrink-0 bg-slate-950 border-b border-slate-800/50">
         {/* Title */}
@@ -540,7 +540,7 @@ export function CourtsIndexPage() {
       </div>
 
       {/* Scrollable List Container */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto relative">
+      <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto relative">
         {/* Alphabet Navigation */}
         {!searchQuery && (
           <AlphabetNav
