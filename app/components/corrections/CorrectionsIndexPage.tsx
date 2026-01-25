@@ -171,7 +171,7 @@ function LetterSection({ letter, centres, sectionRef }: {
 }) {
   return (
     <div ref={sectionRef} id={`section-${letter}`}>
-      <div className="sticky top-0 z-10 px-4 py-2 bg-slate-900/95 backdrop-blur-sm border-b border-blue-500/20">
+      <div className="sticky top-0 z-10 px-4 py-2 bg-slate-900 border-b border-blue-500/20 shadow-[0_-10px_0_0_hsl(222.2,84%,4.9%)]">
         <span className="text-sm font-bold text-blue-400">{letter}</span>
       </div>
       <div className="bg-slate-800/20">
