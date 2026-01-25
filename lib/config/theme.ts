@@ -116,10 +116,11 @@ export function getScheduleLabelClass(isAmber = false): string {
 // ============================================================================
 
 export const alphabetNav = {
-  card: 'fixed right-1 top-[calc(50%+1rem)] -translate-y-1/2 z-40 flex flex-col items-center py-2 px-1 select-none touch-none rounded-lg bg-slate-800/25 border border-slate-600/30 shadow-lg backdrop-blur-sm',
+  card: 'fixed right-1 top-[calc(50%-1rem)] -translate-y-1/2 z-40 flex flex-col items-center py-2 px-1 select-none touch-none rounded-lg bg-slate-800/25 border border-slate-600/30 shadow-lg backdrop-blur-sm',
   bubble: 'fixed z-50 w-12 h-12 rounded-xl flex items-center justify-center bg-slate-800 border border-slate-600/50 shadow-lg',
   letter: 'text-[11px] font-bold w-5 h-5 flex items-center justify-center leading-none',
   letterActive: 'text-blue-400',
   letterAvailable: 'text-slate-300',
   letterUnavailable: 'text-slate-600',
 } as const;
+
