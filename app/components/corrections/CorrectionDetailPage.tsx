@@ -185,7 +185,7 @@ function ContactSection({ centre }: { centre: CorrectionalCentre }) {
         </div>
       </div>
 
-      {/* CDN Fax Row */}
+      {/* CDN Fax Row - only if dedicated CDN fax exists */}
       {centre.cdn_fax && (
         <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
           <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
@@ -199,9 +199,6 @@ function ContactSection({ centre }: { centre: CorrectionalCentre }) {
                 Fax
               </Link>
               <span className="text-slate-400"> (CDN)</span>
-              {centre.accepts_cdn_by_fax && (
-                <FaCheck className="w-3 h-3 text-emerald-400 inline ml-1.5" />
-              )}
             </div>
             <div className="text-xs text-slate-300 font-mono">{centre.cdn_fax}</div>
           </div>
@@ -211,7 +208,7 @@ function ContactSection({ centre }: { centre: CorrectionalCentre }) {
         </div>
       )}
 
-      {/* General Fax Row */}
+      {/* General Fax Row - with CDN tag if accepts CDN but no dedicated CDN fax */}
       {centre.general_fax && (
         <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
           <div className="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center">
@@ -220,11 +217,20 @@ function ContactSection({ centre }: { centre: CorrectionalCentre }) {
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-slate-200">
-              <Link href="/faq" className="text-slate-400 hover:text-slate-300 hover:underline">
-                Fax
-              </Link>
-              <span className="text-slate-500"> (General)</span>
+            <div className="text-sm font-medium text-slate-200 flex items-center gap-2">
+              <span>
+                <Link href="/faq" className="text-slate-400 hover:text-slate-300 hover:underline">
+                  Fax
+                </Link>
+                <span className="text-slate-500"> (General)</span>
+              </span>
+              {/* Show CDN tag if accepts CDN but no dedicated CDN fax number */}
+              {!centre.cdn_fax && centre.accepts_cdn_by_fax && (
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/15 text-emerald-400 inline-flex items-center gap-1">
+                  CDN
+                  <FaCheck className="w-2.5 h-2.5" />
+                </span>
+              )}
             </div>
             <div className="text-xs text-slate-300 font-mono">{centre.general_fax}</div>
           </div>
