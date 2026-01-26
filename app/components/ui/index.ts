@@ -9,6 +9,7 @@ export { PillButton } from './PillButton';
 export { SearchBar } from './SearchBar';
 export { SearchBarWithFilter } from './SearchBarWithFilter';
 export { FilterChip, FilterGroup, FilterPanel } from './FilterChip';
+export { FilterModal } from './FilterModal';
 export { IndexPageShell, EmptyState, ResultsCount } from './IndexPageShell';
 export { AlphabetNav } from './AlphabetNav';
 export { BottomNav } from './BottomNav';
