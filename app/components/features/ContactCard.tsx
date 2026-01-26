@@ -5,7 +5,7 @@ import { FaCopy, FaClipboardCheck, FaEye, FaEyeSlash } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { card, text, toggle, iconSize, getCategoryAccentClass, type ContactCategory } from '@/lib/config/theme';
 import { CONTACT_ROLES } from '@/lib/config/constants';
-import type { ContactWithRole, BailContact } from '@/types';
+import type { ContactWithRole } from '@/types';
 
 // ============================================================================
 // TYPES
@@ -130,7 +130,6 @@ export function CourtContactsStack({ contacts, onCopy, isCopied }: CourtContacts
     { roleId: CONTACT_ROLES.CRIMINAL_REGISTRY, category: 'court', label: 'Criminal Registry' },
     { roleId: CONTACT_ROLES.COURT_REGISTRY, category: 'court', label: 'Court Registry' },
     { roleId: CONTACT_ROLES.JCM, category: 'provincial', label: 'Provincial JCM' },
-    { roleId: CONTACT_ROLES.BAIL_JCM, category: 'bail', label: 'Bail JCM' },
     { roleId: CONTACT_ROLES.SCHEDULING, category: 'supreme', label: 'Supreme Scheduling' },
     { roleId: CONTACT_ROLES.INTERPRETER, category: 'other', label: 'Interpreter Request' },
   ];
@@ -199,12 +198,11 @@ export function CourtContactsStack({ contacts, onCopy, isCopied }: CourtContacts
 
 interface CrownContactsStackProps {
   contacts: ContactWithRole[];
-  bailContacts?: BailContact[];
   onCopy?: CopyFunction;
   isCopied?: IsCopiedFunction;
 }
 
-export function CrownContactsStack({ contacts, bailContacts, onCopy, isCopied }: CrownContactsStackProps) {
+export function CrownContactsStack({ contacts, onCopy, isCopied }: CrownContactsStackProps) {
   const [showFull, setShowFull] = useState(false);
 
   const crownContacts = useMemo(() => {
@@ -215,13 +213,6 @@ export function CrownContactsStack({ contacts, bailContacts, onCopy, isCopied }:
       const emails = provCrown.emails?.length ? provCrown.emails : (provCrown.email ? [provCrown.email] : []);
       if (emails.length > 0) {
         result.push({ label: 'Provincial Crown', emails, category: 'provincial', id: `prov-crown-${provCrown.id}` });
-      }
-    }
-
-    if (bailContacts) {
-      const bailCrown = bailContacts.find(bc => bc.role_id === CONTACT_ROLES.CROWN);
-      if (bailCrown?.email) {
-        result.push({ label: 'Bail Crown', emails: [bailCrown.email], category: 'bail', id: `bail-crown-${bailCrown.id}` });
       }
     }
 
@@ -242,7 +233,7 @@ export function CrownContactsStack({ contacts, bailContacts, onCopy, isCopied }:
     }
 
     return result;
-  }, [contacts, bailContacts]);
+  }, [contacts]);
 
   const hasTruncation = crownContacts.some(c => c.emails.join(', ').length > 40);
 
@@ -275,3 +266,4 @@ export function CrownContactsStack({ contacts, bailContacts, onCopy, isCopied }:
 }
 
 export { ContactItem as ContactCard };
+
