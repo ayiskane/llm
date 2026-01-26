@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaMagnifyingGlass, FaXmark, FaSliders, FaBuildingShield } from '@/lib/icons';
+import { AlphabetNav } from '@/app/components/ui/AlphabetNav';
 import { cn } from '@/lib/config/theme';
 import { REGION_COLORS } from '@/lib/config/constants';
 import { useCorrectionalCentres } from '@/lib/hooks/useCorrectionsCentres';
@@ -110,7 +111,7 @@ function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: {
               key={r.id}
               onClick={() => onFilterChange({ ...filters, region: r.id })}
               className={cn(
-                'px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5',
+                'px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5',
                 filters.region === r.id ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800/50 text-slate-400 border border-slate-700/50'
               )}
             >
@@ -128,7 +129,7 @@ function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: {
               key={j}
               onClick={() => onFilterChange({ ...filters, jurisdiction: j })}
               className={cn(
-                'px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
+                'px-2.5 py-1.5 rounded-lg text-xs font-medium',
                 filters.jurisdiction === j ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800/50 text-slate-400 border border-slate-700/50'
               )}
             >
@@ -137,9 +138,7 @@ function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: {
           ))}
         </div>
       </div>
-      {hasFilters && (
-        <button onClick={onClearAll} className="text-xs text-slate-500 hover:text-slate-300">Clear all filters</button>
-      )}
+      {hasFilters && <button onClick={onClearAll} className="text-xs text-slate-500 hover:text-slate-300">Clear all filters</button>}
     </div>
   );
 }
@@ -147,7 +146,7 @@ function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: {
 function CentreListItem({ centre, onClick }: { centre: CorrectionalCentre; onClick: () => void }) {
   const region = getRegion(centre.location);
   return (
-    <button onClick={onClick} className="w-full text-left px-4 py-3 border-b border-slate-700/30 last:border-b-0 hover:bg-slate-800/30 active:bg-slate-800/50 transition-colors">
+    <button onClick={onClick} className="w-full text-left px-4 py-3 border-b border-slate-700/30 last:border-b-0 hover:bg-slate-800/30 active:bg-slate-800/50">
       <div className="text-sm font-medium text-slate-200 mb-1.5">{centre.name}</div>
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="px-2 py-1 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
@@ -170,7 +169,7 @@ function LetterSection({ letter, centres, onCentreClick }: {
   letter: string; centres: CorrectionalCentre[]; onCentreClick: (id: number) => void;
 }) {
   return (
-    <div>
+    <div id={`section-${letter}`}>
       <div className="sticky top-0 z-10 px-4 py-2 bg-slate-950 border-b border-slate-800/50">
         <span className="text-sm font-bold text-blue-400">{letter}</span>
       </div>
@@ -194,9 +193,7 @@ export function CorrectionsIndexPage() {
 
   const hasActiveFilters = filters.region !== 0 || filters.jurisdiction !== 'all';
   const clearAllFilters = useCallback(() => { setFilters({ region: 0, jurisdiction: 'all' }); setSearchQuery(''); }, []);
-  const handleCentreClick = useCallback((centreId: number) => {
-    router.push(`/corrections/${centreId}`);
-  }, [router]);
+  const handleCentreClick = useCallback((centreId: number) => router.push(`/corrections/${centreId}`), [router]);
 
   const filteredCentres = useMemo(() => {
     let result = centres;
@@ -211,6 +208,15 @@ export function CorrectionsIndexPage() {
   }, [centres, filters, searchQuery]);
 
   const groupedCentres = useMemo(() => groupByLetter(filteredCentres), [filteredCentres]);
+  const availableLetters = useMemo(() => groupedCentres.map(g => g.letter), [groupedCentres]);
+
+  // OPTIMAL: Use scrollIntoView
+  const handleLetterChange = useCallback((letter: string) => {
+    const section = document.getElementById(`section-${letter}`);
+    if (section) {
+      section.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }
+  }, []);
 
   if (isLoading) {
     return (
@@ -266,6 +272,11 @@ export function CorrectionsIndexPage() {
           </>
         )}
       </div>
+
+      {/* Alphabet Nav - FIXED position */}
+      {!searchQuery && availableLetters.length > 1 && (
+        <AlphabetNav availableLetters={availableLetters} onLetterChange={handleLetterChange} />
+      )}
     </div>
   );
 }
