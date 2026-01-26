@@ -413,7 +413,6 @@ function EDisclosureSection({ centre }: { centre: CorrectionalCentre }) {
     <div className="rounded-lg overflow-hidden bg-slate-800/30 border border-slate-700/50">
       {/* Header - not clickable, always open */}
       <div className="flex items-center gap-2.5 p-3 border-b border-slate-700/30 bg-slate-800/50">
-        <span className="text-[6px] text-cyan-400">●</span>
         <span className="flex-1 text-left text-[13px] uppercase tracking-wider text-slate-200 font-medium">
           e-Disclosure
         </span>
@@ -648,4 +647,5 @@ export function CorrectionDetailPage({ centre, onBack, onSearch }: CorrectionDet
     </div>
   );
 }
+
 
