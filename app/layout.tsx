@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { QueryProvider } from './providers/QueryProvider';
-import { BottomNav } from './components/ui';
+import { BottomNavWrapper } from './components/ui/BottomNavWrapper';
 import { APP_NAME, APP_DESCRIPTION } from '@/lib/config/constants';
 import './globals.css';
 
@@ -52,7 +52,7 @@ export default function RootLayout({
           <main className="flex-1 min-h-0">
             {children}
           </main>
-          <BottomNav />
+          <BottomNavWrapper />
         </QueryProvider>
       </body>
     </html>
