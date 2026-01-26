@@ -4,7 +4,6 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaMagnifyingGlass, FaXmark, FaSliders, FaBuildingShield } from '@/lib/icons';
 import { AlphabetNav } from '@/app/components/ui/AlphabetNav';
-import { FilterModal } from '@/app/components/ui/FilterModal';
 import { cn } from '@/lib/config/theme';
 import { REGION_COLORS } from '@/lib/config/constants';
 import { useCorrectionalCentres } from '@/lib/hooks/useCorrectionsCentres';
@@ -96,62 +95,50 @@ function SearchBar({ value, onChange, onClear, onFilterClick, hasActiveFilters }
   );
 }
 
-function FilterChip({ label, isActive, onClick, dot }: { label: string; isActive: boolean; onClick: () => void; dot?: string }) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all',
-        isActive 
-          ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
-          : 'bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:border-slate-600'
-      )}
-    >
-      {dot && <span className={cn('w-2 h-2 rounded-full', dot)} />}
-      {label}
-    </button>
-  );
-}
-
-function FilterContent({ filters, onFilterChange, onClearAll }: {
-  filters: Filters; onFilterChange: (f: Filters) => void; onClearAll: () => void;
+function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: {
+  isOpen: boolean; filters: Filters; onFilterChange: (f: Filters) => void; onClearAll: () => void;
 }) {
+  if (!isOpen) return null;
   const hasFilters = filters.region !== 0 || filters.jurisdiction !== 'all';
 
   return (
-    <div className="space-y-6">
-      {/* Region */}
+    <div className="border-t border-slate-700/30 bg-slate-900/50 px-4 py-3 space-y-3">
       <div>
-        <label className="text-xs uppercase tracking-wider text-slate-500 mb-3 block font-medium">Region</label>
-        <div className="flex flex-wrap gap-2">
+        <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">Region</label>
+        <div className="flex flex-wrap gap-1.5">
           {REGIONS.map((r) => (
-            <FilterChip
+            <button
               key={r.id}
-              label={r.name}
-              isActive={filters.region === r.id}
               onClick={() => onFilterChange({ ...filters, region: r.id })}
-              dot={r.id !== 0 ? REGION_COLORS[r.id]?.dot : undefined}
-            />
+              className={cn(
+                'px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5',
+                filters.region === r.id ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800/50 text-slate-400 border border-slate-700/50'
+              )}
+            >
+              {r.id !== 0 && <span className={cn('w-1.5 h-1.5 rounded-full', REGION_COLORS[r.id]?.dot)} />}
+              {r.name}
+            </button>
           ))}
         </div>
       </div>
-
-      {/* Jurisdiction */}
       <div>
-        <label className="text-xs uppercase tracking-wider text-slate-500 mb-3 block font-medium">Jurisdiction</label>
-        <div className="flex flex-wrap gap-2">
-          <FilterChip label="All" isActive={filters.jurisdiction === 'all'} onClick={() => onFilterChange({ ...filters, jurisdiction: 'all' })} />
-          <FilterChip label="Provincial" isActive={filters.jurisdiction === 'provincial'} onClick={() => onFilterChange({ ...filters, jurisdiction: 'provincial' })} />
-          <FilterChip label="Federal" isActive={filters.jurisdiction === 'federal'} onClick={() => onFilterChange({ ...filters, jurisdiction: 'federal' })} />
+        <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">Jurisdiction</label>
+        <div className="flex gap-1.5">
+          {(['all', 'provincial', 'federal'] as const).map((j) => (
+            <button
+              key={j}
+              onClick={() => onFilterChange({ ...filters, jurisdiction: j })}
+              className={cn(
+                'px-2.5 py-1.5 rounded-lg text-xs font-medium',
+                filters.jurisdiction === j ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800/50 text-slate-400 border border-slate-700/50'
+              )}
+            >
+              {j === 'all' ? 'All' : j.charAt(0).toUpperCase() + j.slice(1)}
+            </button>
+          ))}
         </div>
       </div>
-
-      {/* Clear All */}
-      {hasFilters && (
-        <button onClick={onClearAll} className="w-full py-3 text-sm text-slate-400 hover:text-white border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors">
-          Clear all filters
-        </button>
-      )}
+      {hasFilters && <button onClick={onClearAll} className="text-xs text-slate-500 hover:text-slate-300">Clear all filters</button>}
     </div>
   );
 }
@@ -225,7 +212,6 @@ export function CorrectionsIndexPage() {
   const groupedCentres = useMemo(() => groupByLetter(filteredCentres), [filteredCentres]);
   const availableLetters = useMemo(() => groupedCentres.map(g => g.letter), [groupedCentres]);
 
-  // Track scroll position to update active letter
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container || availableLetters.length === 0) return;
@@ -281,49 +267,50 @@ export function CorrectionsIndexPage() {
 
   return (
     <div className="h-full flex flex-col bg-slate-950">
+      {/* Header */}
       <div className="flex-shrink-0 bg-slate-950 border-b border-slate-800/50">
         <div className="px-4 pt-4 pb-2">
           <h1 className="text-xl font-bold text-white">BC Corrections Index</h1>
         </div>
         <div className="px-4 pb-3">
-          <SearchBar value={searchQuery} onChange={setSearchQuery} onClear={() => setSearchQuery('')} onFilterClick={() => setIsFilterOpen(true)} hasActiveFilters={hasActiveFilters} />
+          <SearchBar value={searchQuery} onChange={setSearchQuery} onClear={() => setSearchQuery('')} onFilterClick={() => setIsFilterOpen(!isFilterOpen)} hasActiveFilters={hasActiveFilters} />
         </div>
+        <FilterPanel isOpen={isFilterOpen} filters={filters} onFilterChange={setFilters} onClearAll={clearAllFilters} />
       </div>
 
-      <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto">
-        {groupedCentres.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 px-4">
-            <FaBuildingShield className="w-12 h-12 text-slate-700 mb-4" />
-            <p className="text-slate-400 text-center">{searchQuery ? `No centres found for "${searchQuery}"` : 'No centres match your filters'}</p>
-            {(searchQuery || hasActiveFilters) && (
-              <button onClick={clearAllFilters} className="mt-4 text-blue-400 text-sm hover:text-blue-300">Clear filters</button>
-            )}
-          </div>
-        ) : (
-          <div className="pb-4">
-            {groupedCentres.map((group) => (
-              <LetterSection key={group.letter} letter={group.letter} centres={group.centres} onCentreClick={handleCentreClick} />
-            ))}
-            <div className="py-3 text-center">
-              <span className="text-xs text-slate-500">{filteredCentres.length} {filteredCentres.length === 1 ? 'centre' : 'centres'}</span>
+      {/* Content area with AlphabetNav */}
+      <div className="flex-1 min-h-0 relative">
+        {/* Scrollable content */}
+        <div ref={scrollContainerRef} className="h-full overflow-y-auto">
+          {groupedCentres.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 px-4">
+              <FaBuildingShield className="w-12 h-12 text-slate-700 mb-4" />
+              <p className="text-slate-400 text-center">{searchQuery ? `No centres found for "${searchQuery}"` : 'No centres match your filters'}</p>
+              {(searchQuery || hasActiveFilters) && (
+                <button onClick={clearAllFilters} className="mt-4 text-blue-400 text-sm hover:text-blue-300">Clear filters</button>
+              )}
             </div>
-          </div>
+          ) : (
+            <>
+              {groupedCentres.map((group) => (
+                <LetterSection key={group.letter} letter={group.letter} centres={group.centres} onCentreClick={handleCentreClick} />
+              ))}
+              <div className="py-4 text-center">
+                <span className="text-xs text-slate-500">{filteredCentres.length} {filteredCentres.length === 1 ? 'centre' : 'centres'}</span>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* AlphabetNav - positioned absolute within relative container */}
+        {!searchQuery && availableLetters.length > 1 && (
+          <AlphabetNav 
+            availableLetters={availableLetters} 
+            activeLetter={activeLetter}
+            onLetterChange={handleLetterChange} 
+          />
         )}
       </div>
-
-      {/* Alphabet Nav */}
-      {!searchQuery && availableLetters.length > 1 && (
-        <AlphabetNav 
-          availableLetters={availableLetters} 
-          activeLetter={activeLetter}
-          onLetterChange={handleLetterChange} 
-        />
-      )}
-
-      {/* Filter Modal */}
-      <FilterModal isOpen={isFilterOpen} onClose={() => setIsFilterOpen(false)} title="Filter Centres">
-        <FilterContent filters={filters} onFilterChange={setFilters} onClearAll={clearAllFilters} />
-      </FilterModal>
     </div>
   );
 }
