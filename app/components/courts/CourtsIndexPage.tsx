@@ -3,7 +3,6 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaMagnifyingGlass, FaXmark, FaBuilding, FaLocationDot, FaSliders, FaChevronDown } from '@/lib/icons';
-import { AlphabetNav } from '@/app/components/ui/AlphabetNav';
 import { cn, pill, text } from '@/lib/config/theme';
 import { useCourts } from '@/lib/hooks/useCourts';
 import type { CourtWithRegionName } from '@/lib/hooks/useCourts';
@@ -63,7 +62,6 @@ function groupCourtsByLetter(courts: CourtWithRegionName[]): GroupedCourts[] {
     return acc;
   }, {} as Record<string, CourtWithRegionName[]>);
 
-  // Sort letters alphabetically, with # at the end
   return Object.entries(grouped)
     .sort(([a], [b]) => {
       if (a === '#') return 1;
@@ -73,37 +71,11 @@ function groupCourtsByLetter(courts: CourtWithRegionName[]): GroupedCourts[] {
     .map(([letter, courts]) => ({ letter, courts }));
 }
 
-function getAvailableLetters(groups: GroupedCourts[]): string[] {
-  return groups.map(g => g.letter);
-}
-
-/**
- * Format court name for display using official BC Gov naming conventions
- * @see https://www2.gov.bc.ca/gov/content/justice/courthouse-services/courthouse-locations
- * 
- * - If name already contains "Court" → use as-is (e.g., "Downtown Community Court")
- * - If circuit court → "[Location] Provincial Court"
- * - If staffed courthouse → "[Location] Law Courts"
- */
 function getCourtDisplayName(court: CourtWithRegionName): string {
   const name = court.name;
-  
-  // Already has "Court" in the name (e.g., "Downtown Community Court", "Vancouver Provincial Court")
-  if (name.toLowerCase().includes('court')) {
-    return name;
-  }
-  
-  // Circuit courts - officially "[Location] Provincial Court"
-  if (court.is_circuit) {
-    return `${name} Provincial Court`;
-  }
-  
-  // Staffed courthouses - officially "[Location] Law Courts"
-  if (court.has_provincial || court.has_supreme) {
-    return `${name} Law Courts`;
-  }
-  
-  // Fallback
+  if (name.toLowerCase().includes('court')) return name;
+  if (court.is_circuit) return `${name} Provincial Court`;
+  if (court.has_provincial || court.has_supreme) return `${name} Law Courts`;
   return name;
 }
 
@@ -193,7 +165,6 @@ function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: FilterPane
   return (
     <div className="border-t border-slate-700/30 bg-slate-900/50">
       <div className="px-4 py-3 space-y-3">
-        {/* Region Filter */}
         <div>
           <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">Region</label>
           <div className="flex flex-wrap gap-1.5">
@@ -218,7 +189,6 @@ function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: FilterPane
           </div>
         </div>
 
-        {/* Court Type Filter */}
         <div>
           <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">Court Type</label>
           <div className="flex gap-1.5">
@@ -239,7 +209,6 @@ function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: FilterPane
           </div>
         </div>
 
-        {/* Court Level Filter */}
         <div>
           <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">Court Level</label>
           <div className="flex gap-1.5">
@@ -260,7 +229,6 @@ function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: FilterPane
           </div>
         </div>
 
-        {/* Clear All */}
         {hasFilters && (
           <button
             onClick={onClearAll}
@@ -274,75 +242,49 @@ function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: FilterPane
   );
 }
 
-interface CourtListItemProps {
-  court: CourtWithRegionName;
-  onClick: () => void;
-}
-
-function CourtListItem({ court, onClick }: CourtListItemProps) {
-  const displayName = getCourtDisplayName(court);
-  const region = REGIONS.find(r => r.id === court.region_id);
-  
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'w-full text-left px-4 py-3',
-        'border-b border-slate-700/30 last:border-b-0',
-        'active:bg-blue-500/10 transition-colors'
-      )}
-    >
-      <div className="text-sm font-medium text-slate-200 mb-1.5">
-        {displayName}
-      </div>
-      <div className="flex items-center gap-1.5 flex-wrap">
-        {region && region.id !== 0 && (
-          <span className="px-2 py-1 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
-            <span>{region.code}</span>
-            <span className="text-slate-600">|</span>
-            <span>{region.name}</span>
-          </span>
-        )}
-        {court.has_provincial && (
-          <span className="px-1.5 py-1 text-[9px] font-bold uppercase tracking-wide rounded bg-emerald-500/15 text-emerald-400">
-            PC
-          </span>
-        )}
-        {court.has_supreme && (
-          <span className="px-1.5 py-1 text-[9px] font-bold uppercase tracking-wide rounded bg-purple-500/15 text-purple-400">
-            SC
-          </span>
-        )}
-        {court.is_circuit && (
-          <span className="px-1.5 py-1 text-[9px] font-bold uppercase tracking-wide rounded bg-amber-500/15 text-amber-400">
-            Circuit
-          </span>
-        )}
-      </div>
-    </button>
-  );
-}
-
 interface LetterSectionProps {
   letter: string;
   courts: CourtWithRegionName[];
   onCourtClick: (courtId: number) => void;
-  sectionRef: (el: HTMLDivElement | null) => void;
 }
 
-function LetterSection({ letter, courts, onCourtClick, sectionRef }: LetterSectionProps) {
+function LetterSection({ letter, courts, onCourtClick }: LetterSectionProps) {
   return (
-    <div ref={sectionRef} id={`section-${letter}`}>
+    <div>
+      {/* Sticky Letter Header */}
       <div className="sticky top-0 z-10 px-4 py-2 bg-slate-950 border-b border-slate-800/50">
         <span className="text-sm font-bold text-blue-400">{letter}</span>
       </div>
-      <div className="bg-slate-800/20">
+      
+      {/* Court Cards */}
+      <div className="divide-y divide-slate-800/50">
         {courts.map((court) => (
-          <CourtListItem
+          <button
             key={court.id}
-            court={court}
             onClick={() => onCourtClick(court.id)}
-          />
+            className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-800/30 active:bg-slate-800/50 transition-colors text-left"
+          >
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-white truncate">
+                {getCourtDisplayName(court)}
+              </div>
+              <div className="flex items-center gap-2 mt-1">
+                <span className={cn('text-[10px] font-medium px-1.5 py-0.5 rounded', REGION_COLORS[court.region_id]?.tag)}>
+                  {court.region_name}
+                </span>
+                {court.has_provincial && (
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">PC</span>
+                )}
+                {court.has_supreme && (
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-400">SC</span>
+                )}
+                {court.is_circuit && (
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400">Circuit</span>
+                )}
+              </div>
+            </div>
+            <FaChevronDown className="w-3 h-3 text-slate-500 -rotate-90 flex-shrink-0" />
+          </button>
         ))}
       </div>
     </div>
@@ -357,22 +299,17 @@ export function CourtsIndexPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { courts, isLoading, error } = useCourts();
-  
-  // Initialize filters from URL params
-  const [filters, setFilters] = useState<Filters>(() => ({
-    region: Number(searchParams.get('region')) || 0,
-    courtType: (searchParams.get('type') as Filters['courtType']) || 'all',
-    courtLevel: (searchParams.get('level') as Filters['courtLevel']) || 'all',
-  }));
-  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [activeLetter, setActiveLetter] = useState<string | null>(null);
-  
-  // Refs for scroll sections
-  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Update URL when filters change (without adding history)
+  // State
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filters, setFilters] = useState<Filters>({
+    region: Number(searchParams.get('region')) || 0,
+    courtType: (searchParams.get('type') as CourtTypeFilter) || 'all',
+    courtLevel: (searchParams.get('level') as CourtLevelFilter) || 'all',
+  });
+
+  // Update URL when filters change
   useEffect(() => {
     const params = new URLSearchParams();
     if (filters.region !== 0) params.set('region', String(filters.region));
@@ -384,39 +321,29 @@ export function CourtsIndexPage() {
     router.replace(newUrl, { scroll: false });
   }, [filters, searchQuery, router]);
 
-  // Check if any filters are active (for indicator)
   const hasActiveFilters = filters.region !== 0 || filters.courtType !== 'all' || filters.courtLevel !== 'all';
 
-  // Clear all filters
   const clearAllFilters = useCallback(() => {
     setFilters({ region: 0, courtType: 'all', courtLevel: 'all' });
     setSearchQuery('');
   }, []);
 
-  // Filter courts based on search and all filters
   const filteredCourts = useMemo(() => {
     let result = courts;
 
-    // Filter by region
     if (filters.region !== 0) {
       result = result.filter(court => court.region_id === filters.region);
     }
-
-    // Filter by court type (staffed vs circuit)
     if (filters.courtType === 'staffed') {
       result = result.filter(court => !court.is_circuit);
     } else if (filters.courtType === 'circuit') {
       result = result.filter(court => court.is_circuit);
     }
-
-    // Filter by court level (PC / SC)
     if (filters.courtLevel === 'pc') {
       result = result.filter(court => court.has_provincial);
     } else if (filters.courtLevel === 'sc') {
       result = result.filter(court => court.has_supreme);
     }
-
-    // Filter by search
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter(court => {
@@ -430,59 +357,12 @@ export function CourtsIndexPage() {
     return result;
   }, [courts, filters, searchQuery]);
 
-  // Group filtered courts by letter
-  const groupedCourts = useMemo(() => {
-    return groupCourtsByLetter(filteredCourts);
-  }, [filteredCourts]);
+  const groupedCourts = useMemo(() => groupCourtsByLetter(filteredCourts), [filteredCourts]);
 
-  // Get available letters for alphabet nav
-  const availableLetters = useMemo(() => {
-    return getAvailableLetters(groupedCourts);
-  }, [groupedCourts]);
-
-  // Handle alphabet nav click
-  const handleLetterClick = useCallback((letter: string) => {
-    setActiveLetter(letter);
-    const section = sectionRefs.current[letter];
-    const container = scrollContainerRef.current;
-    if (section && container) {
-      const sectionTop = section.offsetTop;
-      container.scrollTo({ top: sectionTop, behavior: 'instant' });
-    }
-  }, []);
-
-  // Handle court click - navigate to detail
   const handleCourtClick = useCallback((courtId: number) => {
     router.push(`/court/${courtId}`);
   }, [router]);
 
-  // Track scroll position to update active letter
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const scrollTop = container.scrollTop;
-      
-      for (const group of groupedCourts) {
-        const section = sectionRefs.current[group.letter];
-        if (section) {
-          const sectionTop = section.offsetTop;
-          const sectionBottom = sectionTop + section.offsetHeight;
-          
-          if (scrollTop >= sectionTop - 10 && scrollTop < sectionBottom - 10) {
-            setActiveLetter(group.letter);
-            break;
-          }
-        }
-      }
-    };
-
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [groupedCourts]);
-
-  // Loading state
   if (isLoading) {
     return (
       <div className="h-full bg-slate-950 flex items-center justify-center">
@@ -494,7 +374,6 @@ export function CourtsIndexPage() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="h-full bg-slate-950 flex items-center justify-center p-4">
@@ -510,16 +389,9 @@ export function CourtsIndexPage() {
     <div className="h-full flex flex-col bg-slate-950">
       {/* Fixed Header */}
       <div className="flex-shrink-0 bg-slate-950 border-b border-slate-800/50">
-        {/* Title */}
         <div className="px-4 pt-4 pb-2">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-white">BC Court Index</h1>
-            </div>
-          </div>
+          <h1 className="text-xl font-bold text-white">BC Court Index</h1>
         </div>
-
-        {/* Search + Filter Button */}
         <div className="px-4 pb-3">
           <SearchBar
             value={searchQuery}
@@ -529,8 +401,6 @@ export function CourtsIndexPage() {
             hasActiveFilters={hasActiveFilters}
           />
         </div>
-
-        {/* Filter Panel */}
         <FilterPanel
           isOpen={isFilterOpen}
           filters={filters}
@@ -539,33 +409,17 @@ export function CourtsIndexPage() {
         />
       </div>
 
-      {/* Scrollable List Container */}
-      <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto relative">
-        {/* Alphabet Navigation */}
-        {!searchQuery && (
-          <AlphabetNav
-            letters={availableLetters}
-            activeLetter={activeLetter}
-            onSelect={handleLetterClick}
-          />
-        )}
-
-        {/* Courts List */}
+      {/* Scrollable List */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
         {groupedCourts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-4">
             <FaLocationDot className="w-12 h-12 text-slate-700 mb-4" />
             <p className="text-slate-400 text-center">
-              {searchQuery 
-                ? `No courts found for "${searchQuery}"`
-                : 'No courts match your filters'
-              }
+              {searchQuery ? `No courts found for "${searchQuery}"` : 'No courts match your filters'}
             </p>
             {(searchQuery || hasActiveFilters) && (
               <button
-                onClick={() => {
-                  setSearchQuery('');
-                  clearAllFilters();
-                }}
+                onClick={() => { setSearchQuery(''); clearAllFilters(); }}
                 className="mt-4 text-blue-400 text-sm hover:text-blue-300 transition-colors"
               >
                 Clear filters
@@ -580,9 +434,6 @@ export function CourtsIndexPage() {
                 letter={group.letter}
                 courts={group.courts}
                 onCourtClick={handleCourtClick}
-                sectionRef={(el) => {
-                  sectionRefs.current[group.letter] = el;
-                }}
               />
             ))}
             <div className="py-3 text-center">
@@ -596,4 +447,3 @@ export function CourtsIndexPage() {
     </div>
   );
 }
-
