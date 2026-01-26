@@ -378,14 +378,14 @@ export function CourtsIndexPage() {
             )}
           </div>
         ) : (
-          <>
+          <div className="pb-4">
             {groupedCourts.map((group) => (
               <LetterSection key={group.letter} letter={group.letter} courts={group.courts} onCourtClick={handleCourtClick} />
             ))}
             <div className="py-3 text-center">
               <span className="text-xs text-slate-500">{filteredCourts.length} {filteredCourts.length === 1 ? 'court' : 'courts'}</span>
             </div>
-          </>
+          </div>
         )}
       </div>
 
