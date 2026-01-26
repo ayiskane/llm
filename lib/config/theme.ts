@@ -17,15 +17,15 @@ export type ContactCategory = 'court' | 'provincial' | 'supreme' | 'bail' | 'oth
 // SECTION COLOR MAPPINGS
 // ============================================================================
 
-export const sectionColorMap: Record<SectionColor, { dot: string; badge: string }> = {
-  emerald: { dot: 'text-emerald-400', badge: 'bg-emerald-500/15 text-emerald-400' },
-  blue: { dot: 'text-blue-400', badge: 'bg-blue-500/15 text-blue-400' },
-  amber: { dot: 'text-amber-400', badge: 'bg-amber-500/15 text-amber-400' },
-  purple: { dot: 'text-purple-400', badge: 'bg-purple-500/15 text-purple-400' },
-  teal: { dot: 'text-teal-400', badge: 'bg-teal-500/15 text-teal-400' },
-  indigo: { dot: 'text-indigo-400', badge: 'bg-indigo-500/15 text-indigo-400' },
-  cyan: { dot: 'text-cyan-400', badge: 'bg-cyan-500/15 text-cyan-400' },
-  rose: { dot: 'text-rose-400', badge: 'bg-rose-500/15 text-rose-400' },
+export const sectionColorMap: Record<SectionColor, { badge: string }> = {
+  emerald: { badge: 'bg-emerald-500/15 text-emerald-400' },
+  blue: { badge: 'bg-blue-500/15 text-blue-400' },
+  amber: { badge: 'bg-amber-500/15 text-amber-400' },
+  purple: { badge: 'bg-purple-500/15 text-purple-400' },
+  teal: { badge: 'bg-teal-500/15 text-teal-400' },
+  indigo: { badge: 'bg-indigo-500/15 text-indigo-400' },
+  cyan: { badge: 'bg-cyan-500/15 text-cyan-400' },
+  rose: { badge: 'bg-rose-500/15 text-rose-400' },
 };
 
 // ============================================================================
@@ -110,3 +110,4 @@ export function getCategoryAccentClass(category: ContactCategory): string {
 export function getScheduleLabelClass(isAmber = false): string {
   return `${text.scheduleLabel} ${isAmber ? 'text-amber-400' : 'text-slate-300'}`;
 }
+
