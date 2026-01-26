@@ -6,24 +6,16 @@ import { cn } from '@/lib/utils';
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#'.split('');
 
 interface AlphabetNavProps {
-  /** Letters that have content sections */
   availableLetters: string[];
-  /** Currently visible section letter (from scroll tracking) */
   activeLetter?: string | null;
-  /** Callback when user selects a letter */
   onLetterChange: (letter: string) => void;
 }
 
 /**
  * AlphabetNav - iOS Contacts-style alphabet index scrubber
  * 
- * Optimal implementation features:
- * - Fixed positioning outside scroll container
- * - Touch scrub with finger-following indicator
- * - Maps touch position to DISPLAYED items (not full alphabet)
- * - Haptic feedback on letter change
- * - Shows dots for gaps between available letters
- * - Handles touchcancel for edge cases
+ * Positioned absolutely within the scroll container's parent,
+ * so it naturally respects the flex layout boundaries.
  */
 export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: AlphabetNavProps) {
   const barRef = useRef<HTMLDivElement>(null);
@@ -32,7 +24,7 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
   const [indicatorY, setIndicatorY] = useState<number | null>(null);
   const lastLetterRef = useRef<string | null>(null);
 
-  // Build display items: show all available letters, collapse gaps to single dot
+  // Build display items: available letters with collapsed gaps as dots
   const displayItems = useMemo(() => {
     const items: { type: 'letter' | 'dot'; value: string; letter?: string }[] = [];
     let inGap = false;
@@ -50,7 +42,7 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
     return items;
   }, [availableLetters]);
 
-  // Get letter at Y position - maps to DISPLAYED items
+  // Get letter at Y position
   const getLetterAtY = useCallback((clientY: number): string | null => {
     const bar = barRef.current;
     if (!bar || displayItems.length === 0) return null;
@@ -62,15 +54,12 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
     
     const item = displayItems[index];
     
-    // If we hit a letter, return it
     if (item.type === 'letter' && item.letter) {
       return item.letter;
     }
     
-    // If we hit a dot, find nearest letter
-    // Search outward from current position
+    // Find nearest letter if we hit a dot
     for (let offset = 1; offset < displayItems.length; offset++) {
-      // Prefer direction based on position (top half = look up first, bottom half = look down first)
       const preferUp = ratio < 0.5;
       const firstDir = preferUp ? -offset : offset;
       const secondDir = preferUp ? offset : -offset;
@@ -91,14 +80,12 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
     return availableLetters[0] || null;
   }, [displayItems, availableLetters]);
 
-  // Trigger haptic feedback
   const triggerHaptic = useCallback(() => {
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       navigator.vibrate(10);
     }
   }, []);
 
-  // Handle scrub
   const handleScrub = useCallback((clientY: number) => {
     const letter = getLetterAtY(clientY);
     setIndicatorY(clientY);
@@ -111,14 +98,12 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
     }
   }, [getLetterAtY, onLetterChange, triggerHaptic]);
 
-  // Start scrub
   const startScrub = useCallback((clientY: number) => {
     setIsScrubbing(true);
     lastLetterRef.current = null;
     handleScrub(clientY);
   }, [handleScrub]);
 
-  // End scrub
   const endScrub = useCallback(() => {
     setIsScrubbing(false);
     setScrubLetter(null);
@@ -126,7 +111,6 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
     lastLetterRef.current = null;
   }, []);
 
-  // Touch handlers
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -145,7 +129,6 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
     endScrub();
   }, [endScrub]);
 
-  // Mouse handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     startScrub(e.clientY);
@@ -154,13 +137,8 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
   useEffect(() => {
     if (!isScrubbing) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      handleScrub(e.clientY);
-    };
-
-    const handleMouseUp = () => {
-      endScrub();
-    };
+    const handleMouseMove = (e: MouseEvent) => handleScrub(e.clientY);
+    const handleMouseUp = () => endScrub();
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
@@ -171,19 +149,15 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
     };
   }, [isScrubbing, handleScrub, endScrub]);
 
-  // Determine which letter to highlight (scrub takes priority over active)
   const highlightedLetter = scrubLetter || activeLetter;
 
   return (
     <>
-      {/* Scrub indicator - follows finger position */}
+      {/* Scrub indicator */}
       {isScrubbing && scrubLetter && indicatorY !== null && (
         <div 
-          className="fixed right-10 z-[60] pointer-events-none transition-transform duration-75"
-          style={{ 
-            top: indicatorY,
-            transform: 'translateY(-50%)'
-          }}
+          className="fixed right-10 z-[60] pointer-events-none"
+          style={{ top: indicatorY, transform: 'translateY(-50%)' }}
         >
           <div className="w-12 h-12 rounded-xl bg-slate-800/95 border border-slate-600 shadow-xl flex items-center justify-center backdrop-blur-sm">
             <span className="text-xl font-bold text-blue-400">{scrubLetter}</span>
@@ -191,22 +165,17 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
         </div>
       )}
 
-      {/* Alphabet bar */}
+      {/* Alphabet bar - absolute within parent, centered in available space */}
       <div
         ref={barRef}
         className={cn(
-          'fixed right-0 z-50',
+          'absolute right-0 top-1/2 -translate-y-1/2 z-40',
           'flex flex-col items-center justify-center',
-          'py-2 px-0.5',
+          'py-1 px-0.5',
           'select-none',
           isScrubbing && 'bg-slate-900/80 rounded-l-lg'
         )}
-        style={{
-          top: '50%',
-          transform: 'translateY(-50%)',
-          touchAction: 'none',
-          maxHeight: 'calc(100dvh - 12rem)',
-        }}
+        style={{ touchAction: 'none' }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -234,11 +203,8 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
             <span
               key={item.letter}
               className={cn(
-                'text-[9px] font-semibold w-4 h-3.5 flex items-center justify-center',
-                'transition-all duration-50',
-                isHighlighted 
-                  ? 'text-blue-400 scale-125 font-bold' 
-                  : 'text-slate-500'
+                'text-[9px] font-semibold w-4 h-3.5 flex items-center justify-center transition-all duration-50',
+                isHighlighted ? 'text-blue-400 scale-125 font-bold' : 'text-slate-500'
               )}
             >
               {item.value}
