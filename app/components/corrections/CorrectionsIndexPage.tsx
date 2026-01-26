@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaMagnifyingGlass, FaXmark, FaSliders, FaBuildingShield } from '@/lib/icons';
 import { AlphabetNav } from '@/app/components/ui/AlphabetNav';
@@ -169,7 +169,7 @@ function LetterSection({ letter, centres, onCentreClick }: {
   letter: string; centres: CorrectionalCentre[]; onCentreClick: (id: number) => void;
 }) {
   return (
-    <div id={`section-${letter}`}>
+    <div id={`section-${letter}`} data-letter={letter}>
       <div className="sticky top-0 z-10 px-4 py-2 bg-slate-950 border-b border-slate-800/50">
         <span className="text-sm font-bold text-blue-400">{letter}</span>
       </div>
@@ -186,10 +186,12 @@ function LetterSection({ letter, centres, onCentreClick }: {
 
 export function CorrectionsIndexPage() {
   const router = useRouter();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { centres, isLoading, error } = useCorrectionalCentres();
   const [filters, setFilters] = useState<Filters>({ region: 0, jurisdiction: 'all' });
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [activeLetter, setActiveLetter] = useState<string | null>(null);
 
   const hasActiveFilters = filters.region !== 0 || filters.jurisdiction !== 'all';
   const clearAllFilters = useCallback(() => { setFilters({ region: 0, jurisdiction: 'all' }); setSearchQuery(''); }, []);
@@ -210,7 +212,31 @@ export function CorrectionsIndexPage() {
   const groupedCentres = useMemo(() => groupByLetter(filteredCentres), [filteredCentres]);
   const availableLetters = useMemo(() => groupedCentres.map(g => g.letter), [groupedCentres]);
 
-  // OPTIMAL: Use scrollIntoView
+  // Track scroll position to update active letter
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container || availableLetters.length === 0) return;
+
+    const handleScroll = () => {
+      const sections = container.querySelectorAll('[data-letter]');
+      let currentLetter: string | null = null;
+
+      sections.forEach((section) => {
+        const rect = section.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        if (rect.top <= containerRect.top + 50) {
+          currentLetter = section.getAttribute('data-letter');
+        }
+      });
+
+      setActiveLetter(currentLetter || availableLetters[0]);
+    };
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [availableLetters]);
+
   const handleLetterChange = useCallback((letter: string) => {
     const section = document.getElementById(`section-${letter}`);
     if (section) {
@@ -252,7 +278,7 @@ export function CorrectionsIndexPage() {
         <FilterPanel isOpen={isFilterOpen} filters={filters} onFilterChange={setFilters} onClearAll={clearAllFilters} />
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto">
         {groupedCentres.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-4">
             <FaBuildingShield className="w-12 h-12 text-slate-700 mb-4" />
@@ -273,9 +299,13 @@ export function CorrectionsIndexPage() {
         )}
       </div>
 
-      {/* Alphabet Nav - FIXED position */}
+      {/* Alphabet Nav */}
       {!searchQuery && availableLetters.length > 1 && (
-        <AlphabetNav availableLetters={availableLetters} onLetterChange={handleLetterChange} />
+        <AlphabetNav 
+          availableLetters={availableLetters} 
+          activeLetter={activeLetter}
+          onLetterChange={handleLetterChange} 
+        />
       )}
     </div>
   );
