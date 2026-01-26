@@ -4,7 +4,6 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaMagnifyingGlass, FaXmark, FaLocationDot, FaSliders } from '@/lib/icons';
 import { AlphabetNav } from '@/app/components/ui/AlphabetNav';
-import { FilterModal } from '@/app/components/ui/FilterModal';
 import { cn } from '@/lib/config/theme';
 import { useCourts } from '@/lib/hooks/useCourts';
 import type { CourtWithRegionName } from '@/lib/hooks/useCourts';
@@ -36,19 +35,10 @@ const REGION_CODE: Record<number, string> = { 1: 'R1', 2: 'R2', 3: 'R3', 4: 'R4'
 // TYPES
 // =============================================================================
 
-interface GroupedCourts {
-  letter: string;
-  courts: CourtWithRegionName[];
-}
-
+interface GroupedCourts { letter: string; courts: CourtWithRegionName[]; }
 type CourtTypeFilter = 'all' | 'staffed' | 'circuit';
 type CourtLevelFilter = 'all' | 'pc' | 'sc';
-
-interface Filters {
-  region: number;
-  courtType: CourtTypeFilter;
-  courtLevel: CourtLevelFilter;
-}
+interface Filters { region: number; courtType: CourtTypeFilter; courtLevel: CourtLevelFilter; }
 
 // =============================================================================
 // HELPER FUNCTIONS
@@ -80,11 +70,7 @@ function getCourtDisplayName(court: CourtWithRegionName): string {
 // =============================================================================
 
 function SearchBar({ value, onChange, onClear, onFilterClick, hasActiveFilters }: {
-  value: string;
-  onChange: (value: string) => void;
-  onClear: () => void;
-  onFilterClick: () => void;
-  hasActiveFilters: boolean;
+  value: string; onChange: (value: string) => void; onClear: () => void; onFilterClick: () => void; hasActiveFilters: boolean;
 }) {
   return (
     <div className="flex gap-2">
@@ -117,82 +103,86 @@ function SearchBar({ value, onChange, onClear, onFilterClick, hasActiveFilters }
   );
 }
 
-function FilterChip({ label, isActive, onClick, dot }: { label: string; isActive: boolean; onClick: () => void; dot?: string }) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all',
-        isActive 
-          ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
-          : 'bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:border-slate-600'
-      )}
-    >
-      {dot && <span className={cn('w-2 h-2 rounded-full', dot)} />}
-      {label}
-    </button>
-  );
-}
-
-function FilterContent({ filters, onFilterChange, onClearAll }: {
-  filters: Filters;
-  onFilterChange: (filters: Filters) => void;
-  onClearAll: () => void;
+function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: {
+  isOpen: boolean; filters: Filters; onFilterChange: (filters: Filters) => void; onClearAll: () => void;
 }) {
+  if (!isOpen) return null;
+
+  const courtTypeOptions = [
+    { value: 'all' as const, label: 'All Courts' },
+    { value: 'staffed' as const, label: 'Staffed Only' },
+    { value: 'circuit' as const, label: 'Circuit Only' },
+  ];
+
+  const courtLevelOptions = [
+    { value: 'all' as const, label: 'All Levels' },
+    { value: 'pc' as const, label: 'Provincial (PC)' },
+    { value: 'sc' as const, label: 'Supreme (SC)' },
+  ];
+
   const hasFilters = filters.region !== 0 || filters.courtType !== 'all' || filters.courtLevel !== 'all';
 
   return (
-    <div className="space-y-6">
-      {/* Region */}
+    <div className="border-t border-slate-700/30 bg-slate-900/50 px-4 py-3 space-y-3">
       <div>
-        <label className="text-xs uppercase tracking-wider text-slate-500 mb-3 block font-medium">Region</label>
-        <div className="flex flex-wrap gap-2">
+        <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">Region</label>
+        <div className="flex flex-wrap gap-1.5">
           {REGIONS.map((region) => (
-            <FilterChip
+            <button
               key={region.id}
-              label={region.name}
-              isActive={filters.region === region.id}
               onClick={() => onFilterChange({ ...filters, region: region.id })}
-              dot={region.id !== 0 ? REGION_COLORS[region.id]?.dot : undefined}
-            />
+              className={cn(
+                'px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5',
+                filters.region === region.id ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800/50 text-slate-400 border border-slate-700/50'
+              )}
+            >
+              {region.id !== 0 && <span className={cn('w-1.5 h-1.5 rounded-full', REGION_COLORS[region.id]?.dot)} />}
+              {region.name}
+            </button>
           ))}
         </div>
       </div>
-
-      {/* Court Type */}
       <div>
-        <label className="text-xs uppercase tracking-wider text-slate-500 mb-3 block font-medium">Court Type</label>
-        <div className="flex flex-wrap gap-2">
-          <FilterChip label="All Courts" isActive={filters.courtType === 'all'} onClick={() => onFilterChange({ ...filters, courtType: 'all' })} />
-          <FilterChip label="Staffed Only" isActive={filters.courtType === 'staffed'} onClick={() => onFilterChange({ ...filters, courtType: 'staffed' })} />
-          <FilterChip label="Circuit Only" isActive={filters.courtType === 'circuit'} onClick={() => onFilterChange({ ...filters, courtType: 'circuit' })} />
+        <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">Court Type</label>
+        <div className="flex gap-1.5">
+          {courtTypeOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => onFilterChange({ ...filters, courtType: opt.value })}
+              className={cn(
+                'px-2.5 py-1.5 rounded-lg text-xs font-medium',
+                filters.courtType === opt.value ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800/50 text-slate-400 border border-slate-700/50'
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
       </div>
-
-      {/* Court Level */}
       <div>
-        <label className="text-xs uppercase tracking-wider text-slate-500 mb-3 block font-medium">Court Level</label>
-        <div className="flex flex-wrap gap-2">
-          <FilterChip label="All Levels" isActive={filters.courtLevel === 'all'} onClick={() => onFilterChange({ ...filters, courtLevel: 'all' })} />
-          <FilterChip label="Provincial (PC)" isActive={filters.courtLevel === 'pc'} onClick={() => onFilterChange({ ...filters, courtLevel: 'pc' })} />
-          <FilterChip label="Supreme (SC)" isActive={filters.courtLevel === 'sc'} onClick={() => onFilterChange({ ...filters, courtLevel: 'sc' })} />
+        <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">Court Level</label>
+        <div className="flex gap-1.5">
+          {courtLevelOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => onFilterChange({ ...filters, courtLevel: opt.value })}
+              className={cn(
+                'px-2.5 py-1.5 rounded-lg text-xs font-medium',
+                filters.courtLevel === opt.value ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800/50 text-slate-400 border border-slate-700/50'
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
       </div>
-
-      {/* Clear All */}
-      {hasFilters && (
-        <button onClick={onClearAll} className="w-full py-3 text-sm text-slate-400 hover:text-white border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors">
-          Clear all filters
-        </button>
-      )}
+      {hasFilters && <button onClick={onClearAll} className="text-xs text-slate-500 hover:text-slate-300">Clear all filters</button>}
     </div>
   );
 }
 
 function LetterSection({ letter, courts, onCourtClick }: {
-  letter: string;
-  courts: CourtWithRegionName[];
-  onCourtClick: (id: number) => void;
+  letter: string; courts: CourtWithRegionName[]; onCourtClick: (id: number) => void;
 }) {
   return (
     <div id={`section-${letter}`} data-letter={letter}>
@@ -243,7 +233,6 @@ export function CourtsIndexPage() {
     courtLevel: (searchParams.get('level') as CourtLevelFilter) || 'all',
   });
 
-  // URL sync
   useEffect(() => {
     const params = new URLSearchParams();
     if (filters.region !== 0) params.set('region', String(filters.region));
@@ -254,11 +243,7 @@ export function CourtsIndexPage() {
   }, [filters, searchQuery, router]);
 
   const hasActiveFilters = filters.region !== 0 || filters.courtType !== 'all' || filters.courtLevel !== 'all';
-
-  const clearAllFilters = useCallback(() => {
-    setFilters({ region: 0, courtType: 'all', courtLevel: 'all' });
-    setSearchQuery('');
-  }, []);
+  const clearAllFilters = useCallback(() => { setFilters({ region: 0, courtType: 'all', courtLevel: 'all' }); setSearchQuery(''); }, []);
 
   const filteredCourts = useMemo(() => {
     let result = courts;
@@ -277,7 +262,6 @@ export function CourtsIndexPage() {
   const groupedCourts = useMemo(() => groupCourtsByLetter(filteredCourts), [filteredCourts]);
   const availableLetters = useMemo(() => groupedCourts.map(g => g.letter), [groupedCourts]);
 
-  // Track scroll position to update active letter
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container || availableLetters.length === 0) return;
@@ -309,9 +293,7 @@ export function CourtsIndexPage() {
     }
   }, []);
 
-  const handleCourtClick = useCallback((courtId: number) => {
-    router.push(`/court/${courtId}`);
-  }, [router]);
+  const handleCourtClick = useCallback((courtId: number) => router.push(`/court/${courtId}`), [router]);
 
   if (isLoading) {
     return (
@@ -347,51 +329,50 @@ export function CourtsIndexPage() {
             value={searchQuery}
             onChange={setSearchQuery}
             onClear={() => setSearchQuery('')}
-            onFilterClick={() => setIsFilterOpen(true)}
+            onFilterClick={() => setIsFilterOpen(!isFilterOpen)}
             hasActiveFilters={hasActiveFilters}
           />
         </div>
+        <FilterPanel isOpen={isFilterOpen} filters={filters} onFilterChange={setFilters} onClearAll={clearAllFilters} />
       </div>
 
-      {/* Scrollable content */}
-      <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto">
-        {groupedCourts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 px-4">
-            <FaLocationDot className="w-12 h-12 text-slate-700 mb-4" />
-            <p className="text-slate-400 text-center">
-              {searchQuery ? `No courts found for "${searchQuery}"` : 'No courts match your filters'}
-            </p>
-            {(searchQuery || hasActiveFilters) && (
-              <button onClick={() => { setSearchQuery(''); clearAllFilters(); }} className="mt-4 text-blue-400 text-sm hover:text-blue-300">
-                Clear filters
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="pb-4">
-            {groupedCourts.map((group) => (
-              <LetterSection key={group.letter} letter={group.letter} courts={group.courts} onCourtClick={handleCourtClick} />
-            ))}
-            <div className="py-3 text-center">
-              <span className="text-xs text-slate-500">{filteredCourts.length} {filteredCourts.length === 1 ? 'court' : 'courts'}</span>
+      {/* Content area with AlphabetNav */}
+      <div className="flex-1 min-h-0 relative">
+        {/* Scrollable content */}
+        <div ref={scrollContainerRef} className="h-full overflow-y-auto">
+          {groupedCourts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 px-4">
+              <FaLocationDot className="w-12 h-12 text-slate-700 mb-4" />
+              <p className="text-slate-400 text-center">
+                {searchQuery ? `No courts found for "${searchQuery}"` : 'No courts match your filters'}
+              </p>
+              {(searchQuery || hasActiveFilters) && (
+                <button onClick={() => { setSearchQuery(''); clearAllFilters(); }} className="mt-4 text-blue-400 text-sm hover:text-blue-300">
+                  Clear filters
+                </button>
+              )}
             </div>
-          </div>
+          ) : (
+            <>
+              {groupedCourts.map((group) => (
+                <LetterSection key={group.letter} letter={group.letter} courts={group.courts} onCourtClick={handleCourtClick} />
+              ))}
+              <div className="py-4 text-center">
+                <span className="text-xs text-slate-500">{filteredCourts.length} {filteredCourts.length === 1 ? 'court' : 'courts'}</span>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* AlphabetNav - positioned absolute within relative container */}
+        {!searchQuery && availableLetters.length > 1 && (
+          <AlphabetNav 
+            availableLetters={availableLetters} 
+            activeLetter={activeLetter}
+            onLetterChange={handleLetterChange} 
+          />
         )}
       </div>
-
-      {/* Alphabet Nav */}
-      {!searchQuery && availableLetters.length > 1 && (
-        <AlphabetNav 
-          availableLetters={availableLetters} 
-          activeLetter={activeLetter}
-          onLetterChange={handleLetterChange} 
-        />
-      )}
-
-      {/* Filter Modal */}
-      <FilterModal isOpen={isFilterOpen} onClose={() => setIsFilterOpen(false)} title="Filter Courts">
-        <FilterContent filters={filters} onFilterChange={setFilters} onClearAll={clearAllFilters} />
-      </FilterModal>
     </div>
   );
 }
