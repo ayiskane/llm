@@ -115,7 +115,7 @@ function CentreHeader({ centre, collapsed }: { centre: CorrectionalCentre; colla
           'flex items-center gap-1 shrink-0 transition-opacity duration-300',
           collapsed ? 'opacity-100' : 'opacity-0 hidden'
         )}>
-          {centre.short_name && <Tag color="blue" size="sm">{centre.short_name}</Tag>}
+          {centre.short_name && <Tag color="amber" size="sm">{centre.short_name}</Tag>}
           {centre.centre_type && centre.centre_type !== 'provincial' && centre.centre_type !== 'federal' && (
             <Tag color="amber" size="sm">{centre.centre_type.toUpperCase()}</Tag>
           )}
@@ -157,7 +157,7 @@ function CentreHeader({ centre, collapsed }: { centre: CorrectionalCentre; colla
           {/* Tags row: [Short form][Women] | [Region][Provincial] */}
           <div className="flex flex-wrap items-center justify-start gap-1.5 mt-2 pb-1">
             {centre.short_name && (
-              <Tag color="blue">{centre.short_name}</Tag>
+              <Tag color="amber">{centre.short_name}</Tag>
             )}
             {centre.centre_type && centre.centre_type !== 'provincial' && centre.centre_type !== 'federal' && (
               <Tag color="amber">{centre.centre_type.toUpperCase()}</Tag>
