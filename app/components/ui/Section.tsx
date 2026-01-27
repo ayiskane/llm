@@ -3,15 +3,12 @@
 import { forwardRef, useState } from 'react';
 import { FaChevronDown } from '@/lib/icons';
 import { cn } from '@/lib/utils';
-import { section } from '@/lib/config/theme';
-
-// Kept for backward compatibility - color no longer affects styling
-export type SectionColor = 'emerald' | 'amber' | 'teal' | 'indigo' | 'blue' | 'purple';
+import { section, sectionColorMap, type SectionColor } from '@/lib/config/theme';
 
 interface SectionProps {
   title: string;
   count?: number | string;
-  color?: SectionColor; // kept for API compatibility but no longer affects styling
+  color?: SectionColor;
   defaultOpen?: boolean;
   isExpanded?: boolean;
   onToggle?: () => void;
@@ -20,11 +17,12 @@ interface SectionProps {
 }
 
 export const Section = forwardRef<HTMLDivElement, SectionProps>(
-  ({ title, count, defaultOpen = false, isExpanded, onToggle, children, className }, ref) => {
+  ({ title, count, color = 'blue', defaultOpen = false, isExpanded, onToggle, children, className }, ref) => {
     const [internalOpen, setInternalOpen] = useState(defaultOpen);
     
     const isOpen = isExpanded !== undefined ? isExpanded : internalOpen;
     const handleToggle = onToggle ?? (() => setInternalOpen(!internalOpen));
+    const badgeColors = sectionColorMap[color]?.badge || sectionColorMap.blue.badge;
 
     return (
       <div ref={ref} className={cn(section.container, className)}>
@@ -36,9 +34,9 @@ export const Section = forwardRef<HTMLDivElement, SectionProps>(
           {/* Title */}
           <span className={section.title}>{title}</span>
           
-          {/* Count badge - unified subtle color */}
+          {/* Count badge - uses section color */}
           {count !== undefined && count !== '' && (
-            <span className="px-1.5 py-0.5 rounded text-xs font-mono bg-blue-500/25 text-blue-300">
+            <span className={cn("px-1.5 py-0.5 rounded text-xs font-mono", badgeColors)}>
               {count}
             </span>
           )}
@@ -67,3 +65,6 @@ export const Section = forwardRef<HTMLDivElement, SectionProps>(
 );
 
 Section.displayName = 'Section';
+
+export type { SectionColor };
+
