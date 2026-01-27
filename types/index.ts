@@ -231,7 +231,8 @@ export interface JcmFxdSchedule {
   days: string | null;        // e.g., "Monday, Thursday" or null for email-only
   time: string | null;        // e.g., "1:30 PM" or null for email-only
   email_acceptable: boolean;  // true if email submissions are acceptable
-  email_only: boolean;        // true if there are no in-person appearances (like Chilliwack)
+  email_only: boolean;        // true if email only, no appearances
+  teams_only: boolean;        // true if must appear via Teams, no email option
   notes: string | null;       // any additional notes
 }
 
