@@ -57,22 +57,24 @@ export async function fetchCourtById(id: number): Promise<CourtWithRegion | null
       region:regions(*)
     `)
     .eq('id', id)
-    .maybeSingle();
+    .limit(1);
 
   if (error) throw new Error(error.message);
-  if (!data) return null;
+  const court = data?.[0];
+  if (!court) return null;
 
   // If this is a circuit court with a contact_hub, look up the hub court's ID and name
   let contact_hub_id: number | null = null;
-  let contact_hub_name: string | null = data.contact_hub;
+  let contact_hub_name: string | null = court.contact_hub;
 
-  if (data.is_circuit && data.contact_hub) {
-    const { data: hubCourt } = await supabase
+  if (court.is_circuit && court.contact_hub) {
+    const { data: hubCourts } = await supabase
       .from('courts')
       .select('id, name')
-      .eq('name', data.contact_hub)
-      .maybeSingle();
+      .eq('name', court.contact_hub)
+      .limit(1);
     
+    const hubCourt = hubCourts?.[0];
     if (hubCourt) {
       contact_hub_id = hubCourt.id;
       contact_hub_name = `${hubCourt.name} Law Courts`;
@@ -80,7 +82,7 @@ export async function fetchCourtById(id: number): Promise<CourtWithRegion | null
   }
 
   return {
-    ...data,
+    ...court,
     contact_hub_id,
     contact_hub_name,
   };
@@ -235,10 +237,10 @@ export async function fetchBailCourtById(id: number): Promise<BailCourt | null> 
     .from('bail_courts')
     .select('*')
     .eq('id', id)
-    .maybeSingle();
+    .limit(1);
 
   if (error) throw new Error(error.message);
-  return data;
+  return data?.[0] || null;
 }
 
 export async function fetchBailContactsByRegionId(regionId: number): Promise<BailContact[]> {
@@ -288,10 +290,10 @@ export async function fetchWeekendBailForCourt(regionId: number, courtId: number
     .select('*')
     .eq('region_id', regionId)
     .eq('is_daytime', false)
-    .maybeSingle();
+    .limit(1);
 
   if (error) throw new Error(error.message);
-  return data;
+  return data?.[0] || null;
 }
 
 // =============================================================================
@@ -333,14 +335,14 @@ export async function fetchJcmFxdScheduleByCourtId(courtId: number): Promise<Jcm
         teams_link:teams_links(*)
       `)
       .eq('court_id', courtId)
-      .maybeSingle();
+      .limit(1);
 
     if (error) {
       // If table doesn't exist yet, return null gracefully
       if (error.code === '42P01') return null;
       throw new Error(error.message);
     }
-    return data;
+    return data?.[0] || null;
   } catch (e) {
     // If table doesn't exist or other error, return null gracefully
     console.warn('JCM FXD schedule query failed:', e);
@@ -460,8 +462,8 @@ export async function fetchCorrectionalCentreById(id: number): Promise<Correctio
     .from('correctional_centres')
     .select('*')
     .eq('id', id)
-    .maybeSingle();
+    .limit(1);
 
   if (error) throw new Error(error.message);
-  return data;
+  return data?.[0] || null;
 }
