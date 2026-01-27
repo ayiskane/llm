@@ -251,6 +251,14 @@ export interface CourtDetails {
   jcmFxdSchedule: JcmFxdSchedule | null;  // Changed: now array with teams included
 }
 
+export interface BailHubDetails {
+  bailCourt: BailCourt;
+  region: { id: number; name: string; code: string } | null;
+  bailTeams: TeamsLink[];
+  bailContacts: BailContact[];
+  linkedCourts: { id: number; name: string }[];  // Courts that use this bail hub
+}
+
 // ============================================================================
 // VIEW MODE
 // ============================================================================

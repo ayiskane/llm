@@ -9,6 +9,7 @@ import type {
   BailContact,
   Program,
   CourtDetails,
+  BailHubDetails,
   CorrectionalCentre,
   WeekendBailCourtWithTeams,
   JcmFxdSchedule,
@@ -232,6 +233,29 @@ export async function fetchBailCourts(): Promise<BailCourt[]> {
   return data || [];
 }
 
+export interface BailCourtWithRegion extends BailCourt {
+  region_name: string;
+  region_code: string;
+}
+
+export async function fetchBailCourtsWithRegion(): Promise<BailCourtWithRegion[]> {
+  const { data, error } = await supabase
+    .from('bail_courts')
+    .select(`
+      *,
+      region:regions(id, name, code)
+    `)
+    .order('name');
+
+  if (error) throw new Error(error.message);
+  
+  return (data || []).map((court: any) => ({
+    ...court,
+    region_name: court.region?.name || 'Unknown',
+    region_code: court.region?.code || 'UNK',
+  }));
+}
+
 export async function fetchBailCourtById(id: number): Promise<BailCourt | null> {
   const { data, error } = await supabase
     .from('bail_courts')
@@ -241,6 +265,60 @@ export async function fetchBailCourtById(id: number): Promise<BailCourt | null> 
 
   if (error) throw new Error(error.message);
   return data?.[0] || null;
+}
+
+export async function fetchBailHubDetails(bailCourtId: number): Promise<BailHubDetails | null> {
+  // Fetch bail court with region info
+  const { data: bailCourtData, error: bailError } = await supabase
+    .from('bail_courts')
+    .select(`
+      *,
+      region:regions(id, name, code)
+    `)
+    .eq('id', bailCourtId)
+    .limit(1);
+
+  if (bailError) throw new Error(bailError.message);
+  const bailCourt = bailCourtData?.[0];
+  if (!bailCourt) return null;
+
+  // Fetch bail teams, bail contacts, and linked courts in parallel
+  const [teamsResult, contactsResult, regionContactsResult, linkedCourtsResult] = await Promise.all([
+    supabase.from('teams_links').select('*').eq('bail_court_id', bailCourtId).order('name'),
+    supabase.from('bail_contacts').select('*').eq('bail_court_id', bailCourtId).order('role_id'),
+    supabase.from('bail_contacts').select('*').eq('region_id', bailCourt.region_id).is('bail_court_id', null).order('role_id'),
+    supabase.from('courts').select('id, name').eq('bail_hub_id', bailCourtId).order('name'),
+  ]);
+
+  if (teamsResult.error) throw new Error(teamsResult.error.message);
+  if (contactsResult.error) throw new Error(contactsResult.error.message);
+
+  // Merge bail court-specific contacts with region-wide contacts
+  const allContacts = [...(contactsResult.data || []), ...(regionContactsResult.data || [])];
+
+  return {
+    bailCourt: {
+      id: bailCourt.id,
+      name: bailCourt.name,
+      court_id: bailCourt.court_id,
+      region_id: bailCourt.region_id,
+      is_hybrid: bailCourt.is_hybrid,
+      is_daytime: bailCourt.is_daytime,
+      triage_time_am: bailCourt.triage_time_am,
+      triage_time_pm: bailCourt.triage_time_pm,
+      court_start_am: bailCourt.court_start_am,
+      court_start_pm: bailCourt.court_start_pm,
+      court_end: bailCourt.court_end,
+      cutoff_new_arrests: bailCourt.cutoff_new_arrests,
+      youth_custody_day: bailCourt.youth_custody_day,
+      youth_custody_time: bailCourt.youth_custody_time,
+      notes: bailCourt.notes,
+    },
+    region: bailCourt.region || null,
+    bailTeams: teamsResult.data || [],
+    bailContacts: allContacts,
+    linkedCourts: linkedCourtsResult.data || [],
+  };
 }
 
 export async function fetchBailContactsByRegionId(regionId: number): Promise<BailContact[]> {
