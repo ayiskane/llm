@@ -115,9 +115,9 @@ function CentreHeader({ centre, collapsed }: { centre: CorrectionalCentre; colla
           'flex items-center gap-1 shrink-0 transition-opacity duration-300',
           collapsed ? 'opacity-100' : 'opacity-0 hidden'
         )}>
-          {centre.short_name && <Tag color="amber" size="sm">{centre.short_name}</Tag>}
+          {centre.short_name && <Tag color="slate" size="sm">{centre.short_name}</Tag>}
           {centre.centre_type && centre.centre_type !== 'provincial' && centre.centre_type !== 'federal' && (
-            <Tag color="amber" size="sm">{centre.centre_type.toUpperCase()}</Tag>
+            <Tag color="slate" size="sm">{centre.centre_type.toUpperCase()}</Tag>
           )}
           <Tag color={centre.is_federal ? 'purple' : 'emerald'} size="sm">
             {centre.is_federal ? 'FED' : 'PROV'}
@@ -157,10 +157,10 @@ function CentreHeader({ centre, collapsed }: { centre: CorrectionalCentre; colla
           {/* Tags row: [Short form][Women] | [Region][Provincial] */}
           <div className="flex flex-wrap items-center justify-start gap-1.5 mt-2 pb-1">
             {centre.short_name && (
-              <Tag color="amber">{centre.short_name}</Tag>
+              <Tag color="slate">{centre.short_name}</Tag>
             )}
             {centre.centre_type && centre.centre_type !== 'provincial' && centre.centre_type !== 'federal' && (
-              <Tag color="amber">{centre.centre_type.toUpperCase()}</Tag>
+              <Tag color="slate">{centre.centre_type.toUpperCase()}</Tag>
             )}
             <span className="text-slate-600">|</span>
             {region && (
@@ -173,9 +173,6 @@ function CentreHeader({ centre, collapsed }: { centre: CorrectionalCentre; colla
             <Tag color={centre.is_federal ? 'purple' : 'emerald'}>
               {centre.is_federal ? 'FEDERAL' : 'PROVINCIAL'}
             </Tag>
-            {centre.security_level && (
-              <Tag color="teal">{centre.security_level.toUpperCase()}</Tag>
-            )}
           </div>
         </div>
       </div>
@@ -229,12 +226,12 @@ function ContactSection({ centre }: { centre: CorrectionalCentre }) {
       {/* CDN Fax Row - uses FaPenLine icon */}
       {centre.cdn_fax && (
         <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
-          <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-            <FaPenLine className="w-5 h-5 text-purple-400" />
+          <div className="w-10 h-10 rounded-lg bg-slate-500/20 flex items-center justify-center">
+            <FaPenLine className="w-5 h-5 text-slate-400" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-slate-200">
-              <Link href="/faq" className="text-purple-400 hover:text-purple-300 hover:underline">
+              <Link href="/faq" className="text-slate-400 hover:text-slate-300 hover:underline">
                 Fax
               </Link>
               <span className="text-slate-400"> (CDN)</span>
@@ -647,5 +644,6 @@ export function CorrectionDetailPage({ centre, onBack, onSearch }: CorrectionDet
     </div>
   );
 }
+
 
 
