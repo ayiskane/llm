@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { FaBuildingColumns, FaChevronRight, FaCopy, FaClipboardCheck } from '@/lib/icons';
+import { FaBuildingColumns, FaChevronRight, FaCopy, FaClipboardCheck, FaEye, FaEyeSlash } from '@/lib/icons';
 import { cn } from '@/lib/utils';
-import { card, text, getScheduleLabelClass } from '@/lib/config/theme';
+import { card, text, toggle, iconSize, getScheduleLabelClass } from '@/lib/config/theme';
 import { TeamsList } from './TeamsCard';
 import { isVBTriageLink, getBailHubTag, CONTACT_ROLES } from '@/lib/config/constants';
 import type { BailCourt, BailTeam, TeamsLink, WeekendBailCourtWithTeams, BailContact, ContactWithRole } from '@/types';
@@ -103,6 +103,8 @@ interface BailContactsStackProps {
 }
 
 function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailContactsStackProps) {
+  const [showFull, setShowFull] = useState(false);
+  
   const bailContactsList = useMemo(() => {
     const result: { label: string; email: string; id: string }[] = [];
 
@@ -124,11 +126,24 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
     return result;
   }, [contacts, bailContacts]);
 
+  const hasTruncation = bailContactsList.some(c => c.email.length > 40);
+
   if (bailContactsList.length === 0) return null;
 
   return (
     <div className="space-y-1.5">
-      <h4 className={text.sectionHeader}>Bail Contacts</h4>
+      <div className="flex items-center justify-between mb-2 px-1">
+        <h4 className={text.sectionHeader}>Bail Contacts</h4>
+        {(hasTruncation || showFull) && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowFull(!showFull); }}
+            className={cn(toggle.base, showFull ? toggle.active : toggle.inactive)}
+          >
+            {showFull ? <FaEyeSlash className={iconSize.xs} /> : <FaEye className={iconSize.xs} />}
+            <span>{showFull ? 'Truncate' : 'Show full'}</span>
+          </button>
+        )}
+      </div>
       <div className="space-y-2">
         {bailContactsList.map((contact) => {
           const isFieldCopied = isCopied ? isCopied(contact.id) : false;
@@ -150,7 +165,12 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
                 <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">
                   {contact.label}
                 </div>
-                <div className="text-[12px] text-slate-200 font-mono leading-relaxed truncate">
+                <div 
+                  className={cn(
+                    "text-[12px] text-slate-200 font-mono leading-relaxed",
+                    showFull ? 'break-all whitespace-normal' : 'truncate'
+                  )}
+                >
                   {contact.email}
                 </div>
               </div>
