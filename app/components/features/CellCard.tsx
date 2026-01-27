@@ -112,7 +112,7 @@ interface SinglePhoneRowProps {
 }
 
 function SinglePhoneRow({ cell, isPolice }: SinglePhoneRowProps) {
-  const iconBg = 'bg-amber-500/20';
+  const iconBg = 'bg-slate-500/20';
   const iconColor = 'text-amber-400';
   const phone = cell.phones?.[0] || '';
 
@@ -143,7 +143,7 @@ interface MultiplePhoneRowProps {
 }
 
 function MultiplePhoneRow({ cell, isPolice }: MultiplePhoneRowProps) {
-  const iconBg = 'bg-amber-500/20';
+  const iconBg = 'bg-slate-500/20';
   const iconColor = 'text-amber-400';
   const phones = cell.phones || [];
 
@@ -189,7 +189,7 @@ function CellRow({ cell, showBorder = true }: CellRowProps) {
 
   if (phoneCount === 0) {
     // No phones - just show name with icon
-    const iconBg = 'bg-amber-500/20';
+    const iconBg = 'bg-slate-500/20';
     const iconColor = 'text-amber-400';
     
     return (
