@@ -1,12 +1,14 @@
 'use client';
 
-import { FaAt, FaVideo, FaMicrosoftTeams } from '@/lib/icons';
+import { FaAt, FaMicrosoftTeams } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { card, text, iconSize } from '@/lib/config/theme';
+import { Button } from '@/app/components/ui/Button';
+import { joinTeamsMeeting } from '@/lib/utils';
 import type { JcmFxdSchedule } from '@/types';
 
 // ============================================================================
-// JCM FXD SCHEDULE ROW COMPONENT
+// SCHEDULE ROW COMPONENT
 // ============================================================================
 
 interface ScheduleRowProps {
@@ -34,45 +36,23 @@ interface JcmFxdScheduleCardProps {
 }
 
 export function JcmFxdScheduleCard({ schedule }: JcmFxdScheduleCardProps) {
-  // Determine the submission method
-  const getMethodDisplay = () => {
-    if (schedule.email_only) {
-      return { 
-        icon: <FaAt className={cn(iconSize.md, "text-emerald-400")} />,
-        bg: 'bg-emerald-500/15',
-        label: 'Email Only',
-        sublabel: 'No in-person JCM FXD appearances',
-        color: 'text-emerald-400'
-      };
-    }
-    if (schedule.teams_only) {
-      return { 
-        icon: <FaMicrosoftTeams className={cn(iconSize.md, "text-indigo-400")} />,
-        bg: 'bg-indigo-500/15',
-        label: 'Teams Only',
-        sublabel: 'Must appear via MS Teams',
-        color: 'text-indigo-400'
-      };
-    }
-    // email_acceptable - has schedule with email option
-    return null;
-  };
+  const hasTeamsLink = !!schedule.teams_link_id && !!schedule.teams_link;
+  const hasSchedule = !!schedule.days || !!schedule.time;
+  const emailOnly = !hasTeamsLink && schedule.email_acceptable;
 
-  const methodDisplay = getMethodDisplay();
-
-  // Email Only or Teams Only - simple card display
-  if (methodDisplay) {
+  // Email Only - no Teams link
+  if (emailOnly && !hasSchedule) {
     return (
       <div className="space-y-1.5">
         <h4 className={text.sectionHeader}>JCM Fixed Date</h4>
         <div className={cn(card.base, "p-3")}>
           <div className="flex items-center gap-2.5">
-            <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", methodDisplay.bg)}>
-              {methodDisplay.icon}
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/15 flex items-center justify-center">
+              <FaAt className={cn(iconSize.md, "text-emerald-400")} />
             </div>
             <div>
-              <div className="text-sm text-slate-200">{methodDisplay.label}</div>
-              <div className="text-xs text-slate-500">{methodDisplay.sublabel}</div>
+              <div className="text-sm text-slate-200">Email Only</div>
+              <div className="text-xs text-slate-500">No in-person JCM FXD appearances</div>
             </div>
           </div>
           {schedule.notes && (
@@ -83,7 +63,42 @@ export function JcmFxdScheduleCard({ schedule }: JcmFxdScheduleCardProps) {
     );
   }
 
-  // Email Acceptable - shows schedule with email option
+  // Teams Only - has Teams link, no email option
+  if (hasTeamsLink && !schedule.email_acceptable && !hasSchedule) {
+    return (
+      <div className="space-y-1.5">
+        <h4 className={text.sectionHeader}>JCM Fixed Date</h4>
+        <div className={cn(card.base, "p-3")}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/15 flex items-center justify-center">
+                <FaMicrosoftTeams className={cn(iconSize.md, "text-indigo-400")} />
+              </div>
+              <div>
+                <div className="text-sm text-slate-200">Teams Only</div>
+                <div className="text-xs text-slate-500">Must appear via MS Teams</div>
+              </div>
+            </div>
+            {schedule.teams_link?.teams_link && (
+              <Button 
+                variant="join" 
+                size="sm" 
+                onClick={() => joinTeamsMeeting(schedule.teams_link!.teams_link!)}
+              >
+                <FaMicrosoftTeams className="w-3.5 h-3.5" />
+                Join
+              </Button>
+            )}
+          </div>
+          {schedule.notes && (
+            <div className="mt-2 text-xs text-slate-400">{schedule.notes}</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Has schedule (with or without Teams link)
   return (
     <div className="space-y-1.5">
       <h4 className={text.sectionHeader}>JCM Fixed Date</h4>
@@ -98,9 +113,35 @@ export function JcmFxdScheduleCard({ schedule }: JcmFxdScheduleCardProps) {
           <span className={cn(text.scheduleLabel, 'text-slate-300')} style={{ letterSpacing: '1px' }}>
             Method
           </span>
-          <span className="text-xs text-emerald-400 font-medium">Email Acceptable</span>
+          <div className="flex items-center gap-2">
+            {hasTeamsLink && (
+              <span className="text-xs text-indigo-400 font-medium">Teams</span>
+            )}
+            {hasTeamsLink && schedule.email_acceptable && (
+              <span className="text-xs text-slate-500">/</span>
+            )}
+            {schedule.email_acceptable && (
+              <span className="text-xs text-emerald-400 font-medium">Email</span>
+            )}
+          </div>
         </div>
       </div>
+      
+      {/* Join button if Teams link exists */}
+      {hasTeamsLink && schedule.teams_link?.teams_link && (
+        <div className="pt-1">
+          <Button 
+            variant="join" 
+            size="sm"
+            className="w-full justify-center"
+            onClick={() => joinTeamsMeeting(schedule.teams_link!.teams_link!)}
+          >
+            <FaMicrosoftTeams className="w-3.5 h-3.5" />
+            Join JCM FXD
+          </Button>
+        </div>
+      )}
+      
       {schedule.notes && (
         <div className="px-1 text-xs text-slate-500">{schedule.notes}</div>
       )}
