@@ -112,8 +112,8 @@ interface SinglePhoneRowProps {
 }
 
 function SinglePhoneRow({ cell, isPolice }: SinglePhoneRowProps) {
-  const iconBg = isPolice ? 'bg-amber-500/20' : 'bg-blue-500/20';
-  const iconColor = isPolice ? 'text-amber-400' : 'text-blue-400';
+  const iconBg = 'bg-amber-500/20';
+  const iconColor = 'text-amber-400';
   const phone = cell.phones?.[0] || '';
 
   return (
@@ -143,8 +143,8 @@ interface MultiplePhoneRowProps {
 }
 
 function MultiplePhoneRow({ cell, isPolice }: MultiplePhoneRowProps) {
-  const iconBg = isPolice ? 'bg-amber-500/20' : 'bg-blue-500/20';
-  const iconColor = isPolice ? 'text-amber-400' : 'text-blue-400';
+  const iconBg = 'bg-amber-500/20';
+  const iconColor = 'text-amber-400';
   const phones = cell.phones || [];
 
   return (
@@ -189,8 +189,8 @@ function CellRow({ cell, showBorder = true }: CellRowProps) {
 
   if (phoneCount === 0) {
     // No phones - just show name with icon
-    const iconBg = isPolice ? 'bg-amber-500/20' : 'bg-blue-500/20';
-    const iconColor = isPolice ? 'text-amber-400' : 'text-blue-400';
+    const iconBg = 'bg-amber-500/20';
+    const iconColor = 'text-amber-400';
     
     return (
       <div className={cn(
@@ -270,3 +270,4 @@ export function CellList({ cells, maxDisplay = 20 }: CellListProps) {
     </div>
   );
 }
+
