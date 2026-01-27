@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { FaArrowLeft, FaAt, FaUserPoliceTie, FaBuildingColumns, FaVideo } from '@/lib/icons';
+import { FaArrowLeft, FaAt, FaUserPoliceTie, FaBuildingColumns, FaVideo, FaChevronRight } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { StickyHeader } from '../layouts/StickyHeader';
 import { Section, PillButton, Toast } from '../ui';
@@ -11,13 +11,12 @@ import { CircuitCourtAlert } from './CircuitCourtAlert';
 import { TeamsList } from '../features/TeamsCard';
 import { CourtContactsStack, CrownContactsStack } from '../features/ContactCard';
 import { CellList } from '../features/CellCard';
-import { BailSectionContent } from '../features/BailCard';
 import { JcmFxdScheduleCard } from '../features/JcmFxdCard';
 import { getBailHubTag } from '@/lib/config/constants';
 import { useCopyToClipboard } from '@/lib/hooks/useCopyToClipboard';
 import type { CourtDetails } from '@/types';
 
-type AccordionSection = 'contacts' | 'cells' | 'bail' | 'teams' | null;
+type AccordionSection = 'contacts' | 'cells' | 'teams' | null;
 
 interface CourtDetailPageProps {
   courtDetails: CourtDetails;
@@ -28,7 +27,7 @@ interface CourtDetailPageProps {
 }
 
 export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCourt, onNavigateToBailHub }: CourtDetailPageProps) {
-  const { court, contacts, cells, teamsLinks, bailCourt, bailTeams, bailContacts, weekendBailCourts, jcmFxdSchedule } = courtDetails;
+  const { court, contacts, cells, teamsLinks, bailCourt, jcmFxdSchedule } = courtDetails;
   
   const [expandedSection, setExpandedSection] = useState<AccordionSection>('contacts');
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
@@ -38,7 +37,6 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
   const scrollRef = useRef<HTMLDivElement>(null);
   const contactsRef = useRef<HTMLDivElement>(null);
   const cellsRef = useRef<HTMLDivElement>(null);
-  const bailRef = useRef<HTMLDivElement>(null);
   const teamsRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
@@ -56,7 +54,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
     setExpandedSection(section);
     
     const refs: Record<string, React.RefObject<HTMLDivElement | null>> = {
-      contacts: contactsRef, cells: cellsRef, bail: bailRef, teams: teamsRef,
+      contacts: contactsRef, cells: cellsRef, teams: teamsRef,
     };
     
     const ref = section ? refs[section] : null;
@@ -83,7 +81,6 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
   const navButtons = [
     { key: 'contacts', label: 'Contacts', icon: <FaAt className="w-4 h-4" />, count: contacts.length, show: contacts.length > 0 },
     { key: 'cells', label: 'Cells', icon: <FaUserPoliceTie className="w-4 h-4" />, count: cells.length, show: cells.length > 0 },
-    { key: 'bail', label: 'Bail', icon: <FaBuildingColumns className="w-4 h-4" />, count: '', show: !!bailCourt },
     { key: 'teams', label: 'Teams', icon: <FaVideo className="w-4 h-4" />, count: teamsLinks.length, show: teamsLinks.length > 0 },
   ];
 
@@ -121,11 +118,9 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
             >
               {btn.icon}
               <span>{btn.label}</span>
-              {btn.count !== '' && (
-                <span className={expandedSection === btn.key ? 'text-white/70' : 'text-slate-500'}>
-                  {btn.count}
-                </span>
-              )}
+              <span className={expandedSection === btn.key ? 'text-white/70' : 'text-slate-500'}>
+                {btn.count}
+              </span>
             </PillButton>
           ))}
         </div>
@@ -176,33 +171,29 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
             </Section>
           )}
 
-          {/* Bail section */}
-          {bailCourt && (
-            <Section
-              ref={bailRef}
-              color="amber"
-              title="Virtual Bail"
-              count={getBailHubTag(bailCourt.name)}
-              isExpanded={expandedSection === 'bail'}
-              onToggle={() => toggleSection('bail')}
+          {/* Bail Hub Link */}
+          {bailCourt && onNavigateToBailHub && (
+            <button
+              onClick={() => onNavigateToBailHub(bailCourt.id, `${court.name} Law Courts`)}
+              className={cn(
+                "w-full rounded-xl overflow-hidden",
+                "bg-slate-800/40 border border-amber-500/30",
+                "hover:bg-slate-800/60 hover:border-amber-500/50",
+                "active:bg-slate-700/50",
+                "transition-all duration-200"
+              )}
             >
-              <div className="p-3">
-                <BailSectionContent
-                  bailCourt={bailCourt}
-                  currentCourtId={court.id}
-                  currentCourtName={`${court.name} Law Courts`}
-                  bailTeams={bailTeams}
-                  courtTeams={teamsLinks}
-                  contacts={contacts}
-                  bailContacts={bailContacts}
-                  weekendBailCourts={weekendBailCourts}
-                  onNavigateToHub={onNavigateToCourt}
-                  onNavigateToBailHub={onNavigateToBailHub}
-                  onCopy={copyToClipboard}
-                  isCopied={isCopied}
-                />
+              <div className="flex items-center gap-3 px-4 py-3">
+                <div className="w-10 h-10 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0">
+                  <FaBuildingColumns className="w-5 h-5 text-amber-400" />
+                </div>
+                <div className="flex-1 min-w-0 text-left">
+                  <div className="text-sm font-medium text-slate-200">Virtual Bail</div>
+                  <div className="text-xs text-slate-500 mt-0.5">{getBailHubTag(bailCourt.name)} • Tap for schedule & contacts</div>
+                </div>
+                <FaChevronRight className="w-5 h-5 text-slate-500 shrink-0" />
               </div>
-            </Section>
+            </button>
           )}
 
           {/* Teams section */}
