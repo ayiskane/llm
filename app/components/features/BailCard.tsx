@@ -110,19 +110,25 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
   const bailContactsList = useMemo(() => {
     const result: { label: string; email: string; id: string }[] = [];
 
-    // Bail Crown from bailContacts table
-    const bailCrown = bailContacts.find(bc => bc.role_id === CONTACT_ROLES.CROWN);
-    if (bailCrown?.email) {
-      result.push({ label: 'Bail Crown', email: bailCrown.email, id: `bail-crown-${bailCrown.id}` });
-    }
-
-    // Bail JCM from contacts table
+    // 1. Bail JCM first (from contacts table)
     const bailJcm = contacts.find(c => c.contact_role_id === CONTACT_ROLES.BAIL_JCM);
     if (bailJcm) {
       const email = bailJcm.emails?.[0] || bailJcm.email;
       if (email) {
         result.push({ label: 'Bail JCM', email, id: `bail-jcm-${bailJcm.id}` });
       }
+    }
+
+    // 2. Bail Crown (from bailContacts table)
+    const bailCrown = bailContacts.find(bc => bc.role_id === CONTACT_ROLES.CROWN);
+    if (bailCrown?.email) {
+      result.push({ label: 'Bail Crown', email: bailCrown.email, id: `bail-crown-${bailCrown.id}` });
+    }
+
+    // 3. Federal Crown (from bailContacts table)
+    const fedCrown = bailContacts.find(bc => bc.role_id === CONTACT_ROLES.FEDERAL_CROWN);
+    if (fedCrown?.email) {
+      result.push({ label: 'Federal Crown', email: fedCrown.email, id: `fed-crown-${fedCrown.id}` });
     }
 
     return result;
