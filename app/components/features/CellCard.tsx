@@ -2,6 +2,7 @@
 
 import { FaPhoneSolid, FaCopy, FaCheck, FaBadgeSheriff, FaDungeon } from '@/lib/icons';
 import { cn } from '@/lib/utils';
+import { cellIcon } from '@/lib/config/theme';
 import type { ShellCell } from '@/types';
 import { useState, useCallback } from 'react';
 
@@ -112,8 +113,7 @@ interface SinglePhoneRowProps {
 }
 
 function SinglePhoneRow({ cell, isPolice }: SinglePhoneRowProps) {
-  const iconBg = 'bg-slate-500/20';
-  const iconColor = 'text-amber-400';
+  const { bg: iconBg, color: iconColor } = cellIcon;
   const phone = cell.phones?.[0] || '';
 
   return (
@@ -143,8 +143,7 @@ interface MultiplePhoneRowProps {
 }
 
 function MultiplePhoneRow({ cell, isPolice }: MultiplePhoneRowProps) {
-  const iconBg = 'bg-slate-500/20';
-  const iconColor = 'text-amber-400';
+  const { bg: iconBg, color: iconColor } = cellIcon;
   const phones = cell.phones || [];
 
   return (
@@ -189,8 +188,7 @@ function CellRow({ cell, showBorder = true }: CellRowProps) {
 
   if (phoneCount === 0) {
     // No phones - just show name with icon
-    const iconBg = 'bg-slate-500/20';
-    const iconColor = 'text-amber-400';
+    const { bg: iconBg, color: iconColor } = cellIcon;
     
     return (
       <div className={cn(
