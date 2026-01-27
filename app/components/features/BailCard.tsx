@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { FaBuildingColumns, FaChevronRight, FaCopy, FaClipboardCheck, FaEye, FaEyeSlash } from '@/lib/icons';
+import { FaBuildingColumns, FaChevronRight, FaCopy, FaClipboardCheck, FaEye, FaEyeSlash, FaMicrosoftTeams } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { card, text, toggle, iconSize, getScheduleLabelClass } from '@/lib/config/theme';
 import { TeamsList } from './TeamsCard';
@@ -108,7 +108,7 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
   const { registerRef, hasTruncation } = useTruncationDetection();
   
   const bailContactsList = useMemo(() => {
-    const result: { label: string; email: string; id: string }[] = [];
+    const result: { label: string; email: string; id: string; teamsChat?: string }[] = [];
 
     // 1. Bail JCM first (from contacts table)
     const bailJcm = contacts.find(c => c.contact_role_id === CONTACT_ROLES.BAIL_JCM);
@@ -122,7 +122,12 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
     // 2. Sheriff VB Coordinator (from bailContacts table)
     const sheriffCoord = bailContacts.find(bc => bc.role_id === CONTACT_ROLES.SHERIFF_VB_COORDINATOR);
     if (sheriffCoord?.email) {
-      result.push({ label: 'Sheriff Coordinator', email: sheriffCoord.email, id: `sheriff-coord-${sheriffCoord.id}` });
+      result.push({ 
+        label: 'Sheriff Coordinator', 
+        email: sheriffCoord.email, 
+        id: `sheriff-coord-${sheriffCoord.id}`,
+        teamsChat: sheriffCoord.teams_chat || undefined
+      });
     }
 
     // 3. Bail Crown (from bailContacts table)
@@ -141,6 +146,12 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
   }, [contacts, bailContacts]);
 
   if (bailContactsList.length === 0) return null;
+
+  const handleTeamsClick = (teamsChat: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const teamsUrl = `https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(teamsChat)}`;
+    window.open(teamsUrl, '_blank');
+  };
 
   return (
     <div className="space-y-1.5">
@@ -186,6 +197,17 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
                   {contact.email}
                 </div>
               </div>
+              
+              {/* Teams chat button (only for sheriff coordinator with teams_chat) */}
+              {contact.teamsChat && (
+                <button
+                  onClick={(e) => handleTeamsClick(contact.teamsChat!, e)}
+                  className="flex items-center px-2 hover:bg-slate-700/50 transition-colors"
+                  title="Open Teams chat"
+                >
+                  <FaMicrosoftTeams className="w-4 h-4 text-purple-400 hover:text-purple-300" />
+                </button>
+              )}
               
               {/* Copy icon */}
               <div className="flex items-center px-2">

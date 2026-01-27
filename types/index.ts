@@ -121,6 +121,7 @@ export interface BailCourt {
 export interface BailContact {
   id: number;
   email: string | null;
+  teams_chat: string | null;
   bail_court_id: number | null;
   region_id: number | null;
   role_id: number;
