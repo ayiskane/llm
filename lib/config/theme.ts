@@ -108,8 +108,11 @@ export function getCategoryAccentClass(category: ContactCategory): string {
   return categoryColorMap[category];
 }
 
-export function getScheduleLabelClass(isAmber = false): string {
-  return `${text.scheduleLabel} ${isAmber ? 'text-amber-400' : 'text-slate-300'}`;
+export function getScheduleLabelClass(color?: 'amber' | 'sky'): string {
+  const colorClass = color === 'amber' ? 'text-amber-400' 
+    : color === 'sky' ? 'text-sky-400' 
+    : 'text-slate-300';
+  return `${text.scheduleLabel} ${colorClass}`;
 }
 
 
