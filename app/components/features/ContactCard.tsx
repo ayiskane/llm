@@ -15,10 +15,10 @@ type CopyFunction = (text: string, fieldId: string) => void | Promise<boolean>;
 type IsCopiedFunction = (fieldId: string) => boolean;
 
 // ============================================================================
-// CONTACT ITEM (Single coupon-style card)
+// COMPACT CONTACT ROW (Option A - Single line inline)
 // ============================================================================
 
-interface ContactItemProps {
+interface ContactRowProps {
   label: string;
   emails: string[];
   category?: ContactCategory;
@@ -28,7 +28,7 @@ interface ContactItemProps {
   fieldId: string;
 }
 
-function ContactItem({ 
+function ContactRow({ 
   label, 
   emails, 
   category = 'other', 
@@ -36,7 +36,7 @@ function ContactItem({
   onCopy,
   isCopied,
   fieldId,
-}: ContactItemProps) {
+}: ContactRowProps) {
   const copyText = emails.join(', ');
   const isFieldCopied = isCopied ? isCopied(fieldId) : false;
 
@@ -46,38 +46,45 @@ function ContactItem({
     }
   }, [copyText, onCopy, fieldId]);
 
+  // Get dot color class from accent bar class
+  const accentClass = getCategoryAccentClass(category);
+
   return (
-    <div className={card.coupon} onClick={handleCopy}>
-      {/* Color accent bar */}
-      <div className={cn('w-1 flex-shrink-0', getCategoryAccentClass(category))} />
+    <div 
+      onClick={handleCopy}
+      className={cn(
+        "flex items-center gap-2 px-3 py-2 cursor-pointer group transition-colors",
+        isFieldCopied ? "bg-emerald-500/10" : "hover:bg-slate-800/50"
+      )}
+    >
+      {/* Color dot */}
+      <div className={cn('w-1.5 h-4 rounded-full flex-shrink-0', accentClass)} />
       
-      {/* Content */}
-      <div className="flex-1 py-2.5 px-3 min-w-0 overflow-hidden">
-        <div className={text.roleLabel}>{label}</div>
-        <div 
-          className={cn(
-            'text-[12px] text-slate-200 font-mono leading-relaxed',
-            showFull ? 'break-all whitespace-normal' : 'whitespace-nowrap overflow-hidden text-ellipsis'
-          )}
-        >
-          {emails.length > 1 ? (
-            <div className={showFull ? 'space-y-1' : ''}>
-              {showFull ? emails.map((email, i) => <div key={i}>{email}</div>) : emails.join(', ')}
-            </div>
-          ) : (
-            emails[0]
-          )}
-        </div>
-      </div>
+      {/* Label */}
+      <span className="text-[10px] text-slate-500 uppercase tracking-wider w-20 flex-shrink-0 truncate">
+        {label}
+      </span>
       
-      {/* Copy button area */}
-      <div className={cn(card.couponDivider, 'flex items-center justify-center px-3 flex-shrink-0 transition-colors')}>
-        {isFieldCopied ? (
-          <FaClipboardCheck className={cn(iconSize.md, 'text-emerald-400')} />
-        ) : (
-          <FaCopy className={cn(iconSize.md, 'text-slate-500')} />
+      {/* Email(s) */}
+      <span 
+        className={cn(
+          "text-[11px] text-slate-300 font-mono flex-1 min-w-0",
+          showFull ? 'break-all whitespace-normal' : 'truncate'
         )}
-      </div>
+      >
+        {emails.length > 1 ? (
+          showFull ? emails.join('\n') : emails.join(', ')
+        ) : (
+          emails[0]
+        )}
+      </span>
+      
+      {/* Copy icon */}
+      {isFieldCopied ? (
+        <FaClipboardCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+      ) : (
+        <FaCopy className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400 flex-shrink-0 transition-colors" />
+      )}
     </div>
   );
 }
@@ -174,9 +181,9 @@ export function CourtContactsStack({ contacts, onCopy, isCopied }: CourtContacts
         onToggle={() => setShowFull(!showFull)}
         showToggle={hasTruncation || showFull}
       />
-      <div className="space-y-2">
+      <div className={card.divided}>
         {orderedContacts.map((contact) => (
-          <ContactItem 
+          <ContactRow 
             key={contact.id}
             label={contact.label}
             emails={contact.emails}
@@ -247,9 +254,9 @@ export function CrownContactsStack({ contacts, onCopy, isCopied }: CrownContacts
         onToggle={() => setShowFull(!showFull)}
         showToggle={hasTruncation || showFull}
       />
-      <div className="space-y-2">
+      <div className={card.divided}>
         {crownContacts.map((contact) => (
-          <ContactItem 
+          <ContactRow 
             key={contact.id}
             label={contact.label}
             emails={contact.emails}
@@ -265,6 +272,7 @@ export function CrownContactsStack({ contacts, onCopy, isCopied }: CrownContacts
   );
 }
 
-export { ContactItem as ContactCard };
+export { ContactRow as ContactCard };
+
 
 
