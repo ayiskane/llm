@@ -145,7 +145,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
           {contacts.length > 0 && (
             <Section
               ref={contactsRef}
-              color="emerald"
+              color="blue"
               title="Contacts"
               count={contacts.length}
               isExpanded={expandedSection === 'contacts'}
@@ -162,7 +162,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
           {cells.length > 0 && (
             <Section
               ref={cellsRef}
-              color="amber"
+              color="blue"
               title="Sheriff Cells"
               count={cells.length}
               isExpanded={expandedSection === 'cells'}
@@ -178,7 +178,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
           {bailCourt && (
             <Section
               ref={bailRef}
-              color="teal"
+              color="amber"
               title="Virtual Bail"
               count={getBailHubTag(bailCourt.name)}
               isExpanded={expandedSection === 'bail'}
