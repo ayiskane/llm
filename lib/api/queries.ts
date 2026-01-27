@@ -284,12 +284,13 @@ export async function fetchWeekendBailForCourt(regionId: number, courtId: number
     return fetchBailCourtById(bailId);
   }
   
-  // Other regions: single weekend bail court
+  // Other regions: single weekend bail court (exclude court-specific ones)
   const { data, error } = await supabase
     .from('bail_courts')
     .select('*')
     .eq('region_id', regionId)
     .eq('is_daytime', false)
+    .is('court_id', null)
     .limit(1);
 
   if (error) throw new Error(error.message);
