@@ -144,7 +144,7 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
           </button>
         )}
       </div>
-      <div className="space-y-2">
+      <div className={card.divided}>
         {bailContactsList.map((contact) => {
           const isFieldCopied = isCopied ? isCopied(contact.id) : false;
           return (
@@ -152,37 +152,34 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
               key={contact.id}
               onClick={() => onCopy?.(contact.email, contact.id)}
               className={cn(
-                "flex items-stretch rounded-xl overflow-hidden cursor-pointer",
-                "bg-slate-800/40 border border-slate-700/50",
-                "hover:bg-slate-800/60 transition-colors"
+                "flex items-center gap-2 px-3 py-2 cursor-pointer group transition-colors",
+                isFieldCopied ? "bg-emerald-500/10" : "hover:bg-slate-800/50"
               )}
             >
-              {/* Color accent bar - amber for bail */}
-              <div className="w-1 flex-shrink-0 bg-amber-500" />
+              {/* Color dot - amber for bail */}
+              <div className="w-1.5 h-4 rounded-full flex-shrink-0 bg-amber-400" />
               
-              {/* Content */}
-              <div className="flex-1 py-2.5 px-3 min-w-0 overflow-hidden">
-                <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">
-                  {contact.label}
-                </div>
-                <div 
-                  className={cn(
-                    "text-[12px] text-slate-200 font-mono leading-relaxed",
-                    showFull ? 'break-all whitespace-normal' : 'truncate'
-                  )}
-                >
-                  {contact.email}
-                </div>
-              </div>
+              {/* Label */}
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider w-20 flex-shrink-0 truncate">
+                {contact.label}
+              </span>
               
-              {/* Copy button area */}
-              <div className="flex items-center justify-center px-3 flex-shrink-0 border-l border-dashed border-slate-700/50">
-                {isFieldCopied ? (
-                  <FaClipboardCheck className="w-4 h-4 text-emerald-400" />
-                ) : (
-                  <FaCopy className="w-4 h-4 text-slate-500" />
+              {/* Email */}
+              <span 
+                className={cn(
+                  "text-[11px] text-slate-300 font-mono flex-1 min-w-0",
+                  showFull ? 'break-all whitespace-normal' : 'truncate'
                 )}
-              </div>
+              >
+                {contact.email}
+              </span>
+              
+              {/* Copy icon */}
+              {isFieldCopied ? (
+                <FaClipboardCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+              ) : (
+                <FaCopy className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400 flex-shrink-0 transition-colors" />
+              )}
             </div>
           );
         })}
@@ -422,6 +419,7 @@ export function BailSectionContent({
 }
 
 export { getBailHubTag };
+
 
 
 
