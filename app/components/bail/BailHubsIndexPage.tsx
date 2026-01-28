@@ -30,6 +30,11 @@ const REGION_CODE: Record<number, string> = { 1: 'R1', 2: 'R2', 3: 'R3', 4: 'R4'
 
 type ScheduleTab = 'weekday' | 'weekend';
 
+function getBailCourtDisplayName(name: string): string {
+  if (name.toLowerCase().includes('court')) return name;
+  return `${name} Law Courts`;
+}
+
 function groupByLetter(courts: BailCourtWithRegion[]) {
   const grouped = courts.reduce((acc, c) => {
     const letter = /[A-Z]/.test(c.name[0]) ? c.name[0].toUpperCase() : '#';
@@ -151,7 +156,7 @@ function FilterModalContent({ regionFilter, onRegionChange }: {
 function BailCourtListItem({ court, onClick }: { court: BailCourtWithRegion; onClick: () => void }) {
   return (
     <button onClick={onClick} className="w-full text-left px-4 py-3 border-b border-slate-700/30 last:border-b-0 hover:bg-slate-800/30 active:bg-slate-800/50">
-      <div className="text-sm font-medium text-slate-200 mb-1.5">{court.name}</div>
+      <div className="text-sm font-medium text-slate-200 mb-1.5">{getBailCourtDisplayName(court.name)}</div>
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="px-2 py-1 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
           <span>{REGION_CODE[court.region_id] || 'R?'}</span>
@@ -214,6 +219,7 @@ export function BailHubsIndexPage() {
       const q = searchQuery.toLowerCase();
       result = result.filter(c => 
         c.name.toLowerCase().includes(q) || 
+        getBailCourtDisplayName(c.name).toLowerCase().includes(q) ||
         c.region_name.toLowerCase().includes(q) ||
         c.notes?.toLowerCase().includes(q)
       );
