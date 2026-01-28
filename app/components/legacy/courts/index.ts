@@ -1,1 +1,0 @@
-export { CourtsIndexPage } from './CourtsIndexPage';
