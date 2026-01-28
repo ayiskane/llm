@@ -6,8 +6,7 @@ import { FaMagnifyingGlass, FaXmark, FaSliders, FaBuildingShield } from '@/lib/i
 import { AlphabetNav, FilterModal } from '@/app/components/ui';
 import { cn } from '@/lib/config/theme';
 import { REGION_COLORS } from '@/lib/config/constants';
-import { useCorrectionalCentres } from '@/lib/hooks/useCorrectionsCentres';
-import type { CorrectionalCentre } from '@/lib/hooks/useCorrectionsCentres';
+import type { CorrectionalCentre } from '@/types';
 
 // =============================================================================
 // CONSTANTS
@@ -193,10 +192,14 @@ function LetterSection({ letter, centres, onCentreClick }: {
 // MAIN COMPONENT
 // =============================================================================
 
-export function CorrectionsIndexPage() {
+interface CorrectionsIndexPageProps {
+  initialCentres: CorrectionalCentre[];
+}
+
+export function CorrectionsIndexPage({ initialCentres }: CorrectionsIndexPageProps) {
   const router = useRouter();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { centres, isLoading, error } = useCorrectionalCentres();
+  const centres = initialCentres;
   const [filters, setFilters] = useState<Filters>({ region: 0, jurisdiction: 'all' });
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -251,28 +254,6 @@ export function CorrectionsIndexPage() {
       section.scrollIntoView({ behavior: 'auto', block: 'start' });
     }
   }, []);
-
-  if (isLoading) {
-    return (
-      <div className="h-full bg-slate-950 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-          <p className="text-slate-400 text-sm">Loading centres...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="h-full bg-slate-950 flex items-center justify-center p-4">
-        <div className="text-center">
-          <p className="text-red-400 mb-2">Failed to load centres</p>
-          <p className="text-slate-500 text-sm">{error}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="h-full flex flex-col bg-slate-950">

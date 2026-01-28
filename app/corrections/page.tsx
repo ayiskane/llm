@@ -1,18 +1,11 @@
-import { Suspense } from 'react';
+import { fetchCorrectionalCentresServer } from '@/lib/api/server';
 import { CorrectionsIndexPage } from '@/app/components/corrections';
 
-function LoadingFallback() {
-  return (
-    <div className="h-screen bg-[hsl(222.2,84%,4.9%)] flex items-center justify-center">
-      <div className="text-slate-400">Loading corrections centres...</div>
-    </div>
-  );
-}
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
 
-export default function CorrectionsPage() {
-  return (
-    <Suspense fallback={<LoadingFallback />}>
-      <CorrectionsIndexPage />
-    </Suspense>
-  );
+export default async function CorrectionsPage() {
+  const centres = await fetchCorrectionalCentresServer();
+
+  return <CorrectionsIndexPage initialCentres={centres} />;
 }

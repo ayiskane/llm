@@ -1,18 +1,11 @@
-import { Suspense } from 'react';
+import { fetchBailCourtsServer } from '@/lib/api/server';
 import { BailHubsIndexPage } from '@/app/components/bail';
 
-function LoadingFallback() {
-  return (
-    <div className="h-screen bg-[hsl(222.2,84%,4.9%)] flex items-center justify-center">
-      <div className="text-slate-400">Loading bail hubs...</div>
-    </div>
-  );
-}
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
 
-export default function BailPage() {
-  return (
-    <Suspense fallback={<LoadingFallback />}>
-      <BailHubsIndexPage />
-    </Suspense>
-  );
+export default async function BailPage() {
+  const bailCourts = await fetchBailCourtsServer();
+
+  return <BailHubsIndexPage initialBailCourts={bailCourts} />;
 }

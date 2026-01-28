@@ -6,8 +6,7 @@ import { FaMagnifyingGlass, FaXmark, FaLocationDot, FaSliders } from '@/lib/icon
 import { AlphabetNav, FilterModal } from '@/app/components/ui';
 import { cn } from '@/lib/config/theme';
 import { REGIONS, REGION_COLORS } from '@/lib/config/constants';
-import { useCourts } from '@/lib/hooks/useCourts';
-import type { CourtWithRegionName } from '@/lib/hooks/useCourts';
+import type { CourtWithRegionName } from '@/lib/api/server';
 
 // =============================================================================
 // CONSTANTS
@@ -208,11 +207,15 @@ function LetterSection({ letter, courts, onCourtClick }: {
 // MAIN COMPONENT
 // =============================================================================
 
-export function CourtsIndexPage() {
+interface CourtsIndexPageProps {
+  initialCourts: CourtWithRegionName[];
+}
+
+export function CourtsIndexPage({ initialCourts }: CourtsIndexPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { courts, isLoading, error } = useCourts();
+  const courts = initialCourts;
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -284,28 +287,6 @@ export function CourtsIndexPage() {
   }, []);
 
   const handleCourtClick = useCallback((courtId: number) => router.push(`/court/${courtId}`), [router]);
-
-  if (isLoading) {
-    return (
-      <div className="h-full bg-slate-950 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-          <p className="text-slate-400 text-sm">Loading courts...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="h-full bg-slate-950 flex items-center justify-center p-4">
-        <div className="text-center">
-          <p className="text-red-400 mb-2">Failed to load courts</p>
-          <p className="text-slate-500 text-sm">{error}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="h-full flex flex-col bg-slate-950">

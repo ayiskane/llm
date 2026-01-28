@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FaMagnifyingGlass, FaXmark, FaScaleBalanced } from '@/lib/icons';
 import { cn } from '@/lib/config/theme';
 import { REGION_COLORS } from '@/lib/config/constants';
-import { useBailCourts, type BailCourtWithRegion } from '@/lib/hooks';
+import type { BailCourtWithRegion } from '@/lib/api/server';
 
 // =============================================================================
 // CONSTANTS
@@ -223,9 +223,13 @@ function WeekendList({ courts, onCourtClick }: {
 // MAIN COMPONENT
 // =============================================================================
 
-export function BailHubsIndexPage() {
+interface BailHubsIndexPageProps {
+  initialBailCourts: BailCourtWithRegion[];
+}
+
+export function BailHubsIndexPage({ initialBailCourts }: BailHubsIndexPageProps) {
   const router = useRouter();
-  const { bailCourts, isLoading, error } = useBailCourts();
+  const bailCourts = initialBailCourts;
   const [activeTab, setActiveTab] = useState<ScheduleTab>('weekday');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -245,36 +249,14 @@ export function BailHubsIndexPage() {
     // Filter by search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      result = result.filter(c => 
-        c.name.toLowerCase().includes(q) || 
+      result = result.filter(c =>
+        c.name.toLowerCase().includes(q) ||
         c.region_name.toLowerCase().includes(q) ||
         c.notes?.toLowerCase().includes(q)
       );
     }
     return result;
   }, [bailCourts, activeTab, searchQuery]);
-
-  if (isLoading) {
-    return (
-      <div className="h-full bg-slate-950 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-          <p className="text-slate-400 text-sm">Loading bail hubs...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="h-full bg-slate-950 flex items-center justify-center p-4">
-        <div className="text-center">
-          <p className="text-red-400 mb-2">Failed to load bail hubs</p>
-          <p className="text-slate-500 text-sm">{error}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="h-full flex flex-col bg-slate-950">

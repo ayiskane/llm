@@ -1,52 +1,33 @@
-'use client';
+import { notFound } from 'next/navigation';
+import { fetchCourtDetailsServer, getAllCourtIds } from '@/lib/api/server';
+import { CourtDetailPageClient } from './CourtDetailPageClient';
 
-import { useParams, useRouter } from 'next/navigation';
-import { CourtDetailPage } from '@/app/components/court';
-import { useCourtDetails } from '@/lib/hooks';
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
 
-export default function CourtPage() {
-  const params = useParams();
-  const router = useRouter();
-  const courtId = params.id ? Number(params.id) : null;
-  
-  const { data: courtDetails, isLoading, error } = useCourtDetails(courtId);
+// Generate static params for all courts at build time
+export async function generateStaticParams() {
+  const ids = await getAllCourtIds();
+  return ids.map((id) => ({ id: String(id) }));
+}
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[hsl(222.2,84%,4.9%)] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-          <p className="text-slate-400 text-sm">Loading court details...</p>
-        </div>
-      </div>
-    );
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function CourtPage({ params }: PageProps) {
+  const { id } = await params;
+  const courtId = Number(id);
+
+  if (isNaN(courtId)) {
+    notFound();
   }
 
-  // Error state
-  if (error || !courtDetails) {
-    return (
-      <div className="min-h-screen bg-[hsl(222.2,84%,4.9%)] flex items-center justify-center p-4">
-        <div className="text-center">
-          <p className="text-red-400 mb-2">Failed to load court</p>
-          <p className="text-slate-500 text-sm mb-4">{error || 'Court not found'}</p>
-          <button
-            onClick={() => router.back()}
-            className="text-blue-400 hover:text-blue-300 transition-colors"
-          >
-            ← Go back
-          </button>
-        </div>
-      </div>
-    );
+  const courtDetails = await fetchCourtDetailsServer(courtId);
+
+  if (!courtDetails) {
+    notFound();
   }
 
-  return (
-    <CourtDetailPage 
-      courtDetails={courtDetails}
-      onBack={() => router.back()}
-      onNavigateToCourt={(courtId) => router.push(`/court/${courtId}`)}
-      onNavigateToBailHub={(bailCourtId, fromName) => router.push(`/bail/${bailCourtId}?from=${encodeURIComponent(fromName)}`)}
-    />
-  );
+  return <CourtDetailPageClient courtDetails={courtDetails} />;
 }
