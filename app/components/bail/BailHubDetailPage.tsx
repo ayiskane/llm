@@ -131,10 +131,12 @@ function ScheduleList({ bailCourt }: { bailCourt: BailHubDetails['bailCourt'] })
   if (scheduleItems.length === 0) return null;
 
   return (
-    <div className={card.divided}>
-      {scheduleItems.map((item) => (
-        <ScheduleRow key={item.label} label={item.label} value={item.value!} color={item.color} />
-      ))}
+    <div className="space-y-1.5">
+      <div className={card.divided}>
+        {scheduleItems.map((item) => (
+          <ScheduleRow key={item.label} label={item.label} value={item.value!} color={item.color} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -186,10 +188,9 @@ function BailContactsStack({ bailContacts, onCopy, isCopied }: BailContactsStack
 
   return (
     <div className="space-y-2">
-      {/* Header with toggle - matches ContactCard SectionHeader pattern */}
-      <div className="flex items-center justify-between mb-2 px-1">
-        <h4 className={text.sectionHeader}>Bail Contacts</h4>
-        {(!showFull ? hasTruncation : true) && (
+      {/* Toggle button only - Section title handles the header */}
+      {(!showFull ? hasTruncation : true) && (
+        <div className="flex justify-end px-1">
           <button
             onClick={(e) => { e.stopPropagation(); setShowFull(!showFull); }}
             className={cn(toggle.base, showFull ? toggle.active : toggle.inactive)}
@@ -197,8 +198,8 @@ function BailContactsStack({ bailContacts, onCopy, isCopied }: BailContactsStack
             {showFull ? <FaEyeSlash className={iconSize.xs} /> : <FaEye className={iconSize.xs} />}
             <span>{showFull ? 'Truncate' : 'Show full'}</span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Contact rows - matches ContactRow pattern */}
       <div className={card.divided}>
@@ -270,17 +271,19 @@ function LinkedCourtsList({ courts, onCourtClick }: LinkedCourtsListProps) {
   if (courts.length === 0) return null;
 
   return (
-    <div className={card.divided}>
-      {courts.map((court) => (
-        <button
-          key={court.id}
-          onClick={() => onCourtClick(court.id)}
-          className="w-full flex items-center gap-3 py-2.5 px-3 hover:bg-slate-800/50 transition-colors text-left"
-        >
-          <FaBuilding className={cn(iconSize.md, 'text-slate-500 flex-shrink-0')} />
-          <span className="text-sm text-slate-200">{court.name}</span>
-        </button>
-      ))}
+    <div className="space-y-1.5">
+      <div className={card.divided}>
+        {courts.map((court) => (
+          <button
+            key={court.id}
+            onClick={() => onCourtClick(court.id)}
+            className="w-full flex items-center gap-3 py-2.5 px-3 hover:bg-slate-800/50 transition-colors text-left"
+          >
+            <FaBuilding className={cn(iconSize.md, 'text-slate-500 flex-shrink-0')} />
+            <span className="text-sm text-slate-200">{court.name}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
