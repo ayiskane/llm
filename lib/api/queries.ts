@@ -91,19 +91,16 @@ export async function fetchCourtById(id: number): Promise<CourtWithRegion | null
 
 export async function fetchCourtsWithRegions(): Promise<CourtWithRegionName[]> {
   const { data, error } = await supabase
-    .from('courts')
-    .select(`
-      *,
-      region:regions(id, name, code)
-    `)
+    .from('courts_with_regions')
+    .select('*')
     .order('name');
 
   if (error) throw new Error(error.message);
-  
+
   return (data || []).map((court: any) => ({
     ...court,
-    region_name: court.region?.name ?? 'Unknown',
-    region_code: court.region?.code ?? 'UNK',
+    region_name: court.region_name ?? 'Unknown',
+    region_code: court.region_code ?? 'UNK',
   }));
 }
 
@@ -240,19 +237,16 @@ export interface BailCourtWithRegion extends BailCourt {
 
 export async function fetchBailCourtsWithRegion(): Promise<BailCourtWithRegion[]> {
   const { data, error } = await supabase
-    .from('bail_courts')
-    .select(`
-      *,
-      region:regions(id, name, code)
-    `)
+    .from('bail_courts_with_regions')
+    .select('*')
     .order('name');
 
   if (error) throw new Error(error.message);
-  
+
   return (data || []).map((court: any) => ({
     ...court,
-    region_name: court.region?.name || 'Unknown',
-    region_code: court.region?.code || 'UNK',
+    region_name: court.region_name || 'Unknown',
+    region_code: court.region_code || 'UNK',
   }));
 }
 
