@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Theme Variations</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #e5e5e5;
+      padding: 24px;
+      line-height: 1.5;
+    }
+    h1 { color: white; font-size: 28px; margin-bottom: 8px; }
+    h2 { color: white; font-size: 18px; margin-bottom: 12px; }
+    .subtitle { color: #737373; margin-bottom: 32px; }
+    .themes-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 40px; }
+    @media (max-width: 900px) { .themes-grid { grid-template-columns: 1fr; } }
+
+    .theme-card {
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .theme-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .theme-name { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
+    .theme-desc { font-size: 12px; opacity: 0.6; }
+    .theme-preview { padding: 20px; }
+
+    .color-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .color-swatch {
+      flex: 1;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-family: monospace;
+    }
+
+    .demo-card {
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+    .demo-header {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .demo-title { font-weight: 500; font-size: 14px; }
+    .demo-badge {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+    .demo-content { padding: 12px 16px; }
+    .demo-text { font-size: 13px; opacity: 0.7; }
+    .demo-list-item {
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+    .demo-meta { opacity: 0.5; font-size: 12px; }
+    .demo-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      border: 1px solid;
+      margin-bottom: 12px;
+    }
+    .demo-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* ========== THEME 1: Current (Slate) ========== */
+    .theme-slate { background: #020617; }
+    .theme-slate .theme-header { background: #0f172a; border-color: rgba(51, 65, 85, 0.5); }
+    .theme-slate .theme-name { color: #f8fafc; }
+    .theme-slate .demo-card { background: rgba(30, 41, 59, 0.3); border: 1px solid rgba(51, 65, 85, 0.5); }
+    .theme-slate .demo-header { border-bottom: 1px solid rgba(51, 65, 85, 0.3); }
+    .theme-slate .demo-title { color: #f8fafc; }
+    .theme-slate .demo-badge { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .theme-slate .demo-text { color: #cbd5e1; }
+    .theme-slate .demo-list-item { border-bottom: 1px solid rgba(51, 65, 85, 0.3); color: #e2e8f0; }
+    .theme-slate .demo-list-item:last-child { border: none; }
+    .theme-slate .demo-input { background: rgba(30, 41, 59, 0.5); border-color: rgba(51, 65, 85, 0.5); color: #e2e8f0; }
+    .theme-slate .demo-input::placeholder { color: #64748b; }
+    .theme-slate .demo-btn { background: #3b82f6; color: white; }
+
+    /* ========== THEME 2: Zinc (Neutral) ========== */
+    .theme-zinc { background: #09090b; }
+    .theme-zinc .theme-header { background: #18181b; border-color: rgba(63, 63, 70, 0.5); }
+    .theme-zinc .theme-name { color: #fafafa; }
+    .theme-zinc .demo-card { background: rgba(39, 39, 42, 0.3); border: 1px solid rgba(63, 63, 70, 0.5); }
+    .theme-zinc .demo-header { border-bottom: 1px solid rgba(63, 63, 70, 0.3); }
+    .theme-zinc .demo-title { color: #fafafa; }
+    .theme-zinc .demo-badge { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+    .theme-zinc .demo-text { color: #d4d4d8; }
+    .theme-zinc .demo-list-item { border-bottom: 1px solid rgba(63, 63, 70, 0.3); color: #e4e4e7; }
+    .theme-zinc .demo-list-item:last-child { border: none; }
+    .theme-zinc .demo-input { background: rgba(39, 39, 42, 0.5); border-color: rgba(63, 63, 70, 0.5); color: #e4e4e7; }
+    .theme-zinc .demo-input::placeholder { color: #71717a; }
+    .theme-zinc .demo-btn { background: #22c55e; color: #052e16; }
+
+    /* ========== THEME 3: Stone (Warm) ========== */
+    .theme-stone { background: #0c0a09; }
+    .theme-stone .theme-header { background: #1c1917; border-color: rgba(68, 64, 60, 0.5); }
+    .theme-stone .theme-name { color: #fafaf9; }
+    .theme-stone .demo-card { background: rgba(41, 37, 36, 0.3); border: 1px solid rgba(68, 64, 60, 0.5); }
+    .theme-stone .demo-header { border-bottom: 1px solid rgba(68, 64, 60, 0.3); }
+    .theme-stone .demo-title { color: #fafaf9; }
+    .theme-stone .demo-badge { background: rgba(251, 146, 60, 0.15); color: #fb923c; }
+    .theme-stone .demo-text { color: #d6d3d1; }
+    .theme-stone .demo-list-item { border-bottom: 1px solid rgba(68, 64, 60, 0.3); color: #e7e5e4; }
+    .theme-stone .demo-list-item:last-child { border: none; }
+    .theme-stone .demo-input { background: rgba(41, 37, 36, 0.5); border-color: rgba(68, 64, 60, 0.5); color: #e7e5e4; }
+    .theme-stone .demo-input::placeholder { color: #78716c; }
+    .theme-stone .demo-btn { background: #f97316; color: #431407; }
+
+    /* ========== THEME 4: Midnight (Deep Blue) ========== */
+    .theme-midnight { background: #030712; }
+    .theme-midnight .theme-header { background: #0c1222; border-color: rgba(30, 58, 95, 0.5); }
+    .theme-midnight .theme-name { color: #f0f9ff; }
+    .theme-midnight .demo-card { background: rgba(15, 35, 64, 0.3); border: 1px solid rgba(30, 58, 95, 0.5); }
+    .theme-midnight .demo-header { border-bottom: 1px solid rgba(30, 58, 95, 0.3); }
+    .theme-midnight .demo-title { color: #f0f9ff; }
+    .theme-midnight .demo-badge { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+    .theme-midnight .demo-text { color: #bae6fd; }
+    .theme-midnight .demo-list-item { border-bottom: 1px solid rgba(30, 58, 95, 0.3); color: #e0f2fe; }
+    .theme-midnight .demo-list-item:last-child { border: none; }
+    .theme-midnight .demo-input { background: rgba(15, 35, 64, 0.5); border-color: rgba(30, 58, 95, 0.5); color: #e0f2fe; }
+    .theme-midnight .demo-input::placeholder { color: #0369a1; }
+    .theme-midnight .demo-btn { background: #0ea5e9; color: #082f49; }
+
+    .palette-section { margin-top: 40px; }
+    .palette-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .palette-card { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px; border: 1px solid rgba(255,255,255,0.08); }
+    .palette-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+    .palette-colors { display: flex; flex-direction: column; gap: 6px; }
+    .palette-color {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      font-family: monospace;
+    }
+    .palette-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .palette-label { color: #a1a1aa; }
+    .palette-hex { color: #71717a; }
+  </style>
+</head>
+<body>
+  <h1>Theme Variations</h1>
+  <p class="subtitle">4 dark theme options based on current design trends</p>
+
+  <div class="themes-grid">
+    <!-- THEME 1: Current Slate -->
+    <div class="theme-card theme-slate">
+      <div class="theme-header">
+        <div class="theme-name">1. Slate (Current)</div>
+        <div class="theme-desc">Cool blue-gray tones • Professional & modern</div>
+      </div>
+      <div class="theme-preview">
+        <div class="color-row">
+          <div class="color-swatch" style="background: #020617; color: #64748b;">#020617</div>
+          <div class="color-swatch" style="background: #0f172a; color: #64748b;">#0f172a</div>
+          <div class="color-swatch" style="background: #1e293b; color: #94a3b8;">#1e293b</div>
+          <div class="color-swatch" style="background: #334155; color: #cbd5e1;">#334155</div>
+        </div>
+        <input type="text" class="demo-input" placeholder="Search courts...">
+        <div class="demo-card">
+          <div class="demo-header">
+            <span class="demo-title">Vancouver Law Courts</span>
+            <span class="demo-badge">Provincial</span>
+          </div>
+          <div class="demo-list-item">
+            <span>Criminal Division</span>
+            <span class="demo-meta">Room 201</span>
+          </div>
+          <div class="demo-list-item">
+            <span>Family Division</span>
+            <span class="demo-meta">Room 305</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THEME 2: Zinc -->
+    <div class="theme-card theme-zinc">
+      <div class="theme-header">
+        <div class="theme-name">2. Zinc (Neutral)</div>
+        <div class="theme-desc">Pure neutral grays • Clean & minimal</div>
+      </div>
+      <div class="theme-preview">
+        <div class="color-row">
+          <div class="color-swatch" style="background: #09090b; color: #71717a;">#09090b</div>
+          <div class="color-swatch" style="background: #18181b; color: #71717a;">#18181b</div>
+          <div class="color-swatch" style="background: #27272a; color: #a1a1aa;">#27272a</div>
+          <div class="color-swatch" style="background: #3f3f46; color: #d4d4d8;">#3f3f46</div>
+        </div>
+        <input type="text" class="demo-input" placeholder="Search courts...">
+        <div class="demo-card">
+          <div class="demo-header">
+            <span class="demo-title">Vancouver Law Courts</span>
+            <span class="demo-badge">Provincial</span>
+          </div>
+          <div class="demo-list-item">
+            <span>Criminal Division</span>
+            <span class="demo-meta">Room 201</span>
+          </div>
+          <div class="demo-list-item">
+            <span>Family Division</span>
+            <span class="demo-meta">Room 305</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THEME 3: Stone -->
+    <div class="theme-card theme-stone">
+      <div class="theme-header">
+        <div class="theme-name">3. Stone (Warm)</div>
+        <div class="theme-desc">Warm brown-gray tones • Softer feel</div>
+      </div>
+      <div class="theme-preview">
+        <div class="color-row">
+          <div class="color-swatch" style="background: #0c0a09; color: #78716c;">#0c0a09</div>
+          <div class="color-swatch" style="background: #1c1917; color: #78716c;">#1c1917</div>
+          <div class="color-swatch" style="background: #292524; color: #a8a29e;">#292524</div>
+          <div class="color-swatch" style="background: #44403c; color: #d6d3d1;">#44403c</div>
+        </div>
+        <input type="text" class="demo-input" placeholder="Search courts...">
+        <div class="demo-card">
+          <div class="demo-header">
+            <span class="demo-title">Vancouver Law Courts</span>
+            <span class="demo-badge">Provincial</span>
+          </div>
+          <div class="demo-list-item">
+            <span>Criminal Division</span>
+            <span class="demo-meta">Room 201</span>
+          </div>
+          <div class="demo-list-item">
+            <span>Family Division</span>
+            <span class="demo-meta">Room 305</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THEME 4: Midnight -->
+    <div class="theme-card theme-midnight">
+      <div class="theme-header">
+        <div class="theme-name">4. Midnight (Deep Blue)</div>
+        <div class="theme-desc">Rich navy tones • Premium & immersive</div>
+      </div>
+      <div class="theme-preview">
+        <div class="color-row">
+          <div class="color-swatch" style="background: #030712; color: #0369a1;">#030712</div>
+          <div class="color-swatch" style="background: #0c1222; color: #0369a1;">#0c1222</div>
+          <div class="color-swatch" style="background: #0f2340; color: #38bdf8;">#0f2340</div>
+          <div class="color-swatch" style="background: #1e3a5f; color: #7dd3fc;">#1e3a5f</div>
+        </div>
+        <input type="text" class="demo-input" placeholder="Search courts...">
+        <div class="demo-card">
+          <div class="demo-header">
+            <span class="demo-title">Vancouver Law Courts</span>
+            <span class="demo-badge">Provincial</span>
+          </div>
+          <div class="demo-list-item">
+            <span>Criminal Division</span>
+            <span class="demo-meta">Room 201</span>
+          </div>
+          <div class="demo-list-item">
+            <span>Family Division</span>
+            <span class="demo-meta">Room 305</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full Palette Reference -->
+  <div class="palette-section">
+    <h2>Full Color Palettes</h2>
+    <p class="subtitle" style="margin-bottom: 20px;">Complete token mappings for each theme</p>
+
+    <div class="palette-grid">
+      <!-- Slate Palette -->
+      <div class="palette-card">
+        <div class="palette-title" style="color: #60a5fa;">Slate (Current)</div>
+        <div class="palette-colors">
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #020617;"></div>
+            <span class="palette-label">page</span>
+            <span class="palette-hex">#020617</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #0f172a;"></div>
+            <span class="palette-label">panel</span>
+            <span class="palette-hex">#0f172a</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #1e293b;"></div>
+            <span class="palette-label">modal</span>
+            <span class="palette-hex">#1e293b</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #334155;"></div>
+            <span class="palette-label">border</span>
+            <span class="palette-hex">#334155</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #3b82f6;"></div>
+            <span class="palette-label">accent</span>
+            <span class="palette-hex">#3b82f6</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zinc Palette -->
+      <div class="palette-card">
+        <div class="palette-title" style="color: #4ade80;">Zinc (Neutral)</div>
+        <div class="palette-colors">
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #09090b;"></div>
+            <span class="palette-label">page</span>
+            <span class="palette-hex">#09090b</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #18181b;"></div>
+            <span class="palette-label">panel</span>
+            <span class="palette-hex">#18181b</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #27272a;"></div>
+            <span class="palette-label">modal</span>
+            <span class="palette-hex">#27272a</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #3f3f46;"></div>
+            <span class="palette-label">border</span>
+            <span class="palette-hex">#3f3f46</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #22c55e;"></div>
+            <span class="palette-label">accent</span>
+            <span class="palette-hex">#22c55e</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stone Palette -->
+      <div class="palette-card">
+        <div class="palette-title" style="color: #fb923c;">Stone (Warm)</div>
+        <div class="palette-colors">
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #0c0a09;"></div>
+            <span class="palette-label">page</span>
+            <span class="palette-hex">#0c0a09</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #1c1917;"></div>
+            <span class="palette-label">panel</span>
+            <span class="palette-hex">#1c1917</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #292524;"></div>
+            <span class="palette-label">modal</span>
+            <span class="palette-hex">#292524</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #44403c;"></div>
+            <span class="palette-label">border</span>
+            <span class="palette-hex">#44403c</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #f97316;"></div>
+            <span class="palette-label">accent</span>
+            <span class="palette-hex">#f97316</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Midnight Palette -->
+      <div class="palette-card">
+        <div class="palette-title" style="color: #38bdf8;">Midnight (Deep Blue)</div>
+        <div class="palette-colors">
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #030712;"></div>
+            <span class="palette-label">page</span>
+            <span class="palette-hex">#030712</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #0c1222;"></div>
+            <span class="palette-label">panel</span>
+            <span class="palette-hex">#0c1222</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #0f2340;"></div>
+            <span class="palette-label">modal</span>
+            <span class="palette-hex">#0f2340</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #1e3a5f;"></div>
+            <span class="palette-label">border</span>
+            <span class="palette-hex">#1e3a5f</span>
+          </div>
+          <div class="palette-color">
+            <div class="palette-dot" style="background: #0ea5e9;"></div>
+            <span class="palette-label">accent</span>
+            <span class="palette-hex">#0ea5e9</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recommendations -->
+  <div style="margin-top: 40px; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+    <h2 style="margin-bottom: 16px;">Recommendations</h2>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; font-size: 13px; color: #a1a1aa;">
+      <div>
+        <strong style="color: #60a5fa;">Keep Slate if:</strong>
+        <ul style="margin-top: 8px; padding-left: 20px;">
+          <li>You want a professional, corporate feel</li>
+          <li>Blue accents work well with your brand</li>
+          <li>Current design is working well</li>
+        </ul>
+      </div>
+      <div>
+        <strong style="color: #4ade80;">Try Zinc if:</strong>
+        <ul style="margin-top: 8px; padding-left: 20px;">
+          <li>You want a cleaner, more minimal look</li>
+          <li>True neutral grays feel more modern</li>
+          <li>Green accents fit your use case</li>
+        </ul>
+      </div>
+      <div>
+        <strong style="color: #fb923c;">Try Stone if:</strong>
+        <ul style="margin-top: 8px; padding-left: 20px;">
+          <li>You want a warmer, softer feel</li>
+          <li>Less clinical, more approachable</li>
+          <li>Orange/amber accents work for you</li>
+        </ul>
+      </div>
+      <div>
+        <strong style="color: #38bdf8;">Try Midnight if:</strong>
+        <ul style="margin-top: 8px; padding-left: 20px;">
+          <li>You want a premium, immersive feel</li>
+          <li>Deep blues feel more sophisticated</li>
+          <li>Cyan/sky accents appeal to you</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <p style="margin-top: 32px; font-size: 11px; color: #52525b;">
+    Sources:
+    <a href="https://ui.shadcn.com/colors" style="color: #60a5fa;">shadcn/ui Colors</a> •
+    <a href="https://blog.karenying.com/posts/50-shades-of-dark-mode-gray/" style="color: #60a5fa;">50 Shades of Dark Mode Gray</a> •
+    <a href="https://www.designstudiouiux.com/blog/dark-mode-ui-design-best-practices/" style="color: #60a5fa;">Dark Mode UI Best Practices 2026</a> •
+    <a href="https://atmos.style/blog/dark-mode-ui-best-practices" style="color: #60a5fa;">Atmos Dark Mode Guide</a>
+  </p>
+</body>
+</html>

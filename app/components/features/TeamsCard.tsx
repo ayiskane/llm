@@ -41,7 +41,7 @@ export function TeamsCard({ link, onCopy, isCopied }: TeamsCardProps) {
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <FaMicrosoftTeams className={cn(iconSize.md, 'text-slate-400 flex-shrink-0')} />
-          <span className={cn(text.secondary, 'text-sm font-medium truncate')}>{displayName}</span>
+          <span className={cn(text.body, 'text-sm font-medium truncate')}>{displayName}</span>
         </div>
         
         <div className="flex items-center gap-2 shrink-0">

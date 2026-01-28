@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Theme Color Comparison - Current vs Proposed</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #020617;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .color-swatch {
+      width: 60px;
+      height: 40px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #64748b;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+    }
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+    }
+    .color-name {
+      width: 180px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    .color-value {
+      font-family: monospace;
+      font-size: 11px;
+      color: #64748b;
+      width: 140px;
+    }
+    .usage-count {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+    }
+    .duplicate-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+    }
+    .proposed-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+    .card {
+      background: rgba(30, 41, 59, 0.3);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .comparison-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="p-6 max-w-6xl mx-auto">
+  <h1 class="text-2xl font-bold mb-2">Theme Color System Analysis</h1>
+  <p class="text-slate-400 text-sm mb-8">Current usage patterns and proposed consolidation</p>
+
+  <!-- SURFACE COLORS -->
+  <div class="card">
+    <div class="section-title">Surface / Background Colors</div>
+    <p class="text-xs text-slate-500 mb-4">Multiple tokens map to the same underlying colors</p>
+
+    <div class="comparison-grid">
+      <!-- Current -->
+      <div>
+        <div class="text-xs text-amber-400 mb-3 font-medium">CURRENT (Duplicates)</div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: rgba(30, 41, 59, 0.5)"></div>
+          <div class="color-name">bg-slate-800/50</div>
+          <div class="color-value">rgba(30,41,59,0.5)</div>
+          <span class="usage-count">39x</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: rgba(30, 41, 59, 0.3)"></div>
+          <div class="color-name">bg-slate-800/30</div>
+          <div class="color-value">rgba(30,41,59,0.3)</div>
+          <span class="usage-count">21x</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: rgba(30, 41, 59, 0.2)"></div>
+          <div class="color-name">bg-slate-800/20</div>
+          <div class="color-value">rgba(30,41,59,0.2)</div>
+          <span class="usage-count">8x</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: rgba(30, 41, 59, 0.8)"></div>
+          <div class="color-name">bg-slate-800/80</div>
+          <div class="color-value">rgba(30,41,59,0.8)</div>
+          <span class="usage-count">6x</span>
+        </div>
+
+        <div class="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+          <div class="text-xs text-amber-400 font-medium mb-1">Issue: Same color, different tokens</div>
+          <div class="text-xs text-slate-400">
+            surface.interactive = bg-slate-800/50<br>
+            surface.input = bg-slate-800/50<br>
+            surface.cardHover = bg-slate-800/50<br>
+            input.base uses bg-slate-800/50<br>
+            button.secondary uses bg-slate-800/50
+          </div>
+        </div>
+      </div>
+
+      <!-- Proposed -->
+      <div>
+        <div class="text-xs text-emerald-400 mb-3 font-medium">PROPOSED (Consolidated)</div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: rgba(30, 41, 59, 0.5)"></div>
+          <div class="color-name">surface.interactive</div>
+          <div class="color-value">--surface-interactive</div>
+          <span class="proposed-badge">Single source</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: rgba(30, 41, 59, 0.3)"></div>
+          <div class="color-name">surface.card</div>
+          <div class="color-value">--surface-card</div>
+          <span class="proposed-badge">Single source</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: rgba(30, 41, 59, 0.2)"></div>
+          <div class="color-name">surface.subtle</div>
+          <div class="color-value">--surface-subtle</div>
+          <span class="proposed-badge">Single source</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: rgba(30, 41, 59, 0.8)"></div>
+          <div class="color-name">surface.elevated</div>
+          <div class="color-value">--surface-elevated</div>
+          <span class="proposed-badge">Single source</span>
+        </div>
+
+        <div class="mt-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+          <div class="text-xs text-emerald-400 font-medium mb-1">Benefit: Semantic naming</div>
+          <div class="text-xs text-slate-400">
+            All inputs, buttons, cards use the same<br>
+            CSS variable. Change once, update everywhere.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEXT COLORS -->
+  <div class="card">
+    <div class="section-title">Text Colors - Typography Hierarchy</div>
+    <p class="text-xs text-slate-500 mb-4">82+ raw color usages could use semantic tokens</p>
+
+    <div class="comparison-grid">
+      <!-- Current -->
+      <div>
+        <div class="text-xs text-amber-400 mb-3 font-medium">CURRENT (Raw Tailwind)</div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: #ffffff"></div>
+          <div class="color-name">text-white</div>
+          <div class="color-value">#ffffff</div>
+          <span class="usage-count">~30x</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: #e2e8f0"></div>
+          <div class="color-name">text-slate-200</div>
+          <div class="color-value">#e2e8f0</div>
+          <span class="usage-count">~25x</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: #cbd5e1"></div>
+          <div class="color-name">text-slate-300</div>
+          <div class="color-value">#cbd5e1</div>
+          <span class="usage-count">29x</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: #94a3b8"></div>
+          <div class="color-name">text-slate-400</div>
+          <div class="color-value">#94a3b8</div>
+          <span class="usage-count">82x</span>
+          <span class="duplicate-badge">Most used!</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: #64748b"></div>
+          <div class="color-name">text-slate-500</div>
+          <div class="color-value">#64748b</div>
+          <span class="usage-count">71x</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: #475569"></div>
+          <div class="color-name">text-slate-600</div>
+          <div class="color-value">#475569</div>
+          <span class="usage-count">~15x</span>
+        </div>
+      </div>
+
+      <!-- Proposed -->
+      <div>
+        <div class="text-xs text-emerald-400 mb-3 font-medium">PROPOSED (Semantic Tokens)</div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: #ffffff"></div>
+          <div class="color-name">text.primary</div>
+          <div class="color-value">--text-primary</div>
+          <span class="proposed-badge">Headings</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: #e2e8f0"></div>
+          <div class="color-name">text.secondary</div>
+          <div class="color-value">--text-secondary</div>
+          <span class="proposed-badge">Body text</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: #cbd5e1"></div>
+          <div class="color-name">text.tertiary</div>
+          <div class="color-value">--text-tertiary</div>
+          <span class="proposed-badge">Secondary info</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: #94a3b8"></div>
+          <div class="color-name">text.muted</div>
+          <div class="color-value">--text-muted</div>
+          <span class="proposed-badge">Labels, hints</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: #64748b"></div>
+          <div class="color-name">text.subtle</div>
+          <div class="color-value">--text-subtle</div>
+          <span class="proposed-badge">Placeholders</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: #475569"></div>
+          <div class="color-name">text.disabled</div>
+          <div class="color-value">--text-disabled</div>
+          <span class="proposed-badge">Disabled</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BORDER COLORS -->
+  <div class="card">
+    <div class="section-title">Border Colors</div>
+    <p class="text-xs text-slate-500 mb-4">67+ border usages with similar patterns</p>
+
+    <div class="comparison-grid">
+      <!-- Current -->
+      <div>
+        <div class="text-xs text-amber-400 mb-3 font-medium">CURRENT</div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: transparent; border: 2px solid rgba(51, 65, 85, 0.5)"></div>
+          <div class="color-name">border-slate-700/50</div>
+          <div class="color-value">rgba(51,65,85,0.5)</div>
+          <span class="usage-count">43x</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: transparent; border: 2px solid rgba(51, 65, 85, 0.3)"></div>
+          <div class="color-name">border-slate-700/30</div>
+          <div class="color-value">rgba(51,65,85,0.3)</div>
+          <span class="usage-count">24x</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: transparent; border: 2px solid rgba(30, 41, 59, 0.5)"></div>
+          <div class="color-name">border-slate-800/50</div>
+          <div class="color-value">rgba(30,41,59,0.5)</div>
+          <span class="usage-count">12x</span>
+        </div>
+      </div>
+
+      <!-- Proposed -->
+      <div>
+        <div class="text-xs text-emerald-400 mb-3 font-medium">PROPOSED</div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: transparent; border: 2px solid rgba(51, 65, 85, 0.5)"></div>
+          <div class="color-name">border.default</div>
+          <div class="color-value">--border-default</div>
+          <span class="proposed-badge">Cards, inputs</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: transparent; border: 2px solid rgba(51, 65, 85, 0.3)"></div>
+          <div class="color-name">border.subtle</div>
+          <div class="color-value">--border-subtle</div>
+          <span class="proposed-badge">Dividers</span>
+        </div>
+
+        <div class="color-row">
+          <div class="color-swatch" style="background: transparent; border: 2px solid rgba(30, 41, 59, 0.5)"></div>
+          <div class="color-name">border.muted</div>
+          <div class="color-value">--border-muted</div>
+          <span class="proposed-badge">Section headers</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCENT COLORS -->
+  <div class="card">
+    <div class="section-title">Accent Colors - Already Well Organized</div>
+    <p class="text-xs text-slate-500 mb-4">These are already in sectionColorMap - no changes needed</p>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div>
+        <div class="color-row flex-col items-start gap-2">
+          <div class="color-swatch w-full h-12" style="background: rgba(59, 130, 246, 0.15)"></div>
+          <div class="text-xs text-blue-400">Blue (Primary)</div>
+          <div class="text-xs text-slate-500">bg-blue-500/15</div>
+        </div>
+      </div>
+      <div>
+        <div class="color-row flex-col items-start gap-2">
+          <div class="color-swatch w-full h-12" style="background: rgba(16, 185, 129, 0.15)"></div>
+          <div class="text-xs text-emerald-400">Emerald (Success)</div>
+          <div class="text-xs text-slate-500">bg-emerald-500/15</div>
+        </div>
+      </div>
+      <div>
+        <div class="color-row flex-col items-start gap-2">
+          <div class="color-swatch w-full h-12" style="background: rgba(245, 158, 11, 0.15)"></div>
+          <div class="text-xs text-amber-400">Amber (Warning)</div>
+          <div class="text-xs text-slate-500">bg-amber-500/15</div>
+        </div>
+      </div>
+      <div>
+        <div class="color-row flex-col items-start gap-2">
+          <div class="color-swatch w-full h-12" style="background: rgba(244, 63, 94, 0.15)"></div>
+          <div class="text-xs text-rose-400">Rose (Danger)</div>
+          <div class="text-xs text-slate-500">bg-rose-500/15</div>
+        </div>
+      </div>
+      <div>
+        <div class="color-row flex-col items-start gap-2">
+          <div class="color-swatch w-full h-12" style="background: rgba(168, 85, 247, 0.15)"></div>
+          <div class="text-xs text-purple-400">Purple</div>
+          <div class="text-xs text-slate-500">bg-purple-500/15</div>
+        </div>
+      </div>
+      <div>
+        <div class="color-row flex-col items-start gap-2">
+          <div class="color-swatch w-full h-12" style="background: rgba(99, 102, 241, 0.15)"></div>
+          <div class="text-xs text-indigo-400">Indigo</div>
+          <div class="text-xs text-slate-500">bg-indigo-500/15</div>
+        </div>
+      </div>
+      <div>
+        <div class="color-row flex-col items-start gap-2">
+          <div class="color-swatch w-full h-12" style="background: rgba(14, 165, 233, 0.15)"></div>
+          <div class="text-xs text-sky-400">Sky (Info)</div>
+          <div class="text-xs text-slate-500">bg-sky-500/15</div>
+        </div>
+      </div>
+      <div>
+        <div class="color-row flex-col items-start gap-2">
+          <div class="color-swatch w-full h-12" style="background: rgba(100, 116, 139, 0.15)"></div>
+          <div class="text-xs text-slate-400">Slate</div>
+          <div class="text-xs text-slate-500">bg-slate-500/15</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1))">
+    <div class="section-title">Summary: Optimization Opportunities</div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="p-4 rounded-lg bg-slate-900/50">
+        <div class="text-3xl font-bold text-amber-400 mb-1">200+</div>
+        <div class="text-sm text-slate-300">Raw color usages</div>
+        <div class="text-xs text-slate-500 mt-1">Could use semantic tokens</div>
+      </div>
+
+      <div class="p-4 rounded-lg bg-slate-900/50">
+        <div class="text-3xl font-bold text-amber-400 mb-1">5</div>
+        <div class="text-sm text-slate-300">Duplicate surface colors</div>
+        <div class="text-xs text-slate-500 mt-1">Same value, different names</div>
+      </div>
+
+      <div class="p-4 rounded-lg bg-slate-900/50">
+        <div class="text-3xl font-bold text-emerald-400 mb-1">~60%</div>
+        <div class="text-sm text-slate-300">Potential reduction</div>
+        <div class="text-xs text-slate-500 mt-1">In unique color definitions</div>
+      </div>
+    </div>
+
+    <div class="mt-6 p-4 rounded-lg bg-slate-800/30 border border-slate-700/30">
+      <div class="text-sm font-medium text-slate-200 mb-2">Recommended Actions:</div>
+      <ol class="text-xs text-slate-400 space-y-1 list-decimal list-inside">
+        <li>Replace raw <code class="text-blue-400">text-slate-400</code> with <code class="text-emerald-400">text.muted</code> (82 occurrences)</li>
+        <li>Replace raw <code class="text-blue-400">text-slate-500</code> with <code class="text-emerald-400">text.subtle</code> (71 occurrences)</li>
+        <li>Replace raw <code class="text-blue-400">bg-slate-800/50</code> with <code class="text-emerald-400">surface.interactive</code> (39 occurrences)</li>
+        <li>Consolidate duplicate token definitions in theme.ts</li>
+        <li>Remove unused CSS variables or wire them to Tailwind utilities</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- LIVE PREVIEW -->
+  <div class="card">
+    <div class="section-title">Live Component Preview</div>
+    <p class="text-xs text-slate-500 mb-4">How components look with the current color system</p>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <!-- Card Example -->
+      <div>
+        <div class="text-xs text-slate-500 mb-2">Card Component</div>
+        <div style="background: rgba(30, 41, 59, 0.3); border: 1px solid rgba(51, 65, 85, 0.5); border-radius: 8px; overflow: hidden;">
+          <div style="padding: 12px; border-bottom: 1px solid rgba(51, 65, 85, 0.3); display: flex; align-items: center; gap: 8px;">
+            <span style="color: #e2e8f0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Contacts</span>
+            <span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-size: 11px;">5</span>
+          </div>
+          <div style="padding: 12px;">
+            <div style="color: #e2e8f0; font-size: 14px; margin-bottom: 4px;">John Smith</div>
+            <div style="color: #94a3b8; font-size: 12px;">Court Clerk</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Example -->
+      <div>
+        <div class="text-xs text-slate-500 mb-2">Input Component</div>
+        <div style="position: relative;">
+          <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path></svg>
+          </div>
+          <input
+            type="text"
+            placeholder="Search courts..."
+            style="width: 100%; background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(51, 65, 85, 0.5); border-radius: 12px; padding: 12px 12px 12px 40px; color: #e2e8f0; font-size: 14px;"
+          >
+        </div>
+      </div>
+
+      <!-- List Item Example -->
+      <div>
+        <div class="text-xs text-slate-500 mb-2">List Item Component</div>
+        <div style="background: rgba(30, 41, 59, 0.2);">
+          <div style="padding: 12px 16px; border-bottom: 1px solid rgba(51, 65, 85, 0.3);">
+            <div style="color: #e2e8f0; font-size: 14px; margin-bottom: 6px;">Vancouver Law Courts</div>
+            <div style="display: flex; gap: 6px;">
+              <span style="background: rgba(255,255,255,0.05); border: 1px solid rgba(51, 65, 85, 0.5); color: #94a3b8; padding: 4px 8px; border-radius: 4px; font-size: 9px; font-family: monospace; text-transform: uppercase; letter-spacing: 1px;">R2 | Vancouver Coastal</span>
+              <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 4px 6px; border-radius: 4px; font-size: 10px;">PC</span>
+              <span style="background: rgba(168, 85, 247, 0.15); color: #c084fc; padding: 4px 6px; border-radius: 4px; font-size: 10px;">SC</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Button Examples -->
+      <div>
+        <div class="text-xs text-slate-500 mb-2">Button Components</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button style="background: #3b82f6; color: white; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500;">Primary</button>
+          <button style="background: rgba(30, 41, 59, 0.5); color: #cbd5e1; border: 1px solid rgba(51, 65, 85, 0.5); padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500;">Secondary</button>
+          <button style="background: transparent; color: #94a3b8; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500;">Ghost</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

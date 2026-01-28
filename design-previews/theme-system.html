@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Design Token System</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* Slate palette */
+      --slate-950: #020617;
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-400: #94a3b8;
+      --slate-300: #cbd5e1;
+      --slate-200: #e2e8f0;
+
+      /* Accent colors */
+      --blue-500: #3b82f6;
+      --blue-400: #60a5fa;
+      --blue-300: #93c5fd;
+      --emerald-500: #10b981;
+      --emerald-400: #34d399;
+      --amber-500: #f59e0b;
+      --amber-400: #fbbf24;
+      --rose-500: #f43f5e;
+      --rose-400: #fb7185;
+      --purple-500: #a855f7;
+      --purple-400: #c084fc;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--slate-950);
+      color: var(--slate-200);
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    h1 { color: white; font-size: 28px; margin-bottom: 8px; }
+    h2 { color: white; font-size: 20px; margin: 32px 0 16px; border-bottom: 1px solid rgba(51, 65, 85, 0.5); padding-bottom: 8px; }
+    h3 { color: var(--slate-300); font-size: 14px; margin: 24px 0 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+    .subtitle { color: var(--slate-400); margin-bottom: 32px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+    .token-card {
+      background: rgba(30, 41, 59, 0.3);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .token-name { font-family: monospace; font-size: 12px; color: var(--blue-400); margin-bottom: 8px; }
+    .token-value { font-family: monospace; font-size: 10px; color: var(--slate-500); margin-top: 8px; }
+    .token-desc { font-size: 11px; color: var(--slate-400); margin-top: 4px; }
+
+    .swatch {
+      height: 48px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--slate-400);
+    }
+
+    .text-sample { padding: 8px 0; }
+
+    /* Component examples */
+    .example-section { margin: 16px 0; }
+
+    .demo-card {
+      background: rgba(30, 41, 59, 0.3);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .demo-card-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .demo-card-content { padding: 16px; }
+
+    .demo-list-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .demo-list-item:last-child { border-bottom: none; }
+    .demo-list-item:hover { background: rgba(30, 41, 59, 0.3); }
+
+    .demo-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+    }
+
+    .btn-primary { background: var(--blue-500); color: white; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-secondary { background: rgba(30, 41, 59, 0.5); color: var(--slate-300); border: 1px solid rgba(51, 65, 85, 0.5); }
+    .btn-secondary:hover { background: rgba(30, 41, 59, 0.7); }
+    .btn-ghost { background: transparent; color: var(--slate-400); }
+    .btn-ghost:hover { background: rgba(30, 41, 59, 0.5); color: white; }
+
+    .demo-input {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      border-radius: 12px;
+      color: var(--slate-200);
+      font-size: 14px;
+    }
+    .demo-input::placeholder { color: var(--slate-500); }
+    .demo-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4); border-color: transparent; }
+
+    .demo-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-family: monospace;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .demo-badge {
+      display: inline-flex;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .demo-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .demo-filter-chip {
+      display: inline-flex;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .flex { display: flex; }
+    .flex-wrap { flex-wrap: wrap; }
+    .gap-2 { gap: 8px; }
+    .gap-3 { gap: 12px; }
+    .items-center { align-items: center; }
+    .mb-2 { margin-bottom: 8px; }
+    .mb-3 { margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <h1>LLM Design Token System</h1>
+  <p class="subtitle">Centralized design tokens for consistent styling</p>
+
+  <!-- SURFACE TOKENS -->
+  <h2>Surface Tokens</h2>
+  <p style="color: var(--slate-400); font-size: 13px; margin-bottom: 16px;">Background colors for different UI layers</p>
+
+  <h3>Page-Level Backgrounds</h3>
+  <div class="grid-3">
+    <div class="token-card">
+      <div class="token-name">surface.page</div>
+      <div class="swatch" style="background: var(--slate-950);">bg-slate-950</div>
+      <div class="token-desc">Main page background</div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">surface.panel</div>
+      <div class="swatch" style="background: var(--slate-900);">bg-slate-900</div>
+      <div class="token-desc">Raised panels, sidebars</div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">surface.modal</div>
+      <div class="swatch" style="background: var(--slate-800);">bg-slate-800</div>
+      <div class="token-desc">Modals, dropdowns, popovers</div>
+    </div>
+  </div>
+
+  <h3>Card Backgrounds (Transparent Layers)</h3>
+  <div class="grid-3">
+    <div class="token-card">
+      <div class="token-name">surface.card</div>
+      <div class="swatch" style="background: rgba(30, 41, 59, 0.3);">bg-slate-800/30</div>
+      <div class="token-desc">Default card background</div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">surface.cardHover</div>
+      <div class="swatch" style="background: rgba(30, 41, 59, 0.5);">hover:bg-slate-800/50</div>
+      <div class="token-desc">Card hover state</div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">surface.cardPressed</div>
+      <div class="swatch" style="background: rgba(30, 41, 59, 0.8);">bg-slate-800/80</div>
+      <div class="token-desc">Card active/pressed state</div>
+    </div>
+  </div>
+
+  <h3>Control Backgrounds</h3>
+  <div class="grid-3">
+    <div class="token-card">
+      <div class="token-name">surface.control</div>
+      <div class="swatch" style="background: rgba(30, 41, 59, 0.5);">bg-slate-800/50</div>
+      <div class="token-desc">Input fields, controls</div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">surface.controlHover</div>
+      <div class="swatch" style="background: rgba(30, 41, 59, 0.7);">hover:bg-slate-800/70</div>
+      <div class="token-desc">Control hover state</div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">surface.header</div>
+      <div class="swatch" style="background: var(--slate-950);">bg-slate-950</div>
+      <div class="token-desc">Sticky headers, nav bars</div>
+    </div>
+  </div>
+
+  <!-- TEXT TOKENS -->
+  <h2>Text Tokens</h2>
+  <p style="color: var(--slate-400); font-size: 13px; margin-bottom: 16px;">Typography hierarchy for content</p>
+
+  <div class="token-card" style="max-width: 500px;">
+    <div class="text-sample" style="color: white; font-size: 18px; font-weight: 600;">
+      <span class="token-name" style="display: inline;">text.heading</span> - Page Title
+    </div>
+    <div class="text-sample" style="color: var(--slate-200);">
+      <span class="token-name" style="display: inline;">text.body</span> - Main readable content goes here
+    </div>
+    <div class="text-sample" style="color: var(--slate-300);">
+      <span class="token-name" style="display: inline;">text.label</span> - Field labels, secondary info
+    </div>
+    <div class="text-sample" style="color: var(--slate-400);">
+      <span class="token-name" style="display: inline;">text.hint</span> - Helper text, metadata
+    </div>
+    <div class="text-sample" style="color: var(--slate-500);">
+      <span class="token-name" style="display: inline;">text.placeholder</span> - Placeholders, empty states
+    </div>
+    <div class="text-sample" style="color: var(--slate-600);">
+      <span class="token-name" style="display: inline;">text.disabled</span> - Disabled/inactive text
+    </div>
+  </div>
+
+  <h3>Interactive Text</h3>
+  <div class="flex gap-3" style="margin-top: 12px;">
+    <div class="token-card">
+      <div class="token-name">text.link</div>
+      <a href="#" style="color: var(--blue-400); text-decoration: none;">Click here to learn more</a>
+    </div>
+    <div class="token-card">
+      <div class="token-name">text.linkSubtle</div>
+      <a href="#" style="color: var(--slate-400); text-decoration: none;">View details</a>
+    </div>
+  </div>
+
+  <!-- BORDER TOKENS -->
+  <h2>Border Tokens</h2>
+  <p style="color: var(--slate-400); font-size: 13px; margin-bottom: 16px;">Two border variants: visible and subtle</p>
+
+  <div class="grid-2" style="max-width: 500px;">
+    <div class="token-card">
+      <div class="token-name">border.visible</div>
+      <div style="height: 60px; border: 1px solid rgba(51, 65, 85, 0.5); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+        <span style="color: var(--slate-500); font-size: 11px;">border-slate-700/50</span>
+      </div>
+      <div class="token-desc">Standard visible borders</div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">border.subtle</div>
+      <div style="height: 60px; border: 1px solid rgba(30, 41, 59, 0.5); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+        <span style="color: var(--slate-500); font-size: 11px;">border-slate-800/50</span>
+      </div>
+      <div class="token-desc">Barely visible separation</div>
+    </div>
+  </div>
+
+  <h3>Divider</h3>
+  <div class="token-card" style="max-width: 400px;">
+    <div class="token-name">border.divider</div>
+    <div style="padding: 12px 0; border-bottom: 1px solid rgba(51, 65, 85, 0.5);">Item above divider</div>
+    <div style="padding: 12px 0;">Item below divider</div>
+  </div>
+
+  <!-- ACCENT COLORS -->
+  <h2>Section Colors</h2>
+  <p style="color: var(--slate-400); font-size: 13px; margin-bottom: 16px;">Accent colors for categorization</p>
+
+  <div class="flex flex-wrap gap-2">
+    <div class="demo-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">Emerald</div>
+    <div class="demo-badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">Blue</div>
+    <div class="demo-badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">Amber</div>
+    <div class="demo-badge" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">Purple</div>
+    <div class="demo-badge" style="background: rgba(244, 63, 94, 0.15); color: #fb7185;">Rose</div>
+    <div class="demo-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">Sky</div>
+  </div>
+
+  <!-- COMPONENT EXAMPLES -->
+  <h2>Component Examples</h2>
+
+  <h3>Cards</h3>
+  <div class="grid-2">
+    <div class="demo-card">
+      <div class="demo-card-header">
+        <span style="color: white; font-weight: 500;">Card Title</span>
+        <span class="demo-badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; margin-left: auto;">Active</span>
+      </div>
+      <div class="demo-card-content">
+        <p style="color: var(--slate-300); font-size: 13px;">Card content with body text styling. Uses surface.card for background.</p>
+      </div>
+    </div>
+    <div class="demo-card">
+      <div class="demo-list-item">
+        <span style="color: var(--slate-200);">List Item 1</span>
+        <span style="color: var(--slate-400); font-size: 12px;">Meta</span>
+      </div>
+      <div class="demo-list-item">
+        <span style="color: var(--slate-200);">List Item 2</span>
+        <span style="color: var(--slate-400); font-size: 12px;">Meta</span>
+      </div>
+      <div class="demo-list-item">
+        <span style="color: var(--slate-200);">List Item 3</span>
+        <span style="color: var(--slate-400); font-size: 12px;">Meta</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>Buttons</h3>
+  <div class="flex flex-wrap gap-2 mb-3">
+    <button class="demo-button btn-primary">Primary</button>
+    <button class="demo-button btn-secondary">Secondary</button>
+    <button class="demo-button btn-ghost">Ghost</button>
+  </div>
+
+  <h3>Input</h3>
+  <div style="max-width: 400px; margin-bottom: 24px;">
+    <input type="text" class="demo-input" placeholder="Search courts...">
+  </div>
+
+  <h3>Tags & Badges</h3>
+  <div class="flex flex-wrap gap-2 mb-3">
+    <span class="demo-tag" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(51, 65, 85, 0.5); color: var(--slate-400);">DEFAULT</span>
+    <span class="demo-tag" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: var(--blue-400);">BLUE</span>
+    <span class="demo-tag" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--emerald-400);">EMERALD</span>
+    <span class="demo-tag" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: var(--amber-400);">AMBER</span>
+  </div>
+
+  <h3>Pills & Toggles</h3>
+  <div class="flex flex-wrap gap-2 mb-3">
+    <span class="demo-pill" style="background: rgba(59, 130, 246, 0.25); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd;">Active Pill</span>
+    <span class="demo-pill" style="background: rgba(59, 130, 246, 0.04); border: 1px solid rgba(59, 130, 246, 0.15); color: var(--slate-400);">Inactive Pill</span>
+  </div>
+
+  <h3>Filter Chips</h3>
+  <div class="flex flex-wrap gap-2">
+    <span class="demo-filter-chip" style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.5); color: var(--blue-400);">All Courts</span>
+    <span class="demo-filter-chip" style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(51, 65, 85, 0.5); color: var(--slate-400);">Provincial</span>
+    <span class="demo-filter-chip" style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(51, 65, 85, 0.5); color: var(--slate-400);">Supreme</span>
+  </div>
+
+  <!-- FULL PAGE EXAMPLE -->
+  <h2>Full Page Example</h2>
+  <div style="background: var(--slate-950); border: 1px solid rgba(51, 65, 85, 0.5); border-radius: 12px; overflow: hidden; max-width: 400px;">
+    <!-- Header -->
+    <div style="padding: 16px; border-bottom: 1px solid rgba(30, 41, 59, 0.5);">
+      <h1 style="font-size: 20px; font-weight: 700; color: white; margin-bottom: 12px;">BC Court Index</h1>
+      <input type="text" class="demo-input" placeholder="Search courts...">
+    </div>
+
+    <!-- Filter chips -->
+    <div style="padding: 12px 16px; display: flex; gap: 8px; border-bottom: 1px solid rgba(51, 65, 85, 0.3);">
+      <span class="demo-filter-chip" style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.5); color: var(--blue-400); font-size: 11px; padding: 4px 10px;">All</span>
+      <span class="demo-filter-chip" style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(51, 65, 85, 0.5); color: var(--slate-400); font-size: 11px; padding: 4px 10px;">Provincial</span>
+      <span class="demo-filter-chip" style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(51, 65, 85, 0.5); color: var(--slate-400); font-size: 11px; padding: 4px 10px;">Supreme</span>
+    </div>
+
+    <!-- List -->
+    <div style="padding: 12px;">
+      <div class="demo-card" style="margin-bottom: 8px;">
+        <div style="padding: 12px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 4px;">
+            <span style="color: white; font-weight: 500; font-size: 14px;">Vancouver Law Courts</span>
+            <span class="demo-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 10px; padding: 2px 6px;">Provincial</span>
+          </div>
+          <p style="color: var(--slate-400); font-size: 12px;">800 Smithe St, Vancouver</p>
+        </div>
+      </div>
+      <div class="demo-card" style="margin-bottom: 8px;">
+        <div style="padding: 12px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 4px;">
+            <span style="color: white; font-weight: 500; font-size: 14px;">Surrey Provincial Court</span>
+            <span class="demo-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 10px; padding: 2px 6px;">Provincial</span>
+          </div>
+          <p style="color: var(--slate-400); font-size: 12px;">14340 57 Ave, Surrey</p>
+        </div>
+      </div>
+      <div class="demo-card">
+        <div style="padding: 12px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 4px;">
+            <span style="color: white; font-weight: 500; font-size: 14px;">BC Supreme Court</span>
+            <span class="demo-badge" style="background: rgba(244, 63, 94, 0.15); color: #fb7185; font-size: 10px; padding: 2px 6px;">Supreme</span>
+          </div>
+          <p style="color: var(--slate-400); font-size: 12px;">800 Smithe St, Vancouver</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOKEN SUMMARY -->
+  <h2>Token Summary</h2>
+  <div class="token-card" style="max-width: 600px;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+      <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.3);">
+        <th style="text-align: left; padding: 8px 0; color: var(--slate-400);">Category</th>
+        <th style="text-align: left; padding: 8px 0; color: var(--slate-400);">Tokens</th>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.3);">
+        <td style="padding: 8px 0; color: var(--slate-300);">Surface</td>
+        <td style="padding: 8px 0; color: var(--slate-400);">page, panel, modal, card, cardHover, cardPressed, control, controlHover, header, toast</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.3);">
+        <td style="padding: 8px 0; color: var(--slate-300);">Text</td>
+        <td style="padding: 8px 0; color: var(--slate-400);">heading, body, label, hint, placeholder, disabled, link, linkSubtle</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.3);">
+        <td style="padding: 8px 0; color: var(--slate-300);">Border</td>
+        <td style="padding: 8px 0; color: var(--slate-400);">visible, subtle, divider</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 0; color: var(--slate-300);">Accents</td>
+        <td style="padding: 8px 0; color: var(--slate-400);">emerald, blue, amber, purple, rose, sky, slate</td>
+      </tr>
+    </table>
+  </div>
+
+</body>
+</html>

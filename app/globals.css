@@ -1,38 +1,124 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   TAILWIND V4 THEME - CYBER OCEAN
-   CSS custom properties for colors only - utilities applied directly in components
+   TAILWIND V4 THEME - CYBER OCEAN DESIGN TOKEN SYSTEM
+   Comprehensive CSS custom properties for consistent styling
    ============================================================================ */
 
 @theme {
-  /* Border radius */
+  /* ==========================================================================
+     BORDER RADIUS TOKENS
+     ========================================================================== */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
-  --radius-md: calc(0.75rem - 2px);
-  --radius-sm: calc(0.75rem - 4px);
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
 
-  /* Base colors */
-  --color-background: hsl(222.2 84% 4.9%);
-  --color-foreground: hsl(210 40% 98%);
-  --color-card: hsl(222.2 84% 4.9%);
-  --color-card-foreground: hsl(210 40% 98%);
-  --color-popover: hsl(222.2 84% 4.9%);
-  --color-popover-foreground: hsl(210 40% 98%);
-  --color-primary: hsl(217.2 91.2% 59.8%);
-  --color-primary-foreground: hsl(222.2 47.4% 11.2%);
-  --color-secondary: hsl(217.2 32.6% 17.5%);
-  --color-secondary-foreground: hsl(210 40% 98%);
-  --color-muted: hsl(217.2 32.6% 17.5%);
-  --color-muted-foreground: hsl(215 20.2% 65.1%);
-  --color-accent: hsl(217.2 32.6% 17.5%);
-  --color-accent-foreground: hsl(210 40% 98%);
-  --color-destructive: hsl(0 62.8% 30.6%);
-  --color-destructive-foreground: hsl(210 40% 98%);
-  --color-border: hsl(217.2 32.6% 17.5%);
-  --color-input: hsl(217.2 32.6% 17.5%);
-  --color-ring: hsl(224.3 76.3% 48%);
+  /* ==========================================================================
+     SURFACE COLORS - Backgrounds & Cards
+     ========================================================================== */
+  /* Base surfaces */
+  --color-surface-base: #020617;           /* slate-950 - deepest background */
+  --color-surface-raised: #0f172a;         /* slate-900 - raised surfaces */
+  --color-surface-overlay: #1e293b;        /* slate-800 - overlays, modals */
 
-  /* Animations */
+  /* Surface with opacity variants (for layering) */
+  --color-surface-card: rgba(30, 41, 59, 0.3);      /* slate-800/30 */
+  --color-surface-card-hover: rgba(30, 41, 59, 0.5); /* slate-800/50 */
+  --color-surface-card-active: rgba(30, 41, 59, 0.8); /* slate-800/80 */
+
+  /* Interactive surface states */
+  --color-surface-interactive: rgba(30, 41, 59, 0.5);
+  --color-surface-interactive-hover: rgba(30, 41, 59, 0.7);
+  --color-surface-interactive-active: rgba(51, 65, 85, 0.5); /* slate-700/50 */
+
+  /* ==========================================================================
+     TEXT COLORS - Typography hierarchy
+     ========================================================================== */
+  --color-text-primary: #ffffff;           /* white - headings, emphasis */
+  --color-text-secondary: #e2e8f0;         /* slate-200 - body text */
+  --color-text-tertiary: #cbd5e1;          /* slate-300 - secondary info */
+  --color-text-muted: #94a3b8;             /* slate-400 - labels, hints */
+  --color-text-subtle: #64748b;            /* slate-500 - disabled, placeholders */
+  --color-text-disabled: #475569;          /* slate-600 - disabled text */
+
+  /* ==========================================================================
+     BORDER COLORS
+     ========================================================================== */
+  --color-border-default: rgba(51, 65, 85, 0.5);   /* slate-700/50 */
+  --color-border-subtle: rgba(51, 65, 85, 0.3);    /* slate-700/30 */
+  --color-border-strong: #334155;                   /* slate-700 */
+  --color-border-muted: rgba(30, 41, 59, 0.5);     /* slate-800/50 */
+  --color-border-focus: rgba(59, 130, 246, 0.4);   /* blue-500/40 */
+
+  /* ==========================================================================
+     ACCENT COLORS - Brand & semantic
+     ========================================================================== */
+  /* Primary (Blue) */
+  --color-accent-primary: #3b82f6;         /* blue-500 */
+  --color-accent-primary-muted: rgba(59, 130, 246, 0.15);
+  --color-accent-primary-subtle: rgba(59, 130, 246, 0.04);
+  --color-accent-primary-text: #60a5fa;    /* blue-400 */
+
+  /* Success (Emerald) */
+  --color-accent-success: #10b981;         /* emerald-500 */
+  --color-accent-success-muted: rgba(16, 185, 129, 0.15);
+  --color-accent-success-text: #34d399;    /* emerald-400 */
+
+  /* Warning (Amber) */
+  --color-accent-warning: #f59e0b;         /* amber-500 */
+  --color-accent-warning-muted: rgba(245, 158, 11, 0.15);
+  --color-accent-warning-text: #fbbf24;    /* amber-400 */
+
+  /* Danger (Rose) */
+  --color-accent-danger: #f43f5e;          /* rose-500 */
+  --color-accent-danger-muted: rgba(244, 63, 94, 0.15);
+  --color-accent-danger-text: #fb7185;     /* rose-400 */
+
+  /* Info (Sky) */
+  --color-accent-info: #0ea5e9;            /* sky-500 */
+  --color-accent-info-muted: rgba(14, 165, 233, 0.15);
+  --color-accent-info-text: #38bdf8;       /* sky-400 */
+
+  /* Purple */
+  --color-accent-purple: #a855f7;          /* purple-500 */
+  --color-accent-purple-muted: rgba(168, 85, 247, 0.15);
+  --color-accent-purple-text: #c084fc;     /* purple-400 */
+
+  /* Indigo */
+  --color-accent-indigo: #6366f1;          /* indigo-500 */
+  --color-accent-indigo-muted: rgba(99, 102, 241, 0.15);
+  --color-accent-indigo-text: #818cf8;     /* indigo-400 */
+
+  /* ==========================================================================
+     LEGACY SEMANTIC COLORS (for compatibility)
+     ========================================================================== */
+  --color-background: var(--color-surface-base);
+  --color-foreground: var(--color-text-secondary);
+  --color-card: var(--color-surface-base);
+  --color-card-foreground: var(--color-text-secondary);
+  --color-popover: var(--color-surface-base);
+  --color-popover-foreground: var(--color-text-secondary);
+  --color-primary: var(--color-accent-primary);
+  --color-primary-foreground: var(--color-surface-base);
+  --color-secondary: var(--color-surface-overlay);
+  --color-secondary-foreground: var(--color-text-secondary);
+  --color-muted: var(--color-surface-overlay);
+  --color-muted-foreground: var(--color-text-muted);
+  --color-accent: var(--color-surface-overlay);
+  --color-accent-foreground: var(--color-text-secondary);
+  --color-destructive: var(--color-accent-danger);
+  --color-destructive-foreground: var(--color-text-secondary);
+  --color-border: var(--color-border-default);
+  --color-input: var(--color-surface-overlay);
+  --color-ring: var(--color-accent-primary);
+
+  /* ==========================================================================
+     ANIMATIONS
+     ========================================================================== */
   --animate-fade-in: fade-in 0.2s ease-out;
   --animate-fade-in-up: fade-in-up 0.3s ease-out;
 }

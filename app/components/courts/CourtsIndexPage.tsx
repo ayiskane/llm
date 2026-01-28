@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaMagnifyingGlass, FaXmark, FaLocationDot, FaSliders } from '@/lib/icons';
 import { AlphabetNav, FilterModal } from '@/app/components/ui';
-import { cn } from '@/lib/config/theme';
+import { cn, surface, text, input, filterChip, listItem, tag, layout, sectionColorMap, border } from '@/lib/config/theme';
 import { REGIONS, REGION_COLORS } from '@/lib/config/constants';
 import type { CourtWithRegionName } from '@/lib/api/server';
 
@@ -58,16 +58,16 @@ function SearchBar({ value, onChange, onClear, onFilterClick, hasActiveFilters }
   return (
     <div className="flex gap-2">
       <div className="relative flex-1">
-        <FaMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <FaMagnifyingGlass className={cn("absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4", text.hint)} />
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Search courts..."
-          className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl pl-11 pr-10 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+          className={input.search}
         />
         {value && (
-          <button onClick={onClear} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+          <button onClick={onClear} className={cn("absolute right-4 top-1/2 -translate-y-1/2", text.linkSubtle)}>
             <FaXmark className="w-4 h-4" />
           </button>
         )}
@@ -76,7 +76,7 @@ function SearchBar({ value, onChange, onClear, onFilterClick, hasActiveFilters }
         onClick={onFilterClick}
         className={cn(
           'relative flex items-center justify-center w-12 rounded-xl border transition-all',
-          hasActiveFilters ? 'bg-blue-500/20 border-blue-500/50 text-blue-400' : 'bg-slate-800/50 border-slate-700/50 text-slate-400'
+          hasActiveFilters ? filterChip.active : filterChip.inactive
         )}
       >
         <FaSliders className="w-4 h-4" />
@@ -105,7 +105,7 @@ function FilterModalContent({ filters, onFilterChange }: {
     <div className="space-y-6">
       {/* Region */}
       <div>
-        <label className="text-xs uppercase tracking-wider text-slate-400 font-medium mb-3 block">Region</label>
+        <label className={cn("mb-3 block", text.sectionHeader)}>Region</label>
         <div className="flex flex-wrap gap-2">
           {REGIONS.map((region) => (
             <button
@@ -113,9 +113,7 @@ function FilterModalContent({ filters, onFilterChange }: {
               onClick={() => onFilterChange({ ...filters, region: region.id })}
               className={cn(
                 'px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all',
-                filters.region === region.id 
-                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' 
-                  : 'bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:border-slate-600'
+                filters.region === region.id ? filterChip.activeAlt : filterChip.inactiveAlt
               )}
             >
               {region.id !== 0 && <span className={cn('w-2 h-2 rounded-full', REGION_COLORS[region.id]?.dot)} />}
@@ -127,7 +125,7 @@ function FilterModalContent({ filters, onFilterChange }: {
 
       {/* Court Type */}
       <div>
-        <label className="text-xs uppercase tracking-wider text-slate-400 font-medium mb-3 block">Court Type</label>
+        <label className={cn("mb-3 block", text.sectionHeader)}>Court Type</label>
         <div className="flex flex-wrap gap-2">
           {COURT_TYPE_OPTIONS.map((opt) => (
             <button
@@ -135,9 +133,7 @@ function FilterModalContent({ filters, onFilterChange }: {
               onClick={() => onFilterChange({ ...filters, courtType: opt.value })}
               className={cn(
                 'px-3 py-2 rounded-xl text-sm font-medium transition-all',
-                filters.courtType === opt.value 
-                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' 
-                  : 'bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:border-slate-600'
+                filters.courtType === opt.value ? filterChip.activeAlt : filterChip.inactiveAlt
               )}
             >
               {opt.label}
@@ -148,7 +144,7 @@ function FilterModalContent({ filters, onFilterChange }: {
 
       {/* Court Level */}
       <div>
-        <label className="text-xs uppercase tracking-wider text-slate-400 font-medium mb-3 block">Court Level</label>
+        <label className={cn("mb-3 block", text.sectionHeader)}>Court Level</label>
         <div className="flex flex-wrap gap-2">
           {COURT_LEVEL_OPTIONS.map((opt) => (
             <button
@@ -156,9 +152,7 @@ function FilterModalContent({ filters, onFilterChange }: {
               onClick={() => onFilterChange({ ...filters, courtLevel: opt.value })}
               className={cn(
                 'px-3 py-2 rounded-xl text-sm font-medium transition-all',
-                filters.courtLevel === opt.value 
-                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' 
-                  : 'bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:border-slate-600'
+                filters.courtLevel === opt.value ? filterChip.activeAlt : filterChip.inactiveAlt
               )}
             >
               {opt.label}
@@ -175,26 +169,26 @@ function LetterSection({ letter, courts, onCourtClick }: {
 }) {
   return (
     <div id={`section-${letter}`} data-letter={letter}>
-      <div className="sticky top-0 z-10 px-4 py-2 bg-slate-950 border-b border-slate-800/50">
-        <span className="text-sm font-bold text-blue-400">{letter}</span>
+      <div className={listItem.header}>
+        <span className={cn("text-sm font-bold", text.link)}>{letter}</span>
       </div>
-      <div className="bg-slate-800/20">
+      <div className={surface.card}>
         {courts.map((court) => (
           <button
             key={court.id}
             onClick={() => onCourtClick(court.id)}
-            className="w-full text-left px-4 py-3 border-b border-slate-700/30 last:border-b-0 hover:bg-slate-800/30 active:bg-slate-800/50"
+            className={listItem.interactive}
           >
-            <div className="text-sm font-medium text-slate-200 mb-1.5">{getCourtDisplayName(court)}</div>
+            <div className={cn("text-sm font-medium mb-1.5", text.body)}>{getCourtDisplayName(court)}</div>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="px-2 py-1 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
+              <span className={cn(tag.base, tag.default)}>
                 <span>{REGION_CODE[court.region_id] || 'R?'}</span>
-                <span className="text-slate-600">|</span>
+                <span className={text.disabled}>|</span>
                 <span>{court.region_name}</span>
               </span>
-              {court.has_provincial && <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">PC</span>}
-              {court.has_supreme && <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-400">SC</span>}
-              {court.is_circuit && <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400">Circuit</span>}
+              {court.has_provincial && <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded", sectionColorMap.emerald.badge)}>PC</span>}
+              {court.has_supreme && <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded", sectionColorMap.purple.badge)}>SC</span>}
+              {court.is_circuit && <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded", sectionColorMap.amber.badge)}>Circuit</span>}
             </div>
           </button>
         ))}
@@ -289,11 +283,11 @@ export function CourtsIndexPage({ initialCourts }: CourtsIndexPageProps) {
   const handleCourtClick = useCallback((courtId: number) => router.push(`/court/${courtId}`), [router]);
 
   return (
-    <div className="h-full flex flex-col bg-slate-950">
+    <div className={layout.pageWithNav}>
       {/* Header */}
-      <div className="flex-shrink-0 bg-slate-950 border-b border-slate-800/50">
+      <div className={cn("shrink-0", surface.page, "border-b border-slate-800/50")}>
         <div className="px-4 pt-4 pb-2">
-          <h1 className="text-xl font-bold text-white">BC Court Index</h1>
+          <h1 className={cn("text-xl font-bold", text.heading)}>BC Court Index</h1>
         </div>
         <div className="px-4 pb-3">
           <SearchBar
@@ -324,11 +318,11 @@ export function CourtsIndexPage({ initialCourts }: CourtsIndexPageProps) {
           {groupedCourts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 px-4">
               <FaLocationDot className="w-12 h-12 text-slate-700 mb-4" />
-              <p className="text-slate-400 text-center">
+              <p className={cn("text-center", text.hint)}>
                 {searchQuery ? `No courts found for "${searchQuery}"` : 'No courts match your filters'}
               </p>
               {(searchQuery || hasActiveFilters) && (
-                <button onClick={() => { setSearchQuery(''); clearAllFilters(); }} className="mt-4 text-blue-400 text-sm hover:text-blue-300">
+                <button onClick={() => { setSearchQuery(''); clearAllFilters(); }} className={cn("mt-4 text-sm", text.link)}>
                   Clear filters
                 </button>
               )}
@@ -339,7 +333,7 @@ export function CourtsIndexPage({ initialCourts }: CourtsIndexPageProps) {
                 <LetterSection key={group.letter} letter={group.letter} courts={group.courts} onCourtClick={handleCourtClick} />
               ))}
               <div className="py-4 text-center">
-                <span className="text-xs text-slate-500">{filteredCourts.length} {filteredCourts.length === 1 ? 'court' : 'courts'}</span>
+                <span className={cn("text-xs", text.placeholder)}>{filteredCourts.length} {filteredCourts.length === 1 ? 'court' : 'courts'}</span>
               </div>
             </>
           )}
@@ -347,10 +341,10 @@ export function CourtsIndexPage({ initialCourts }: CourtsIndexPageProps) {
 
         {/* AlphabetNav - positioned absolute within relative container */}
         {!searchQuery && availableLetters.length > 1 && (
-          <AlphabetNav 
-            availableLetters={availableLetters} 
+          <AlphabetNav
+            availableLetters={availableLetters}
             activeLetter={activeLetter}
-            onLetterChange={handleLetterChange} 
+            onLetterChange={handleLetterChange}
           />
         )}
       </div>

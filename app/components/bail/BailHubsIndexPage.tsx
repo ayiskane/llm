@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaMagnifyingGlass, FaXmark, FaScaleBalanced } from '@/lib/icons';
-import { cn } from '@/lib/config/theme';
+import { cn, surface, text, input, listItem, tag, layout, button, border } from '@/lib/config/theme';
 import { REGION_COLORS } from '@/lib/config/constants';
 import type { BailCourtWithRegion } from '@/lib/api/server';
 
@@ -85,16 +85,16 @@ function SearchBar({ value, onChange, onClear }: {
 }) {
   return (
     <div className="relative">
-      <FaMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+      <FaMagnifyingGlass className={cn("absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4", text.hint)} />
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search bail hubs..."
-        className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl pl-11 pr-10 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+        className={input.search}
       />
       {value && (
-        <button onClick={onClear} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+        <button onClick={onClear} className={cn("absolute right-4 top-1/2 -translate-y-1/2", text.linkSubtle)}>
           <FaXmark className="w-4 h-4" />
         </button>
       )}
@@ -104,31 +104,31 @@ function SearchBar({ value, onChange, onClear }: {
 
 function SectionHeader({ title, code, colorDot }: { title: string; code?: string; colorDot?: string }) {
   return (
-    <div className="sticky top-0 z-10 px-4 py-2 bg-slate-950 border-b border-slate-800/50">
+    <div className={listItem.header}>
       <div className="flex items-center gap-2">
         {colorDot && <span className={cn('w-2 h-2 rounded-full', colorDot)} />}
-        {code && <span className="text-xs font-mono text-slate-500">{code}</span>}
-        {code && <span className="text-slate-600">|</span>}
-        <span className="text-sm font-bold text-blue-400">{title}</span>
+        {code && <span className={cn("text-xs font-mono", text.placeholder)}>{code}</span>}
+        {code && <span className={text.disabled}>|</span>}
+        <span className={cn("text-sm font-bold", text.link)}>{title}</span>
       </div>
     </div>
   );
 }
 
-function BailCourtListItem({ court, onClick, showRegion = false }: { 
-  court: BailCourtWithRegion; 
+function BailCourtListItem({ court, onClick, showRegion = false }: {
+  court: BailCourtWithRegion;
   onClick: () => void;
   showRegion?: boolean;
 }) {
   const region = REGION_INFO[court.region_id];
   return (
-    <button onClick={onClick} className="w-full text-left px-4 py-3 border-b border-slate-700/30 last:border-b-0 hover:bg-slate-800/30 active:bg-slate-800/50">
-      <div className="text-sm font-medium text-slate-200">{court.name}</div>
+    <button onClick={onClick} className={listItem.interactive}>
+      <div className={cn("text-sm font-medium", text.body)}>{court.name}</div>
       {showRegion && region && (
         <div className="flex items-center gap-1.5 mt-1">
-          <span className="px-2 py-0.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
+          <span className={cn(tag.base, tag.default)}>
             <span>{region.code}</span>
-            <span className="text-slate-600">|</span>
+            <span className={text.disabled}>|</span>
             <span>{region.name}</span>
           </span>
         </div>
@@ -160,7 +160,7 @@ function WeekdayList({ courts, onCourtClick }: {
               code={info.code} 
               colorDot={REGION_COLORS[regionId]?.dot}
             />
-            <div className="bg-slate-800/20">
+            <div className={surface.card}>
               {regionCourts.map(c => (
                 <BailCourtListItem key={c.id} court={c} onClick={() => onCourtClick(c.id)} />
               ))}
@@ -198,7 +198,7 @@ function WeekendList({ courts, onCourtClick }: {
       {justiceCenters.length > 0 && (
         <div>
           <SectionHeader title="Justice Center" />
-          <div className="bg-slate-800/20">
+          <div className={surface.cardSubtle}>
             {justiceCenters.map(c => (
               <BailCourtListItem key={c.id} court={c} onClick={() => onCourtClick(c.id)} showRegion />
             ))}
@@ -208,7 +208,7 @@ function WeekendList({ courts, onCourtClick }: {
       {federal.length > 0 && (
         <div>
           <SectionHeader title="Federal" />
-          <div className="bg-slate-800/20">
+          <div className={surface.cardSubtle}>
             {federal.map(c => (
               <BailCourtListItem key={c.id} court={c} onClick={() => onCourtClick(c.id)} />
             ))}
@@ -259,11 +259,11 @@ export function BailHubsIndexPage({ initialBailCourts }: BailHubsIndexPageProps)
   }, [bailCourts, activeTab, searchQuery]);
 
   return (
-    <div className="h-full flex flex-col bg-slate-950">
+    <div className={layout.pageWithNav}>
       {/* Header */}
-      <div className="flex-shrink-0 bg-slate-950 border-b border-slate-800/50">
+      <div className={cn("shrink-0", surface.page, "border-b border-slate-800/50")}>
         <div className="px-4 pt-4 pb-2">
-          <h1 className="text-xl font-bold text-white">BC Bail Hubs</h1>
+          <h1 className={cn("text-xl font-bold", text.heading)}>BC Bail Hubs</h1>
         </div>
         {/* Search */}
         <div className="px-4 pb-2">
@@ -278,7 +278,7 @@ export function BailHubsIndexPage({ initialBailCourts }: BailHubsIndexPageProps)
           <div className="px-4 pb-3">
             <button
               onClick={() => router.push('/bail/525')}
-              className="w-full py-2 px-3 rounded-lg text-xs font-medium bg-slate-800/50 text-slate-300 border border-slate-700/50 hover:bg-slate-800/70 hover:text-slate-200 transition-all text-left"
+              className={cn(button.base, button.secondary, button.md, "w-full text-left")}
             >
               525 Detention Review
             </button>
@@ -287,15 +287,15 @@ export function BailHubsIndexPage({ initialBailCourts }: BailHubsIndexPageProps)
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div className={layout.scrollArea}>
         {filteredCourts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-4">
             <FaScaleBalanced className="w-12 h-12 text-slate-700 mb-4" />
-            <p className="text-slate-400 text-center">
+            <p className={cn("text-center", text.hint)}>
               {searchQuery ? `No bail hubs found for "${searchQuery}"` : 'No bail hubs available'}
             </p>
             {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="mt-4 text-blue-400 text-sm hover:text-blue-300">
+              <button onClick={() => setSearchQuery('')} className={cn("mt-4 text-sm", text.link)}>
                 Clear search
               </button>
             )}
@@ -308,7 +308,7 @@ export function BailHubsIndexPage({ initialBailCourts }: BailHubsIndexPageProps)
               <WeekendList courts={filteredCourts} onCourtClick={handleCourtClick} />
             )}
             <div className="py-4 text-center">
-              <span className="text-xs text-slate-500">
+              <span className={cn("text-xs", text.placeholder)}>
                 {filteredCourts.length} bail {filteredCourts.length === 1 ? 'hub' : 'hubs'}
               </span>
             </div>

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=375">
+  <title>Design 3: Floating Action Cards</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(180deg, #0c1222 0%, #0a0f1a 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+    }
+
+    /* Floating Header */
+    .header {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .header-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+    }
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    /* Court Info Card */
+    .court-card {
+      margin: 8px 16px 20px;
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 20px;
+    }
+    .court-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .court-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .court-meta-divider { color: #334155; }
+    .tags {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .tag {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .tag-prov { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .tag-sup { background: rgba(139, 92, 246, 0.15); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3); }
+    .tag-region { background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); }
+
+    /* Floating Action Buttons */
+    .fab-row {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .fab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .fab-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      transition: transform 0.2s;
+    }
+    .fab:hover .fab-icon { transform: scale(1.05); }
+    .fab-icon.contacts { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+    .fab-icon.cells { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .fab-icon.teams { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
+    .fab-icon.bail { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+    .fab-label { font-size: 11px; color: #94a3b8; }
+    .fab-count { font-size: 10px; color: #64748b; }
+
+    /* Content Sections */
+    .content { padding: 0 16px 100px; }
+    .section {
+      background: rgba(30, 41, 59, 0.4);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .section-header {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    .section-title-icon.blue { background: rgba(59, 130, 246, 0.2); }
+    .section-title-icon.green { background: rgba(16, 185, 129, 0.2); }
+    .section-badge {
+      background: rgba(255,255,255,0.1);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    /* Contact Rows */
+    .contact-row {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .contact-row:last-child { border-bottom: none; }
+    .contact-row:hover { background: rgba(255,255,255,0.03); }
+    .contact-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .contact-dot.blue { background: #3b82f6; }
+    .contact-dot.green { background: #10b981; }
+    .contact-dot.purple { background: #8b5cf6; }
+    .contact-info { flex: 1; min-width: 0; }
+    .contact-label { font-size: 12px; color: #e2e8f0; }
+    .contact-value {
+      font-size: 11px;
+      color: #64748b;
+      font-family: monospace;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .contact-copy { color: #475569; font-size: 14px; }
+
+    /* Access Code */
+    .access-code {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .access-icon { font-size: 20px; }
+    .access-info { flex: 1; }
+    .access-label { font-size: 11px; color: #6ee7b7; }
+    .access-value { font-size: 18px; font-weight: 700; color: #fff; font-family: monospace; letter-spacing: 2px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <button class="back-btn">←</button>
+    <div class="header-actions">
+      <button class="icon-btn">🔍</button>
+      <button class="icon-btn">⭐</button>
+    </div>
+  </div>
+
+  <div class="court-card">
+    <div class="court-name">Vancouver Law Courts</div>
+    <div class="court-meta">
+      <span>📍 800 Smithe Street</span>
+      <span class="court-meta-divider">•</span>
+      <span>Vancouver, BC</span>
+    </div>
+    <div class="tags">
+      <span class="tag tag-region">R2 Vancouver Coastal</span>
+      <span class="tag tag-prov">Provincial</span>
+      <span class="tag tag-sup">Supreme</span>
+    </div>
+  </div>
+
+  <div class="fab-row">
+    <div class="fab">
+      <div class="fab-icon contacts">📧</div>
+      <div class="fab-label">Contacts</div>
+      <div class="fab-count">5 items</div>
+    </div>
+    <div class="fab">
+      <div class="fab-icon cells">🔒</div>
+      <div class="fab-label">Cells</div>
+      <div class="fab-count">3 items</div>
+    </div>
+    <div class="fab">
+      <div class="fab-icon teams">📹</div>
+      <div class="fab-label">Teams</div>
+      <div class="fab-count">2 links</div>
+    </div>
+    <div class="fab">
+      <div class="fab-icon bail">⚖️</div>
+      <div class="fab-label">Bail</div>
+      <div class="fab-count">VAN Hub</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="section-title-icon blue">🏛️</span>
+          Court Contacts
+        </div>
+        <span class="section-badge">3</span>
+      </div>
+      <div class="contact-row">
+        <div class="contact-dot blue"></div>
+        <div class="contact-info">
+          <div class="contact-label">Criminal Registry</div>
+          <div class="contact-value">criminal.registry@gov.bc.ca</div>
+        </div>
+        <div class="contact-copy">📋</div>
+      </div>
+      <div class="contact-row">
+        <div class="contact-dot blue"></div>
+        <div class="contact-info">
+          <div class="contact-label">Provincial JCM</div>
+          <div class="contact-value">jcm.vancouver@gov.bc.ca</div>
+        </div>
+        <div class="contact-copy">📋</div>
+      </div>
+      <div class="contact-row">
+        <div class="contact-dot purple"></div>
+        <div class="contact-info">
+          <div class="contact-label">Supreme Scheduling</div>
+          <div class="contact-value">supreme.scheduling@gov.bc.ca</div>
+        </div>
+        <div class="contact-copy">📋</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="section-title-icon green">⚖️</span>
+          Crown Contacts
+        </div>
+        <span class="section-badge">2</span>
+      </div>
+      <div class="contact-row">
+        <div class="contact-dot green"></div>
+        <div class="contact-info">
+          <div class="contact-label">Provincial Crown</div>
+          <div class="contact-value">crown.vancouver@gov.bc.ca</div>
+        </div>
+        <div class="contact-copy">📋</div>
+      </div>
+      <div class="contact-row">
+        <div class="contact-dot green"></div>
+        <div class="contact-info">
+          <div class="contact-label">Federal Crown</div>
+          <div class="contact-value">federal.crown@ppsc-sppc.gc.ca</div>
+        </div>
+        <div class="contact-copy">📋</div>
+      </div>
+    </div>
+
+    <div class="access-code">
+      <div class="access-icon">🔐</div>
+      <div class="access-info">
+        <div class="access-label">Teams Access Code</div>
+        <div class="access-value">123 456 789#</div>
+      </div>
+      <div class="contact-copy">📋</div>
+    </div>
+  </div>
+</body>
+</html>

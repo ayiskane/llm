@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=375">
+  <title>Design 5: Dashboard Grid</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #09090b;
+      color: #fafafa;
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+    }
+
+    /* Minimal Header */
+    .header {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid #27272a;
+    }
+    .back-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #27272a;
+      border: none;
+      color: #a1a1aa;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .header-title {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 500;
+      color: #a1a1aa;
+    }
+    .search-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid #27272a;
+      color: #71717a;
+      cursor: pointer;
+    }
+
+    /* Court Hero */
+    .court-hero {
+      padding: 24px 16px;
+      border-bottom: 1px solid #27272a;
+    }
+    .court-name {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .court-location {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 13px;
+      color: #71717a;
+    }
+    .court-location a { color: #3b82f6; text-decoration: none; }
+    .badge-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 16px;
+    }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-prov { background: #14532d; color: #4ade80; }
+    .badge-sup { background: #581c87; color: #c084fc; }
+    .badge-region { background: #27272a; color: #a1a1aa; }
+
+    /* Dashboard Grid */
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 16px;
+    }
+    .widget {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .widget:hover {
+      border-color: #3f3f46;
+      background: #1f1f23;
+    }
+    .widget.full-width {
+      grid-column: span 2;
+    }
+    .widget-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .widget-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .widget-icon.blue { background: #1e3a8a; }
+    .widget-icon.green { background: #14532d; }
+    .widget-icon.amber { background: #78350f; }
+    .widget-icon.purple { background: #581c87; }
+    .widget-icon.red { background: #7f1d1d; }
+    .widget-count {
+      font-size: 11px;
+      color: #71717a;
+      background: #27272a;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .widget-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fafafa;
+    }
+    .widget-subtitle {
+      font-size: 11px;
+      color: #52525b;
+      margin-top: 2px;
+    }
+
+    /* Contact Preview in Widget */
+    .widget-preview {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #27272a;
+    }
+    .preview-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      font-size: 11px;
+    }
+    .preview-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #3b82f6;
+    }
+    .preview-label { color: #a1a1aa; flex: 1; }
+    .preview-action { color: #52525b; font-size: 10px; }
+
+    /* Bail Widget - Special */
+    .widget.bail {
+      background: linear-gradient(135deg, #451a03 0%, #78350f 100%);
+      border-color: #92400e;
+    }
+    .widget.bail:hover {
+      border-color: #b45309;
+    }
+    .bail-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .bail-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(251, 191, 36, 0.15);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+    .bail-text { flex: 1; }
+    .bail-title { font-size: 15px; font-weight: 600; color: #fcd34d; }
+    .bail-sub { font-size: 11px; color: #b45309; margin-top: 2px; }
+    .bail-arrow { color: #fcd34d; }
+
+    /* Access Code Widget */
+    .access-widget {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .access-icon {
+      width: 36px;
+      height: 36px;
+      background: #14532d;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .access-info { flex: 1; }
+    .access-label { font-size: 10px; color: #52525b; text-transform: uppercase; letter-spacing: 0.5px; }
+    .access-code { font-size: 16px; font-weight: 700; color: #4ade80; font-family: monospace; letter-spacing: 1px; }
+    .access-copy { color: #52525b; }
+
+    /* Quick Actions */
+    .quick-actions {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px 16px;
+    }
+    .quick-btn {
+      flex: 1;
+      padding: 12px;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .quick-btn:hover { border-color: #3f3f46; }
+    .quick-btn-icon { font-size: 18px; margin-bottom: 4px; }
+    .quick-btn-label { font-size: 11px; color: #71717a; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <button class="back-btn">←</button>
+    <div class="header-title">Court Details</div>
+    <button class="search-btn">🔍</button>
+  </div>
+
+  <div class="court-hero">
+    <div class="court-name">Vancouver Law Courts</div>
+    <div class="court-location">
+      📍 <a href="#">800 Smithe Street, Vancouver, BC</a>
+    </div>
+    <div class="badge-row">
+      <span class="badge badge-region">R2 Vancouver Coastal</span>
+      <span class="badge badge-prov">Provincial</span>
+      <span class="badge badge-sup">Supreme</span>
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <div class="widget">
+      <div class="widget-header">
+        <div class="widget-icon blue">🏛️</div>
+        <span class="widget-count">3</span>
+      </div>
+      <div class="widget-title">Court</div>
+      <div class="widget-subtitle">Registry & JCM</div>
+      <div class="widget-preview">
+        <div class="preview-item">
+          <div class="preview-dot"></div>
+          <span class="preview-label">Criminal Registry</span>
+          <span class="preview-action">→</span>
+        </div>
+        <div class="preview-item">
+          <div class="preview-dot"></div>
+          <span class="preview-label">Provincial JCM</span>
+          <span class="preview-action">→</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-header">
+        <div class="widget-icon green">⚖️</div>
+        <span class="widget-count">2</span>
+      </div>
+      <div class="widget-title">Crown</div>
+      <div class="widget-subtitle">Prov & Federal</div>
+      <div class="widget-preview">
+        <div class="preview-item">
+          <div class="preview-dot" style="background:#10b981"></div>
+          <span class="preview-label">Provincial Crown</span>
+          <span class="preview-action">→</span>
+        </div>
+        <div class="preview-item">
+          <div class="preview-dot" style="background:#10b981"></div>
+          <span class="preview-label">Federal Crown</span>
+          <span class="preview-action">→</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-header">
+        <div class="widget-icon amber">🔒</div>
+        <span class="widget-count">3</span>
+      </div>
+      <div class="widget-title">Cells</div>
+      <div class="widget-subtitle">Sheriff & Police</div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-header">
+        <div class="widget-icon purple">📹</div>
+        <span class="widget-count">2</span>
+      </div>
+      <div class="widget-title">Teams</div>
+      <div class="widget-subtitle">Video links</div>
+    </div>
+
+    <div class="widget bail full-width">
+      <div class="bail-content">
+        <div class="bail-icon">⚖️</div>
+        <div class="bail-text">
+          <div class="bail-title">Virtual Bail Hub</div>
+          <div class="bail-sub">VAN • View schedule & contacts</div>
+        </div>
+        <div class="bail-arrow">→</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="access-widget" style="margin: 0 16px;">
+    <div class="access-icon">🔐</div>
+    <div class="access-info">
+      <div class="access-label">Teams Access Code</div>
+      <div class="access-code">123 456 789#</div>
+    </div>
+    <div class="access-copy">📋</div>
+  </div>
+
+  <div class="quick-actions" style="margin-top: 16px;">
+    <div class="quick-btn">
+      <div class="quick-btn-icon">📍</div>
+      <div class="quick-btn-label">Directions</div>
+    </div>
+    <div class="quick-btn">
+      <div class="quick-btn-icon">⭐</div>
+      <div class="quick-btn-label">Favorite</div>
+    </div>
+    <div class="quick-btn">
+      <div class="quick-btn-icon">📤</div>
+      <div class="quick-btn-label">Share</div>
+    </div>
+  </div>
+</body>
+</html>
