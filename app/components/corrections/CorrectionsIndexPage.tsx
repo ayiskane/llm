@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaMagnifyingGlass, FaXmark, FaSliders, FaBuildingShield } from '@/lib/icons';
-import { AlphabetNav } from '@/app/components/ui/AlphabetNav';
+import { AlphabetNav, FilterModal } from '@/app/components/ui';
 import { cn } from '@/lib/config/theme';
 import { REGION_COLORS } from '@/lib/config/constants';
 import { useCorrectionalCentres } from '@/lib/hooks/useCorrectionsCentres';
@@ -28,12 +28,18 @@ const LOCATION_TO_REGION: Record<string, { id: number; code: string; name: strin
   'Mission': { id: 3, code: 'R3', name: 'Fraser' },
 };
 
-const REGIONS = [
+const CORRECTIONS_REGIONS = [
   { id: 0, name: 'All Regions', code: 'ALL' },
   { id: 1, name: 'Island', code: 'R1' },
   { id: 3, name: 'Fraser', code: 'R3' },
   { id: 4, name: 'Interior', code: 'R4' },
   { id: 5, name: 'Northern', code: 'R5' },
+] as const;
+
+const JURISDICTION_OPTIONS = [
+  { value: 'all' as const, label: 'All' },
+  { value: 'provincial' as const, label: 'Provincial' },
+  { value: 'federal' as const, label: 'Federal' },
 ] as const;
 
 const getRegion = (location: string) => LOCATION_TO_REGION[location] ?? { id: 0, code: 'UNK', name: 'Unknown' };
@@ -95,50 +101,53 @@ function SearchBar({ value, onChange, onClear, onFilterClick, hasActiveFilters }
   );
 }
 
-function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: {
-  isOpen: boolean; filters: Filters; onFilterChange: (f: Filters) => void; onClearAll: () => void;
+function FilterModalContent({ filters, onFilterChange }: {
+  filters: Filters; onFilterChange: (f: Filters) => void;
 }) {
-  if (!isOpen) return null;
-  const hasFilters = filters.region !== 0 || filters.jurisdiction !== 'all';
-
   return (
-    <div className="border-t border-slate-700/30 bg-slate-900/50 px-4 py-3 space-y-3">
+    <div className="space-y-6">
+      {/* Region */}
       <div>
-        <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">Region</label>
-        <div className="flex flex-wrap gap-1.5">
-          {REGIONS.map((r) => (
+        <label className="text-xs uppercase tracking-wider text-slate-400 font-medium mb-3 block">Region</label>
+        <div className="flex flex-wrap gap-2">
+          {CORRECTIONS_REGIONS.map((r) => (
             <button
               key={r.id}
               onClick={() => onFilterChange({ ...filters, region: r.id })}
               className={cn(
-                'px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5',
-                filters.region === r.id ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800/50 text-slate-400 border border-slate-700/50'
+                'px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all',
+                filters.region === r.id 
+                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' 
+                  : 'bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:border-slate-600'
               )}
             >
-              {r.id !== 0 && <span className={cn('w-1.5 h-1.5 rounded-full', REGION_COLORS[r.id]?.dot)} />}
+              {r.id !== 0 && <span className={cn('w-2 h-2 rounded-full', REGION_COLORS[r.id]?.dot)} />}
               {r.name}
             </button>
           ))}
         </div>
       </div>
+
+      {/* Jurisdiction */}
       <div>
-        <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">Jurisdiction</label>
-        <div className="flex gap-1.5">
-          {(['all', 'provincial', 'federal'] as const).map((j) => (
+        <label className="text-xs uppercase tracking-wider text-slate-400 font-medium mb-3 block">Jurisdiction</label>
+        <div className="flex flex-wrap gap-2">
+          {JURISDICTION_OPTIONS.map((j) => (
             <button
-              key={j}
-              onClick={() => onFilterChange({ ...filters, jurisdiction: j })}
+              key={j.value}
+              onClick={() => onFilterChange({ ...filters, jurisdiction: j.value })}
               className={cn(
-                'px-2.5 py-1.5 rounded-lg text-xs font-medium',
-                filters.jurisdiction === j ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800/50 text-slate-400 border border-slate-700/50'
+                'px-3 py-2 rounded-xl text-sm font-medium transition-all',
+                filters.jurisdiction === j.value 
+                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' 
+                  : 'bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:border-slate-600'
               )}
             >
-              {j === 'all' ? 'All' : j.charAt(0).toUpperCase() + j.slice(1)}
+              {j.label}
             </button>
           ))}
         </div>
       </div>
-      {hasFilters && <button onClick={onClearAll} className="text-xs text-slate-500 hover:text-slate-300">Clear all filters</button>}
     </div>
   );
 }
@@ -273,10 +282,20 @@ export function CorrectionsIndexPage() {
           <h1 className="text-xl font-bold text-white">BC Corrections Index</h1>
         </div>
         <div className="px-4 pb-3">
-          <SearchBar value={searchQuery} onChange={setSearchQuery} onClear={() => setSearchQuery('')} onFilterClick={() => setIsFilterOpen(!isFilterOpen)} hasActiveFilters={hasActiveFilters} />
+          <SearchBar value={searchQuery} onChange={setSearchQuery} onClear={() => setSearchQuery('')} onFilterClick={() => setIsFilterOpen(true)} hasActiveFilters={hasActiveFilters} />
         </div>
-        <FilterPanel isOpen={isFilterOpen} filters={filters} onFilterChange={setFilters} onClearAll={clearAllFilters} />
       </div>
+
+      {/* Filter Modal */}
+      <FilterModal
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        title="Filter Centres"
+        onReset={() => setFilters({ region: 0, jurisdiction: 'all' })}
+        hasActiveFilters={hasActiveFilters}
+      >
+        <FilterModalContent filters={filters} onFilterChange={setFilters} />
+      </FilterModal>
 
       {/* Content area with AlphabetNav */}
       <div className="flex-1 min-h-0 relative">
@@ -302,7 +321,7 @@ export function CorrectionsIndexPage() {
           )}
         </div>
 
-        {/* AlphabetNav - positioned absolute within relative container */}
+        {/* AlphabetNav */}
         {!searchQuery && availableLetters.length > 1 && (
           <AlphabetNav 
             availableLetters={availableLetters} 
