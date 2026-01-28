@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { FaArrowLeft, FaAt, FaUserPoliceTie, FaBuildingColumns, FaVideo, FaChevronRight, FaMagnifyingGlass, FaXmark, FaStarJelly } from '@/lib/icons';
-import { cn } from '@/lib/utils';
+import { cn, text, surface, border, iconSize } from '@/lib/config/theme';
 import { StickyHeader } from '../layouts/StickyHeader';
 import { Section, PillButton, Toast } from '../ui';
 import { CourtHeader } from './CourtHeader';
@@ -115,7 +115,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
         <div className="flex items-center gap-2 px-3 py-2">
           <button
             onClick={onBack}
-            className="p-2 -ml-1 text-slate-400 hover:text-white transition-colors shrink-0"
+            className={cn("p-2 -ml-1 transition-colors shrink-0", text.linkSubtle)}
           >
             <FaArrowLeft className="w-5 h-5" />
           </button>
@@ -126,7 +126,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
           )}>
             {isSearchExpanded ? (
               <div className="flex-1 relative animate-in fade-in slide-in-from-right-2 duration-200">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <div className={cn("absolute left-3 top-1/2 -translate-y-1/2", text.hint)}>
                   <FaMagnifyingGlass className="w-4 h-4" />
                 </div>
                 <input
@@ -137,7 +137,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
                   onBlur={handleSearchBlur}
                   onKeyDown={handleSearchKeyDown}
                   placeholder="Search courts, contacts..."
-                  className="w-full h-9 pl-10 pr-9 bg-slate-800 border border-slate-700 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent rounded-xl"
+                  className={cn("w-full h-9 pl-10 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent rounded-xl", surface.modal, border.visible.replace('border-slate-700/50', 'border-slate-700'), text.heading, "placeholder:text-slate-500")}
                 />
                 {searchQuery && (
                   <button
@@ -146,7 +146,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
                       setSearchQuery('');
                       searchInputRef.current?.focus();
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors p-1"
+                    className={cn("absolute right-3 top-1/2 -translate-y-1/2 transition-colors p-1", text.linkSubtle)}
                   >
                     <FaXmark className="w-4 h-4" />
                   </button>
@@ -155,7 +155,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
             ) : (
               <button
                 onClick={() => setIsSearchExpanded(true)}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors"
+                className={cn("p-2 rounded-lg transition-colors", text.linkSubtle, surface.cardHover)}
               >
                 <FaMagnifyingGlass className="w-5 h-5" />
               </button>
@@ -168,7 +168,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
                 "p-2 rounded-lg transition-colors shrink-0",
                 isFavorite
                   ? "text-amber-400 hover:text-amber-300"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  : cn(text.linkSubtle, surface.cardHover)
               )}
             >
               <FaStarJelly className={cn("w-5 h-5", isFavorite && "fill-amber-400")} />
@@ -180,16 +180,16 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
         <CourtHeader court={court} collapsed={isHeaderCollapsed} />
         
         {/* Pill navigation - with top border */}
-        <div className="flex gap-1.5 px-3 py-2 border-t border-slate-700/30">
+        <div className={cn("flex gap-1.5 px-3 py-2 border-t", border.visible.replace('border ', ''))}>
           {navButtons.filter(btn => btn.show).map((btn) => (
-            <PillButton className="flex-1 justify-center" 
-              key={btn.key} 
-              isActive={expandedSection === btn.key} 
+            <PillButton className="flex-1 justify-center"
+              key={btn.key}
+              isActive={expandedSection === btn.key}
               onClick={() => navigateToSection(btn.key as AccordionSection)}
             >
               {btn.icon}
               <span>{btn.label}</span>
-              <span className={expandedSection === btn.key ? 'text-white/70' : 'text-slate-500'}>
+              <span className={expandedSection === btn.key ? 'text-white/70' : text.placeholder}>
                 {btn.count}
               </span>
             </PillButton>
@@ -248,7 +248,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
               onClick={() => onNavigateToBailHub(bailCourt.id, `${court.name} Law Courts`)}
               className={cn(
                 "w-full rounded-xl overflow-hidden",
-                "bg-slate-800/40 border border-amber-500/30",
+                surface.card, "border border-amber-500/30",
                 "hover:bg-slate-800/60 hover:border-amber-500/50",
                 "active:bg-slate-700/50",
                 "transition-all duration-200"
@@ -259,10 +259,10 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
                   <FaBuildingColumns className="w-5 h-5 text-amber-400" />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <div className="text-sm font-medium text-slate-200">Virtual Bail</div>
-                  <div className="text-xs text-slate-500 mt-0.5">{getBailHubTag(bailCourt.name)} • Tap for schedule & contacts</div>
+                  <div className={cn("text-sm font-medium", text.body)}>Virtual Bail</div>
+                  <div className={cn("text-xs mt-0.5", text.placeholder)}>{getBailHubTag(bailCourt.name)} • Tap for schedule & contacts</div>
                 </div>
-                <FaChevronRight className="w-5 h-5 text-slate-500 shrink-0" />
+                <FaChevronRight className={cn("w-5 h-5 shrink-0", text.placeholder)} />
               </div>
             </button>
           )}
@@ -292,12 +292,12 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
           {court.access_code && (
             <div
               onClick={() => copyToClipboard(court.access_code!, 'access-code')}
-              className="p-3 rounded-lg bg-slate-800/30 border border-slate-700/50 cursor-pointer hover:bg-slate-800/50 transition-colors"
+              className={cn("p-3 rounded-lg cursor-pointer transition-colors", surface.card, border.visible, surface.cardHover)}
             >
-              <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1">
+              <div className={cn("text-[9px] font-mono uppercase tracking-wider mb-1", text.placeholder)}>
                 Court Access Code
               </div>
-              <div className="text-sm font-mono text-slate-300">
+              <div className={cn("text-sm font-mono", text.label)}>
                 {court.access_code}
               </div>
             </div>

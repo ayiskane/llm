@@ -285,7 +285,7 @@ export function CourtsIndexPage({ initialCourts }: CourtsIndexPageProps) {
   return (
     <div className={layout.pageWithNav}>
       {/* Header */}
-      <div className={cn("shrink-0", surface.page, "border-b border-slate-800/50")}>
+      <div className={cn("shrink-0", surface.page, border.subtle.replace('border', 'border-b'))}>
         <div className="px-4 pt-4 pb-2">
           <h1 className={cn("text-xl font-bold", text.heading)}>BC Court Index</h1>
         </div>
@@ -317,7 +317,7 @@ export function CourtsIndexPage({ initialCourts }: CourtsIndexPageProps) {
         <div ref={scrollContainerRef} className="h-full overflow-y-auto">
           {groupedCourts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 px-4">
-              <FaLocationDot className="w-12 h-12 text-slate-700 mb-4" />
+              <FaLocationDot className={cn("w-12 h-12 mb-4", text.disabled)} />
               <p className={cn("text-center", text.hint)}>
                 {searchQuery ? `No courts found for "${searchQuery}"` : 'No courts match your filters'}
               </p>

@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from 'react';
 import { FaMagnifyingGlass, FaXmark, FaArrowsRotate } from '@/lib/icons';
-import { cn } from '@/lib/utils';
+import { cn, text, surface, border } from '@/lib/config/theme';
 
 interface SearchBarProps {
   value: string;
@@ -47,14 +47,14 @@ export function SearchBar({
 
   return (
     <div className={cn('relative', className)}>
-      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+      <div className={cn("absolute left-3 top-1/2 -translate-y-1/2", text.hint)}>
         {isLoading ? (
           <FaArrowsRotate className="w-4 h-4 animate-spin" />
         ) : (
           <FaMagnifyingGlass className="w-4 h-4" />
         )}
       </div>
-      
+
       <input
         ref={inputRef}
         type="text"
@@ -62,13 +62,13 @@ export function SearchBar({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="w-full h-9 pl-10 pr-9 bg-slate-800 border border-slate-700 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent rounded-xl"
+        className={cn("w-full h-9 pl-10 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent rounded-xl", surface.modal, border.visible.replace('border-slate-700/50', 'border-slate-700'), text.heading, "placeholder:text-slate-500")}
       />
-      
+
       {value && (
         <button
           onClick={handleClear}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors p-1"
+          className={cn("absolute right-3 top-1/2 -translate-y-1/2 transition-colors p-1", text.linkSubtle)}
         >
           <FaXmark className="w-4 h-4" />
         </button>

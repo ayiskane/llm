@@ -1,8 +1,7 @@
 'use client';
 
 import { FaPhoneSolid, FaCopy, FaCheck, FaBadgeSheriff, FaDungeon } from '@/lib/icons';
-import { cn } from '@/lib/utils';
-import { cellIcon } from '@/lib/config/theme';
+import { cn, cellIcon, text, surface, border } from '@/lib/config/theme';
 import type { ShellCell } from '@/types';
 import { useState, useCallback } from 'react';
 
@@ -40,28 +39,29 @@ function CellIcon({ isPolice, className }: CellIconProps) {
 // ============================================================================
 
 interface CopyButtonProps {
-  text: string;
+  copyText: string;
   className?: string;
 }
 
-function CopyButton({ text, className }: CopyButtonProps) {
+function CopyButton({ copyText, className }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(copyText);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch (err) {
       console.error('Failed to copy:', err);
     }
-  }, [text]);
+  }, [copyText]);
 
   return (
     <button
       onClick={handleCopy}
       className={cn(
-        "flex items-center justify-center rounded bg-slate-700/50 active:bg-slate-600/50 transition-colors",
+        "flex items-center justify-center rounded transition-colors",
+        surface.control, surface.controlPressed,
         className
       )}
       title="Copy to clipboard"
@@ -69,7 +69,7 @@ function CopyButton({ text, className }: CopyButtonProps) {
       {copied ? (
         <FaCheck className="w-4 h-4 text-green-400" />
       ) : (
-        <FaCopy className="w-4 h-4 text-slate-400" />
+        <FaCopy className={cn("w-4 h-4", text.hint)} />
       )}
     </button>
   );
@@ -122,11 +122,11 @@ function SinglePhoneRow({ cell, isPolice }: SinglePhoneRowProps) {
         <CellIcon isPolice={isPolice} className={cn("w-5 h-5", iconColor)} />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-slate-200">{cell.name}</div>
+        <div className={cn("text-sm font-medium", text.body)}>{cell.name}</div>
         <div className="text-xs text-blue-400 font-mono">{phone}</div>
       </div>
       <div className="flex items-center gap-1.5">
-        <CopyButton text={phone} className="w-9 h-9 rounded-lg" />
+        <CopyButton copyText={phone} className="w-9 h-9 rounded-lg" />
         <CallButton phone={phone} className="w-9 h-9 rounded-lg" />
       </div>
     </div>
@@ -149,11 +149,11 @@ function MultiplePhoneRow({ cell, isPolice }: MultiplePhoneRowProps) {
   return (
     <div>
       {/* Header with icon and name */}
-      <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-700/30">
+      <div className={cn("flex items-center gap-3 px-4 py-2.5", border.divider)}>
         <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", iconBg)}>
           <CellIcon isPolice={isPolice} className={cn("w-5 h-5", iconColor)} />
         </div>
-        <div className="text-sm font-medium text-slate-200">{cell.name}</div>
+        <div className={cn("text-sm font-medium", text.body)}>{cell.name}</div>
       </div>
       
       {/* Phone number rows with numbered badges */}
@@ -164,7 +164,7 @@ function MultiplePhoneRow({ cell, isPolice }: MultiplePhoneRowProps) {
               {idx + 1}
             </span>
             <span className="flex-1 text-xs text-blue-400 font-mono">{phone}</span>
-            <CopyButton text={phone} className="p-1.5" />
+            <CopyButton copyText={phone} className="p-1.5" />
             <CallButton phone={phone} className="p-1.5" />
           </div>
         ))}
@@ -193,12 +193,12 @@ function CellRow({ cell, showBorder = true }: CellRowProps) {
     return (
       <div className={cn(
         "flex items-center gap-3 px-4 py-3",
-        showBorder && "border-b border-slate-700/30 last:border-b-0"
+        showBorder && cn(border.divider, "last:border-b-0")
       )}>
         <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", iconBg)}>
           <CellIcon isPolice={isPolice} className={cn("w-5 h-5", iconColor)} />
         </div>
-        <div className="text-sm font-medium text-slate-200">{cell.name}</div>
+        <div className={cn("text-sm font-medium", text.body)}>{cell.name}</div>
         <span className="text-xs text-slate-500 ml-auto">No phone</span>
       </div>
     );

@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { FaXmark } from '@/lib/icons';
-import { cn } from '@/lib/config/theme';
+import { cn, surface, text, border } from '@/lib/config/theme';
 
 interface FilterModalProps {
   isOpen: boolean;
@@ -75,18 +75,18 @@ export function FilterModal({
         aria-modal="true"
         aria-labelledby="filter-modal-title"
       >
-        <div className="bg-slate-900 rounded-t-3xl border-t border-slate-700/50 shadow-2xl max-h-[85vh] flex flex-col">
+        <div className={cn("rounded-t-3xl border-t shadow-2xl max-h-[85vh] flex flex-col", surface.panel, border.visible.replace('border ', 'border-t '))}>
           {/* Drag handle */}
           <div className="flex justify-center pt-3 pb-2">
             <div className="w-12 h-1.5 rounded-full bg-slate-700" />
           </div>
-          
+
           {/* Header */}
           <div className="flex items-center justify-between px-5 pb-4">
-            <h2 id="filter-modal-title" className="text-lg font-semibold text-white">{title}</h2>
+            <h2 id="filter-modal-title" className={cn("text-lg font-semibold", text.heading)}>{title}</h2>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+              className={cn("w-8 h-8 rounded-full flex items-center justify-center transition-colors", surface.modal, text.hint, "hover:text-white hover:bg-slate-700")}
               aria-label="Close filters"
             >
               <FaXmark className="w-4 h-4" />
@@ -104,7 +104,7 @@ export function FilterModal({
               {hasActiveFilters && onReset && (
                 <button
                   onClick={handleReset}
-                  className="flex-1 py-3 rounded-xl border border-slate-700 text-slate-300 font-medium text-sm hover:bg-slate-800 transition-colors"
+                  className={cn("flex-1 py-3 rounded-xl border font-medium text-sm transition-colors", border.visible, text.label, surface.cardHover)}
                 >
                   Reset
                 </button>

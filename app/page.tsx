@@ -7,7 +7,7 @@ export const revalidate = 300;
 
 function LoadingFallback() {
   return (
-    <div className="h-screen bg-[hsl(222.2,84%,4.9%)] flex items-center justify-center">
+    <div className="h-screen bg-slate-950 flex items-center justify-center">
       <div className="text-slate-400">Loading courts...</div>
     </div>
   );

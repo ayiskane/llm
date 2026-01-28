@@ -2,8 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { FaMicrosoftTeams, FaEye, FaEyeSlash, FaCopy, FaClipboardCheck, FaPhone, FaHashtag } from '@/lib/icons';
-import { cn } from '@/lib/utils';
-import { text, iconSize } from '@/lib/config/theme';
+import { cn, text, iconSize, surface, border } from '@/lib/config/theme';
 import { Button } from '@/app/components/ui/Button';
 import { joinTeamsMeeting } from '@/lib/utils';
 import { isVBTriageLink, formatCourtroomName } from '@/lib/config/constants';
@@ -37,10 +36,10 @@ export function TeamsCard({ link, onCopy, isCopied }: TeamsCardProps) {
   };
 
   return (
-    <div className="py-2.5 px-3 rounded-lg bg-slate-800/30">
+    <div className={cn("py-2.5 px-3 rounded-lg", surface.card)}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <FaMicrosoftTeams className={cn(iconSize.md, 'text-slate-400 flex-shrink-0')} />
+          <FaMicrosoftTeams className={cn(iconSize.md, text.hint, 'shrink-0')} />
           <span className={cn(text.body, 'text-sm font-medium truncate')}>{displayName}</span>
         </div>
         
@@ -50,9 +49,9 @@ export function TeamsCard({ link, onCopy, isCopied }: TeamsCardProps) {
               onClick={() => setShowDialIn(!showDialIn)}
               className={cn(
                 'flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-colors',
-                showDialIn 
-                  ? 'bg-slate-700/50 text-slate-300' 
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-700/30'
+                showDialIn
+                  ? cn(surface.control, text.label)
+                  : cn(text.placeholder, "hover:text-slate-300", surface.cardHover)
               )}
             >
               {showDialIn ? <FaEyeSlash className="w-3.5 h-3.5" /> : <FaEye className="w-3.5 h-3.5" />}
@@ -70,36 +69,36 @@ export function TeamsCard({ link, onCopy, isCopied }: TeamsCardProps) {
       </div>
       
       {hasDialInInfo && showDialIn && (
-        <div 
-          className="mt-2 p-2.5 rounded bg-slate-950/70 border border-dashed border-slate-600/50 cursor-pointer hover:border-slate-500/50 transition-colors"
+        <div
+          className={cn("mt-2 p-2.5 rounded border border-dashed cursor-pointer transition-colors", surface.page, "border-slate-600/50 hover:border-slate-500/50")}
           onClick={handleCopyAll}
         >
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0 space-y-1 font-mono text-xs">
               {link.phone && (
-                <div className="flex items-center gap-2 text-slate-300">
-                  <FaPhone className={cn(iconSize.sm, 'text-slate-500 shrink-0')} />
+                <div className={cn("flex items-center gap-2", text.label)}>
+                  <FaPhone className={cn(iconSize.sm, text.placeholder, 'shrink-0')} />
                   <span>{link.phone}</span>
                 </div>
               )}
               {link.phone_toll_free && (
-                <div className="flex items-center gap-2 text-slate-400">
-                  <FaPhone className={cn(iconSize.sm, 'text-slate-500 shrink-0')} />
+                <div className={cn("flex items-center gap-2", text.hint)}>
+                  <FaPhone className={cn(iconSize.sm, text.placeholder, 'shrink-0')} />
                   <span>{link.phone_toll_free}</span>
                 </div>
               )}
               {link.conference_id && (
-                <div className="flex items-center gap-2 text-slate-400">
-                  <FaHashtag className={cn(iconSize.sm, 'text-slate-500 shrink-0')} />
+                <div className={cn("flex items-center gap-2", text.hint)}>
+                  <FaHashtag className={cn(iconSize.sm, text.placeholder, 'shrink-0')} />
                   <span>Conference ID: {link.conference_id}</span>
                 </div>
               )}
             </div>
-            
+
             {isCopied?.(`teams-${link.id}`) ? (
-              <FaClipboardCheck className={cn(iconSize.md, 'text-emerald-400 flex-shrink-0')} />
+              <FaClipboardCheck className={cn(iconSize.md, 'text-emerald-400 shrink-0')} />
             ) : (
-              <FaCopy className={cn(iconSize.md, 'text-slate-500 flex-shrink-0')} />
+              <FaCopy className={cn(iconSize.md, text.placeholder, 'shrink-0')} />
             )}
           </div>
         </div>

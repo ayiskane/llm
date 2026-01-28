@@ -1,7 +1,7 @@
 'use client';
 
 import { FaLocationDot } from '@/lib/icons';
-import { cn } from '@/lib/utils';
+import { cn, text, surface, border } from '@/lib/config/theme';
 import { Tag } from '../ui/Tag';
 import { openInMaps } from '@/lib/utils';
 import type { Court, CourtWithRegion } from '@/types';
@@ -53,9 +53,10 @@ export function CourtHeader({ court, collapsed = false, className }: CourtHeader
     <div className={cn('px-4 py-2', className)}>
       {/* Title row - always visible, changes size */}
       <div className="flex items-center gap-2">
-        <h1 
+        <h1
           className={cn(
-            'font-semibold text-white uppercase tracking-wide flex-1 truncate text-left',
+            'font-semibold uppercase tracking-wide flex-1 truncate text-left',
+            text.heading,
             'transition-all duration-300 ease-out',
             collapsed ? 'text-sm' : 'text-lg'
           )}
@@ -77,7 +78,7 @@ export function CourtHeader({ court, collapsed = false, className }: CourtHeader
         {court.address && collapsed && (
           <button
             onClick={() => openInMaps(court.address)}
-            className="p-1.5 rounded-md bg-slate-800/50 hover:bg-slate-700/50 transition-colors shrink-0"
+            className={cn("p-1.5 rounded-md transition-colors shrink-0", surface.control, surface.controlHover)}
           >
             <FaLocationDot className="w-4 h-4 text-blue-400" />
           </button>
@@ -96,7 +97,7 @@ export function CourtHeader({ court, collapsed = false, className }: CourtHeader
           {court.address && (
             <button
               onClick={() => openInMaps(court.address)}
-              className="flex items-center justify-start gap-1 text-xs mt-1 text-slate-500 hover:text-blue-400 transition-colors text-left"
+              className={cn("flex items-center justify-start gap-1 text-xs mt-1 transition-colors text-left", text.placeholder, "hover:text-blue-400")}
             >
               <FaLocationDot className="w-3 h-3 shrink-0" />
               <span className="text-left">{court.address}</span>
@@ -106,9 +107,9 @@ export function CourtHeader({ court, collapsed = false, className }: CourtHeader
           {/* Region and tags row */}
           <div className="flex flex-wrap items-center justify-start gap-1.5 mt-2 pb-1">
             {region && (
-              <span className="px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
+              <span className={cn("px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase tracking-widest", surface.card, border.visible, text.hint)}>
                 <span>{region.code}</span>
-                <span className="text-slate-600">|</span>
+                <span className={text.disabled}>|</span>
                 <span>{region.name}</span>
               </span>
             )}

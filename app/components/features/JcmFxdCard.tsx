@@ -1,8 +1,7 @@
 'use client';
 
 import { FaAt, FaMicrosoftTeams } from '@/lib/icons';
-import { cn } from '@/lib/utils';
-import { card, text, iconSize } from '@/lib/config/theme';
+import { cn, card, text, iconSize } from '@/lib/config/theme';
 import { Button } from '@/app/components/ui/Button';
 import { joinTeamsMeeting } from '@/lib/utils';
 import type { JcmFxdSchedule } from '@/types';
@@ -19,10 +18,10 @@ interface ScheduleRowProps {
 function ScheduleRow({ label, value }: ScheduleRowProps) {
   return (
     <div className={card.flexRow}>
-      <span className={cn(text.scheduleLabel, 'text-slate-300')} style={{ letterSpacing: '1px' }}>
+      <span className={cn(text.scheduleLabel, text.label)} style={{ letterSpacing: '1px' }}>
         {label}
       </span>
-      <span className={text.monoValue}>{value}</span>
+      <span className={text.mono}>{value}</span>
     </div>
   );
 }
@@ -51,12 +50,12 @@ export function JcmFxdScheduleCard({ schedule }: JcmFxdScheduleCardProps) {
               <FaAt className={cn(iconSize.md, "text-emerald-400")} />
             </div>
             <div>
-              <div className="text-sm text-slate-200">Email Only</div>
-              <div className="text-xs text-slate-500">No in-person JCM FXD appearances</div>
+              <div className={cn("text-sm", text.body)}>Email Only</div>
+              <div className={cn("text-xs", text.placeholder)}>No in-person JCM FXD appearances</div>
             </div>
           </div>
           {schedule.notes && (
-            <div className="mt-2 text-xs text-slate-400">{schedule.notes}</div>
+            <div className={cn("mt-2 text-xs", text.hint)}>{schedule.notes}</div>
           )}
         </div>
       </div>
@@ -75,8 +74,8 @@ export function JcmFxdScheduleCard({ schedule }: JcmFxdScheduleCardProps) {
                 <FaMicrosoftTeams className={cn(iconSize.md, "text-indigo-400")} />
               </div>
               <div>
-                <div className="text-sm text-slate-200">Teams Only</div>
-                <div className="text-xs text-slate-500">Must appear via MS Teams</div>
+                <div className={cn("text-sm", text.body)}>Teams Only</div>
+                <div className={cn("text-xs", text.placeholder)}>Must appear via MS Teams</div>
               </div>
             </div>
             {schedule.teams_link?.teams_link && (
@@ -91,7 +90,7 @@ export function JcmFxdScheduleCard({ schedule }: JcmFxdScheduleCardProps) {
             )}
           </div>
           {schedule.notes && (
-            <div className="mt-2 text-xs text-slate-400">{schedule.notes}</div>
+            <div className={cn("mt-2 text-xs", text.hint)}>{schedule.notes}</div>
           )}
         </div>
       </div>
@@ -110,7 +109,7 @@ export function JcmFxdScheduleCard({ schedule }: JcmFxdScheduleCardProps) {
           <ScheduleRow label="Time" value={schedule.time} />
         )}
         <div className={cn(card.flexRow, "items-center")}>
-          <span className={cn(text.scheduleLabel, 'text-slate-300')} style={{ letterSpacing: '1px' }}>
+          <span className={cn(text.scheduleLabel, text.label)} style={{ letterSpacing: '1px' }}>
             Method
           </span>
           <div className="flex items-center gap-2">
@@ -143,7 +142,7 @@ export function JcmFxdScheduleCard({ schedule }: JcmFxdScheduleCardProps) {
       )}
       
       {schedule.notes && (
-        <div className="px-1 text-xs text-slate-500">{schedule.notes}</div>
+        <div className={cn("px-1 text-xs", text.placeholder)}>{schedule.notes}</div>
       )}
     </div>
   );

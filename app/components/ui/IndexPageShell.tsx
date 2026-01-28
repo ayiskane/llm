@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { cn } from '@/lib/config/theme';
+import { cn, surface, text, border } from '@/lib/config/theme';
 
 // =============================================================================
 // TYPES
@@ -23,10 +23,10 @@ interface IndexPageShellProps {
 
 function LoadingState({ text = 'Loading...' }: { text?: string }) {
   return (
-    <div className="h-[calc(100vh-4rem)] bg-[hsl(222.2,84%,4.9%)] flex items-center justify-center">
+    <div className={cn("h-[calc(100vh-4rem)] flex items-center justify-center", surface.page)}>
       <div className="flex flex-col items-center gap-4">
         <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-        <p className="text-slate-400 text-sm">{text}</p>
+        <p className={cn("text-sm", text.hint)}>{text}</p>
       </div>
     </div>
   );
@@ -38,10 +38,10 @@ function LoadingState({ text = 'Loading...' }: { text?: string }) {
 
 function ErrorState({ message }: { message: string }) {
   return (
-    <div className="h-[calc(100vh-4rem)] bg-[hsl(222.2,84%,4.9%)] flex items-center justify-center p-4">
+    <div className={cn("h-[calc(100vh-4rem)] flex items-center justify-center p-4", surface.page)}>
       <div className="text-center">
         <p className="text-red-400 mb-2">Something went wrong</p>
-        <p className="text-slate-500 text-sm">{message}</p>
+        <p className={cn("text-sm", text.placeholder)}>{message}</p>
       </div>
     </div>
   );
@@ -69,14 +69,14 @@ export function IndexPageShell({
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-[hsl(222.2,84%,4.9%)] overflow-hidden">
+    <div className={cn("h-[calc(100vh-4rem)] flex flex-col overflow-hidden", surface.page)}>
       {/* Fixed Header */}
-      <div className="flex-shrink-0 bg-[rgba(8,11,18,0.98)] border-b border-blue-500/10">
+      <div className={cn("shrink-0 border-b border-blue-500/10", surface.header)}>
         {/* Title */}
         <div className="px-4 pt-4 pb-2">
-          <h1 className="text-xl font-bold text-white">{title}</h1>
+          <h1 className={cn("text-xl font-bold", text.heading)}>{title}</h1>
           {subtitle && (
-            <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
+            <p className={cn("text-xs mt-0.5", text.placeholder)}>{subtitle}</p>
           )}
         </div>
 
@@ -105,10 +105,10 @@ interface EmptyStateProps {
 export function EmptyState({ icon, message, onClear }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-20 px-4">
-      <div className="w-12 h-12 text-slate-700 mb-4">
+      <div className={cn("w-12 h-12 mb-4", text.disabled)}>
         {icon}
       </div>
-      <p className="text-slate-400 text-center">{message}</p>
+      <p className={cn("text-center", text.hint)}>{message}</p>
       {onClear && (
         <button
           onClick={onClear}
@@ -134,7 +134,7 @@ interface ResultsCountProps {
 export function ResultsCount({ count, singular, plural }: ResultsCountProps) {
   return (
     <div className="py-4 text-center">
-      <span className="text-xs text-slate-500">
+      <span className={cn("text-xs", text.placeholder)}>
         {count} {count === 1 ? singular : plural}
       </span>
     </div>

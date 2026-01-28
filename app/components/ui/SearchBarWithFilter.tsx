@@ -1,7 +1,7 @@
 'use client';
 
 import { FaMagnifyingGlass, FaXmark, FaSliders } from '@/lib/icons';
-import { cn } from '@/lib/config/theme';
+import { cn, surface, text, border } from '@/lib/config/theme';
 
 interface SearchBarWithFilterProps {
   value: string;
@@ -23,7 +23,7 @@ export function SearchBarWithFilter({
   return (
     <div className="flex gap-2 px-4 pb-3">
       <div className="relative flex-1">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+        <div className={cn("absolute left-4 top-1/2 -translate-y-1/2", text.hint)}>
           <FaMagnifyingGlass className="w-4 h-4" />
         </div>
         <input
@@ -32,17 +32,18 @@ export function SearchBarWithFilter({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           className={cn(
-            'w-full bg-slate-800/50 border border-slate-700/50 rounded-xl',
+            'w-full rounded-xl',
+            surface.control, border.visible,
             'pl-11 pr-10 py-3 text-sm',
-            'text-slate-200 placeholder:text-slate-500',
-            'focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/40',
+            text.body, 'placeholder:text-slate-500',
+            border.focus,
             'transition-all duration-200'
           )}
         />
         {value && (
           <button
             onClick={onClear}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
+            className={cn("absolute right-4 top-1/2 -translate-y-1/2 transition-colors", text.hint, "hover:text-slate-200")}
           >
             <FaXmark className="w-4 h-4" />
           </button>
@@ -54,7 +55,7 @@ export function SearchBarWithFilter({
           'relative flex items-center justify-center w-12 rounded-xl border transition-all',
           hasActiveFilters
             ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-            : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:text-slate-200'
+            : cn(surface.control, border.visible, text.hint, 'hover:text-slate-200')
         )}
       >
         <FaSliders className="w-4 h-4" />

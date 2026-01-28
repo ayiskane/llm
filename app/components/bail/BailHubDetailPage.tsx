@@ -2,8 +2,7 @@
 
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { FaArrowLeft, FaAt, FaVideo, FaCopy, FaClipboardCheck, FaEye, FaEyeSlash, FaCommentDots, FaBuilding, FaClock } from '@/lib/icons';
-import { cn } from '@/lib/utils';
-import { card, text, toggle, iconSize, getScheduleLabelClass } from '@/lib/config/theme';
+import { cn, card, text, toggle, iconSize, getScheduleLabelClass, surface, border } from '@/lib/config/theme';
 import { StickyHeader } from '../layouts/StickyHeader';
 import { Section, PillButton, Toast } from '../ui';
 import { TeamsList } from '@/app/components/features/TeamsCard';
@@ -35,7 +34,8 @@ function BailHubHeader({ bailCourt, region, collapsed }: BailHubHeaderProps) {
       <div className="flex items-center gap-2">
         <h1 
           className={cn(
-            'font-semibold text-white uppercase tracking-wide flex-1 truncate text-left',
+            'font-semibold uppercase tracking-wide flex-1 truncate text-left',
+            text.heading,
             'transition-all duration-300 ease-out',
             collapsed ? 'text-sm' : 'text-lg'
           )}
@@ -45,7 +45,7 @@ function BailHubHeader({ bailCourt, region, collapsed }: BailHubHeaderProps) {
         
         {/* Collapsed: show compact region tag */}
         {region && collapsed && (
-          <span className="px-1.5 py-1 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest shrink-0">
+          <span className={cn("px-1.5 py-1 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase tracking-widest shrink-0", surface.card, border.visible, text.hint)}>
             <span>{REGION_CODE[region.id] || region.code}</span>
           </span>
         )}
@@ -59,15 +59,15 @@ function BailHubHeader({ bailCourt, region, collapsed }: BailHubHeaderProps) {
           {/* Region tag - matches CourtHeader exactly (no colored dot) */}
           <div className="flex flex-wrap items-center justify-start gap-1.5 mt-2 pb-1">
             {region && (
-              <span className="px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
+              <span className={cn("px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase tracking-widest", surface.card, border.visible, text.hint)}>
                 <span>{REGION_CODE[region.id] || region.code}</span>
-                <span className="text-slate-600">|</span>
+              <span className={text.disabled}>|</span>
                 <span>{region.name}</span>
               </span>
             )}
           </div>
           {bailCourt.notes && (
-            <p className="text-xs text-slate-500 mt-1">{bailCourt.notes}</p>
+            <p className={cn("text-xs mt-1", text.placeholder)}>{bailCourt.notes}</p>
           )}
         </div>
       </div>
@@ -91,7 +91,7 @@ function ScheduleRow({ label, value, color }: ScheduleRowProps) {
       <span className={getScheduleLabelClass(color)} style={{ letterSpacing: '1px' }}>
         {label}
       </span>
-      <span className={text.monoValue}>{value}</span>
+      <span className={text.mono}>{value}</span>
     </div>
   );
 }
@@ -191,16 +191,17 @@ function BailContactsStack({ bailContacts, onCopy, isCopied }: BailContactsStack
               onClick={() => onCopy(contact.email, contact.id)}
               className={cn(
                 "flex items-stretch cursor-pointer group transition-colors",
-                isFieldCopied ? "bg-emerald-500/10" : "hover:bg-slate-800/50"
+                isFieldCopied ? "bg-emerald-500/10" : surface.cardHover
               )}
             >
               <div className="w-1 flex-shrink-0 bg-amber-400" />
               <div className="flex-1 py-2 px-3 min-w-0">
-                <div className="text-[9px] text-slate-500 uppercase tracking-wider">{contact.label}</div>
+                <div className={cn("text-[9px] uppercase tracking-wider", text.placeholder)}>{contact.label}</div>
                 <div 
                   ref={!showFull ? registerRef : undefined}
                   className={cn(
-                    "text-[11px] text-slate-300 font-mono",
+                    "text-[11px] font-mono",
+                    text.label,
                     showFull ? 'break-all whitespace-normal' : 'truncate'
                   )}
                 >
@@ -211,7 +212,7 @@ function BailContactsStack({ bailContacts, onCopy, isCopied }: BailContactsStack
                 {isFieldCopied ? (
                   <FaClipboardCheck className={cn(iconSize.sm, 'text-emerald-400')} />
                 ) : (
-                  <FaCopy className={cn(iconSize.sm, 'text-slate-600 group-hover:text-slate-400 transition-colors')} />
+                  <FaCopy className={cn(iconSize.sm, text.disabled, 'group-hover:text-slate-400 transition-colors')} />
                 )}
               </div>
             </div>
@@ -257,10 +258,10 @@ function LinkedCourtsList({ courts, onCourtClick }: LinkedCourtsListProps) {
           <button
             key={court.id}
             onClick={() => onCourtClick(court.id)}
-            className="w-full flex items-center gap-3 py-2.5 px-3 hover:bg-slate-800/50 transition-colors text-left"
+            className={cn("w-full flex items-center gap-3 py-2.5 px-3 transition-colors text-left", surface.cardHover)}
           >
-            <FaBuilding className={cn(iconSize.md, 'text-slate-500 flex-shrink-0')} />
-            <span className="text-sm text-slate-200">{court.name}</span>
+            <FaBuilding className={cn(iconSize.md, text.placeholder, 'shrink-0')} />
+            <span className={cn("text-sm", text.body)}>{court.name}</span>
           </button>
         ))}
       </div>
@@ -339,7 +340,7 @@ export function BailHubDetailPage({ details, onBack, onNavigateToCourt, referrer
         <div className="flex items-center gap-2 px-3 py-2">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+            className={cn("flex items-center gap-2 transition-colors", text.linkSubtle)}
           >
             <FaArrowLeft className={iconSize.md} />
             <span className="text-sm">{backLabel}</span>
@@ -348,7 +349,7 @@ export function BailHubDetailPage({ details, onBack, onNavigateToCourt, referrer
         
         <BailHubHeader bailCourt={bailCourt} region={region} collapsed={isHeaderCollapsed} />
         
-        <div className="flex gap-1.5 px-3 py-2 border-t border-slate-700/30">
+        <div className={cn("flex gap-1.5 px-3 py-2", border.divider.replace('border-b', 'border-t'))}>
           {navButtons.filter(btn => btn.show).map((btn) => (
             <PillButton 
               className="flex-1 justify-center" 

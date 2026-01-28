@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
-import { cn } from '@/lib/utils';
+import { cn, text, surface, border } from '@/lib/config/theme';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#'.split('');
 
@@ -178,11 +178,11 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
     <>
       {/* Scrub indicator */}
       {isScrubbing && scrubLetter && indicatorY !== null && (
-        <div 
-          className="fixed right-10 z-[60] pointer-events-none"
+        <div
+          className="fixed right-10 z-60 pointer-events-none"
           style={{ top: indicatorY, transform: 'translateY(-50%)' }}
         >
-          <div className="w-12 h-12 rounded-xl bg-slate-800/95 border border-slate-600 shadow-xl flex items-center justify-center backdrop-blur-sm">
+          <div className="w-12 h-12 rounded-xl border shadow-xl flex items-center justify-center backdrop-blur-sm bg-slate-800/95 border-slate-600">
             <span className="text-xl font-bold text-blue-400">{scrubLetter}</span>
           </div>
         </div>
@@ -208,7 +208,7 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
             return (
               <span
                 key={`dot-${idx}`}
-                className="text-[6px] text-slate-600 h-1.5 flex items-center justify-center"
+                className={cn("text-[6px] h-1.5 flex items-center justify-center", text.disabled)}
                 aria-hidden="true"
               >
                 •
@@ -223,7 +223,7 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
               key={item.letter}
               className={cn(
                 'text-[9px] font-semibold w-4 h-3.5 flex items-center justify-center transition-all duration-50',
-                isHighlighted ? 'text-blue-400 scale-125 font-bold' : 'text-slate-500'
+                isHighlighted ? 'text-blue-400 scale-125 font-bold' : text.placeholder
               )}
             >
               {item.value}

@@ -1,0 +1,1107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LLM Theme Hard-coded Colors Report</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 24px; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:#0b1220; color:#e2e8f0; }
+  h1 { font-size: 20px; margin-bottom: 6px; }
+  p { color:#94a3b8; margin-top:0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid rgba(148,163,184,0.2); vertical-align: top; }
+  th { color:#cbd5e1; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; }
+  .swatch { width: 36px; height: 20px; border-radius: 4px; border: 1px solid rgba(148,163,184,0.3); }
+  .sample { font-size: 12px; }
+  .files { font-size: 12px; color:#94a3b8; }
+  .more { color:#64748b; }
+</style>
+</head>
+<body>
+  <h1>Hard-coded Color Classes</h1>
+  <p>Sources: app/, components/, lib/ TSX files. Tailwind default palette used for hex mapping.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Class</th>
+        <th>Swatch</th>
+        <th>Hex</th>
+        <th>Sample</th>
+        <th>Used in (examples)</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+  <tr>
+    <td class="mono">bg-amber-400</td>
+    <td>
+      <div class="swatch" style="background:#fbbf24"></div>
+    </td>
+    <td class="mono">#fbbf24</td>
+    <td>
+      <div class="sample" style="color:#fbbf24">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubDetailPage.tsx</div><div>app/components/features/BailCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-amber-500/15</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/court/CircuitCourtAlert.tsx</div><div>app/components/court/CourtDetailPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/features/BailCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-amber-500/20</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/features/BailCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-blue-500</td>
+    <td>
+      <div class="swatch" style="background:#3b82f6"></div>
+    </td>
+    <td class="mono">#3b82f6</td>
+    <td>
+      <div class="sample" style="color:#3b82f6">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/ui/FilterModal.tsx</div><div>app/components/ui/SearchBarWithFilter.tsx</div><div>app/login/page.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-blue-500/15</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionsIndexPage.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-blue-500/20</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/features/CourtCard.tsx</div><div>app/components/ui/FilterChip.tsx</div><div>app/components/ui/SearchBarWithFilter.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-blue-500/80</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/features/CellCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-blue-600</td>
+    <td>
+      <div class="swatch" style="background:#2563eb"></div>
+    </td>
+    <td class="mono">#2563eb</td>
+    <td>
+      <div class="sample" style="color:#2563eb">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/ui/FilterModal.tsx</div><div>app/login/page.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-emerald-500/10</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubDetailPage.tsx</div><div>app/components/features/BailCard.tsx</div><div>app/components/features/ContactCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-emerald-500/15</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/features/JcmFxdCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-green-500/20</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/features/CellCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-green-500/30</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/features/CellCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-indigo-500</td>
+    <td>
+      <div class="swatch" style="background:#6366f1"></div>
+    </td>
+    <td class="mono">#6366f1</td>
+    <td>
+      <div class="sample" style="color:#6366f1">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubDetailPage.tsx</div><div>app/components/features/BailCard.tsx</div><div>components/ui/button.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-indigo-500/15</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/features/JcmFxdCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-indigo-600</td>
+    <td>
+      <div class="swatch" style="background:#4f46e5"></div>
+    </td>
+    <td class="mono">#4f46e5</td>
+    <td>
+      <div class="sample" style="color:#4f46e5">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubDetailPage.tsx</div><div>app/components/features/BailCard.tsx</div><div>components/ui/button.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-indigo-700</td>
+    <td>
+      <div class="swatch" style="background:#4338ca"></div>
+    </td>
+    <td class="mono">#4338ca</td>
+    <td>
+      <div class="sample" style="color:#4338ca">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubDetailPage.tsx</div><div>app/components/features/BailCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-purple-500/15</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-purple-500/20</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/features/CourtCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-red-500/10</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/login/page.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-red-500/15</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionDetailPage.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-500/20</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionDetailPage.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-600/50</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/features/CellCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-700</td>
+    <td>
+      <div class="swatch" style="background:#334155"></div>
+    </td>
+    <td class="mono">#334155</td>
+    <td>
+      <div class="sample" style="color:#334155">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/ui/FilterModal.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-700/30</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/features/TeamsCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-700/50</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/court/CourtDetailPage.tsx</div><div>app/components/court/CourtHeader.tsx</div><div>app/components/features/BailCard.tsx</div><div>app/components/features/CellCard.tsx</div><div>app/components/features/TeamsCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-800</td>
+    <td>
+      <div class="swatch" style="background:#1e293b"></div>
+    </td>
+    <td class="mono">#1e293b</td>
+    <td>
+      <div class="sample" style="color:#1e293b">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/court/CourtDetailPage.tsx</div><div>app/components/court/SearchBar.tsx</div><div>app/components/ui/FilterModal.tsx</div><div>app/login/page.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-800/20</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-800/30</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/court/CourtDetailPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/features/CourtCard.tsx</div><div class="more">+2 more</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-800/40</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/court/CourtDetailPage.tsx</div><div>app/components/features/BailCard.tsx</div><div>app/components/features/CellCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-800/50</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubDetailPage.tsx</div><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/court/CircuitCourtAlert.tsx</div><div>app/components/court/CourtDetailPage.tsx</div><div class="more">+11 more</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-800/60</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/court/CourtDetailPage.tsx</div><div>app/components/features/BailCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-800/70</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/court/CircuitCourtAlert.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-800/80</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-800/95</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/ui/AlphabetNav.tsx</div><div>app/components/ui/Toast.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-900</td>
+    <td>
+      <div class="swatch" style="background:#0f172a"></div>
+    </td>
+    <td class="mono">#0f172a</td>
+    <td>
+      <div class="sample" style="color:#0f172a">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/ui/FilterModal.tsx</div><div>app/layout.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-900/20</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/faq/page.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-900/50</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/ui/FilterChip.tsx</div><div>app/login/page.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-900/80</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/ui/AlphabetNav.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-900/95</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/ui/BottomNav.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-950</td>
+    <td>
+      <div class="swatch" style="background:#020617"></div>
+    </td>
+    <td class="mono">#020617</td>
+    <td>
+      <div class="sample" style="color:#020617">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/login/page.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">bg-slate-950/70</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/features/TeamsCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-amber-500/30</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/court/CourtDetailPage.tsx</div><div>app/components/features/BailCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-amber-500/40</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/court/CircuitCourtAlert.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-amber-500/50</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/court/CourtDetailPage.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-b-0</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/features/CellCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-blue-500/10</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/ui/IndexPageShell.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-blue-500/30</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/ui/FilterChip.tsx</div><div>app/components/ui/IndexPageShell.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-blue-500/40</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/ui/SearchBarWithFilter.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-blue-500/50</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/ui/Input.tsx</div><div>app/components/ui/SearchBar.tsx</div><div>app/components/ui/SearchBarWithFilter.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-purple-500/30</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-red-500/30</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/login/page.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-red-500/50</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/login/page.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-slate-500/50</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/features/TeamsCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-slate-600</td>
+    <td>
+      <div class="swatch" style="background:#475569"></div>
+    </td>
+    <td class="mono">#475569</td>
+    <td>
+      <div class="sample" style="color:#475569">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/ui/AlphabetNav.tsx</div><div>app/components/ui/FilterChip.tsx</div><div>app/login/page.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-slate-600/50</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/features/BailCard.tsx</div><div>app/components/features/CourtCard.tsx</div><div>app/components/features/TeamsCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-slate-700</td>
+    <td>
+      <div class="swatch" style="background:#334155"></div>
+    </td>
+    <td class="mono">#334155</td>
+    <td>
+      <div class="sample" style="color:#334155">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/court/CourtDetailPage.tsx</div><div>app/components/court/SearchBar.tsx</div><div>app/components/ui/FilterModal.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-slate-700/30</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubDetailPage.tsx</div><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/court/CourtDetailPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div class="more">+3 more</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-slate-700/50</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubDetailPage.tsx</div><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/court/CourtDetailPage.tsx</div><div>app/components/court/CourtHeader.tsx</div><div class="more">+12 more</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-slate-800</td>
+    <td>
+      <div class="swatch" style="background:#1e293b"></div>
+    </td>
+    <td class="mono">#1e293b</td>
+    <td>
+      <div class="sample" style="color:#1e293b">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/ui/BottomNav.tsx</div><div>app/components/ui/FilterModal.tsx</div><div>app/login/page.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">border-slate-800/50</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">fill-amber-400</td>
+    <td>
+      <div class="swatch" style="background:#fbbf24"></div>
+    </td>
+    <td class="mono">#fbbf24</td>
+    <td>
+      <div class="sample" style="color:#fbbf24">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/court/CourtDetailPage.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">from-right-2</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/court/CourtDetailPage.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">ring-blue-500/40</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/ui/SearchBarWithFilter.tsx</div><div>app/login/page.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">ring-blue-500/50</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/ui/Input.tsx</div><div>app/components/ui/SearchBar.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">ring-indigo-500</td>
+    <td>
+      <div class="swatch" style="background:#6366f1"></div>
+    </td>
+    <td class="mono">#6366f1</td>
+    <td>
+      <div class="sample" style="color:#6366f1">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/court/CourtDetailPage.tsx</div><div>app/components/court/SearchBar.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">ring-offset-0</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/login/page.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">ring-offset-2</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>components/ui/badge.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-amber-300</td>
+    <td>
+      <div class="swatch" style="background:#fcd34d"></div>
+    </td>
+    <td class="mono">#fcd34d</td>
+    <td>
+      <div class="sample" style="color:#fcd34d">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/court/CourtDetailPage.tsx</div><div>app/components/features/BailCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-amber-400</td>
+    <td>
+      <div class="swatch" style="background:#fbbf24"></div>
+    </td>
+    <td class="mono">#fbbf24</td>
+    <td>
+      <div class="sample" style="color:#fbbf24">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/court/CircuitCourtAlert.tsx</div><div>app/components/court/CourtDetailPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/features/BailCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-amber-400/70</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-amber-500</td>
+    <td>
+      <div class="swatch" style="background:#f59e0b"></div>
+    </td>
+    <td class="mono">#f59e0b</td>
+    <td>
+      <div class="sample" style="color:#f59e0b">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/court/CircuitCourtAlert.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-blue-300</td>
+    <td>
+      <div class="swatch" style="background:#93c5fd"></div>
+    </td>
+    <td class="mono">#93c5fd</td>
+    <td>
+      <div class="sample" style="color:#93c5fd">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/features/BailCard.tsx</div><div>app/components/ui/IndexPageShell.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-blue-400</td>
+    <td>
+      <div class="swatch" style="background:#60a5fa"></div>
+    </td>
+    <td class="mono">#60a5fa</td>
+    <td>
+      <div class="sample" style="color:#60a5fa">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/court/CourtHeader.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/features/BailCard.tsx</div><div class="more">+7 more</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-blue-500</td>
+    <td>
+      <div class="swatch" style="background:#3b82f6"></div>
+    </td>
+    <td class="mono">#3b82f6</td>
+    <td>
+      <div class="sample" style="color:#3b82f6">Sample text</div>
+    </td>
+    <td class="files"><div>app/login/page.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-emerald-400</td>
+    <td>
+      <div class="swatch" style="background:#34d399"></div>
+    </td>
+    <td class="mono">#34d399</td>
+    <td>
+      <div class="sample" style="color:#34d399">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubDetailPage.tsx</div><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/features/BailCard.tsx</div><div>app/components/features/ContactCard.tsx</div><div class="more">+2 more</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-green-400</td>
+    <td>
+      <div class="swatch" style="background:#4ade80"></div>
+    </td>
+    <td class="mono">#4ade80</td>
+    <td>
+      <div class="sample" style="color:#4ade80">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/features/CellCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-indigo-400</td>
+    <td>
+      <div class="swatch" style="background:#818cf8"></div>
+    </td>
+    <td class="mono">#818cf8</td>
+    <td>
+      <div class="sample" style="color:#818cf8">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/features/JcmFxdCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-purple-300</td>
+    <td>
+      <div class="swatch" style="background:#d8b4fe"></div>
+    </td>
+    <td class="mono">#d8b4fe</td>
+    <td>
+      <div class="sample" style="color:#d8b4fe">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-purple-400</td>
+    <td>
+      <div class="swatch" style="background:#c084fc"></div>
+    </td>
+    <td class="mono">#c084fc</td>
+    <td>
+      <div class="sample" style="color:#c084fc">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/features/CourtCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-purple-400/70</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-purple-400/80</td>
+    <td>
+      <div class="swatch" style="background:transparent"></div>
+    </td>
+    <td class="mono">n/a</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/features/BailCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-red-400</td>
+    <td>
+      <div class="swatch" style="background:#f87171"></div>
+    </td>
+    <td class="mono">#f87171</td>
+    <td>
+      <div class="sample" style="color:#f87171">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/ui/IndexPageShell.tsx</div><div>app/login/page.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-slate-100</td>
+    <td>
+      <div class="swatch" style="background:#f1f5f9"></div>
+    </td>
+    <td class="mono">#f1f5f9</td>
+    <td>
+      <div class="sample" style="color:#f1f5f9">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/features/CourtCard.tsx</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-slate-200</td>
+    <td>
+      <div class="swatch" style="background:#e2e8f0"></div>
+    </td>
+    <td class="mono">#e2e8f0</td>
+    <td>
+      <div class="sample" style="color:#e2e8f0">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubDetailPage.tsx</div><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/court/CourtDetailPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div class="more">+10 more</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-slate-300</td>
+    <td>
+      <div class="swatch" style="background:#cbd5e1"></div>
+    </td>
+    <td class="mono">#cbd5e1</td>
+    <td>
+      <div class="sample" style="color:#cbd5e1">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubDetailPage.tsx</div><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/court/CourtDetailPage.tsx</div><div>app/components/court/SearchBar.tsx</div><div class="more">+8 more</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-slate-400</td>
+    <td>
+      <div class="swatch" style="background:#94a3b8"></div>
+    </td>
+    <td class="mono">#94a3b8</td>
+    <td>
+      <div class="sample" style="color:#94a3b8">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubDetailPage.tsx</div><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/court/CircuitCourtAlert.tsx</div><div>app/components/court/CourtDetailPage.tsx</div><div class="more">+17 more</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-slate-500</td>
+    <td>
+      <div class="swatch" style="background:#64748b"></div>
+    </td>
+    <td class="mono">#64748b</td>
+    <td>
+      <div class="sample" style="color:#64748b">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubDetailPage.tsx</div><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/court/CircuitCourtAlert.tsx</div><div>app/components/court/CourtDetailPage.tsx</div><div class="more">+19 more</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-slate-600</td>
+    <td>
+      <div class="swatch" style="background:#475569"></div>
+    </td>
+    <td class="mono">#475569</td>
+    <td>
+      <div class="sample" style="color:#475569">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubDetailPage.tsx</div><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionDetailPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/court/CircuitCourtAlert.tsx</div><div>app/components/court/CourtHeader.tsx</div><div class="more">+5 more</div></td>
+  </tr>
+
+  <tr>
+    <td class="mono">text-slate-700</td>
+    <td>
+      <div class="swatch" style="background:#334155"></div>
+    </td>
+    <td class="mono">#334155</td>
+    <td>
+      <div class="sample" style="color:#334155">Sample text</div>
+    </td>
+    <td class="files"><div>app/components/bail/BailHubsIndexPage.tsx</div><div>app/components/corrections/CorrectionsIndexPage.tsx</div><div>app/components/courts/CourtsIndexPage.tsx</div><div>app/components/ui/IndexPageShell.tsx</div></td>
+  </tr>
+    </tbody>
+  </table>
+</body>
+</html>

@@ -44,7 +44,8 @@ export const Section = forwardRef<HTMLDivElement, SectionProps>(
           {/* Chevron */}
           <FaChevronDown
             className={cn(
-              'w-4 h-4 text-slate-500 transition-transform duration-200',
+              'w-4 h-4 transition-transform duration-200',
+              text.placeholder,
               isOpen && 'rotate-180'
             )}
           />

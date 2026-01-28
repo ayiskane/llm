@@ -2,8 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { FaCopy, FaClipboardCheck, FaEye, FaEyeSlash } from '@/lib/icons';
-import { cn } from '@/lib/utils';
-import { card, text, toggle, iconSize, getCategoryAccentClass, type ContactCategory } from '@/lib/config/theme';
+import { cn, card, text, toggle, iconSize, getCategoryAccentClass, surface, type ContactCategory } from '@/lib/config/theme';
 import { CONTACT_ROLES } from '@/lib/config/constants';
 import { useTruncationDetection } from '@/lib/hooks';
 import type { ContactWithRole } from '@/types';
@@ -57,21 +56,22 @@ function ContactRow({
       onClick={handleCopy}
       className={cn(
         "flex items-stretch cursor-pointer group transition-colors",
-        isFieldCopied ? "bg-emerald-500/10" : "hover:bg-slate-800/50"
+        isFieldCopied ? "bg-emerald-500/10" : surface.cardHover
       )}
     >
       {/* Vertical color bar */}
-      <div className={cn('w-1 flex-shrink-0', accentClass)} />
+      <div className={cn('w-1 shrink-0', accentClass)} />
       
       {/* Content: label + email stacked */}
       <div className="flex-1 py-2 px-3 min-w-0">
-        <div className="text-[9px] text-slate-500 uppercase tracking-wider">
+        <div className={cn("text-[9px] uppercase tracking-wider", text.placeholder)}>
           {label}
         </div>
-        <div 
+        <div
           ref={!showFull ? registerTruncationRef : undefined}
           className={cn(
-            "text-[11px] text-slate-300 font-mono",
+            "text-[11px] font-mono",
+            text.label,
             showFull ? 'break-all whitespace-normal' : 'truncate'
           )}
         >
@@ -88,7 +88,7 @@ function ContactRow({
         {isFieldCopied ? (
           <FaClipboardCheck className="w-3.5 h-3.5 text-emerald-400" />
         ) : (
-          <FaCopy className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400 transition-colors" />
+          <FaCopy className={cn("w-3.5 h-3.5 group-hover:text-slate-400 transition-colors", text.disabled)} />
         )}
       </div>
     </div>

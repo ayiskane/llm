@@ -3,7 +3,8 @@
 import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { FaArrowLeft, FaPhone, FaClock, FaUsers, FaCheck, FaXmark, FaCopy, FaLocationDot, FaFax, FaPenLine } from '@/lib/icons';
-import { cn, openInMaps } from '@/lib/utils';
+import { cn, surface, text, border } from '@/lib/config/theme';
+import { openInMaps } from '@/lib/utils';
 import { StickyHeader } from '../layouts/StickyHeader';
 import { Section, PillButton } from '../ui';
 import { Tag } from '../ui/Tag';
@@ -35,24 +36,25 @@ type AccordionSection = 'contact' | 'callback' | 'visits' | null;
 // COPY BUTTON COMPONENT
 // =============================================================================
 
-function CopyButton({ text, className }: { text: string; className?: string }) {
+function CopyButton({ copyText, className }: { copyText: string; className?: string }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(copyText);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch (err) {
       console.error('Failed to copy:', err);
     }
-  }, [text]);
+  }, [copyText]);
 
   return (
     <button
       onClick={handleCopy}
       className={cn(
-        "flex items-center justify-center rounded bg-slate-700/50 active:bg-slate-600/50 transition-colors",
+        "flex items-center justify-center rounded transition-colors",
+        surface.control, surface.controlPressed,
         className
       )}
       title="Copy to clipboard"
@@ -60,7 +62,7 @@ function CopyButton({ text, className }: { text: string; className?: string }) {
       {copied ? (
         <FaCheck className="w-4 h-4 text-green-400" />
       ) : (
-        <FaCopy className="w-4 h-4 text-slate-400" />
+        <FaCopy className={cn("w-4 h-4", text.hint)} />
       )}
     </button>
   );
@@ -95,21 +97,22 @@ function CallButton({ phone, className }: { phone: string; className?: string })
 
 function CentreHeader({ centre, collapsed }: { centre: CorrectionalCentre; collapsed: boolean }) {
   const region = LOCATION_TO_REGION[centre.location];
-  
+
   return (
     <div className="px-4 py-2">
       {/* Title row - always visible, changes size */}
       <div className="flex items-center gap-2">
-        <h1 
+        <h1
           className={cn(
-            'font-semibold text-white uppercase tracking-wide flex-1 truncate text-left',
+            'font-semibold uppercase tracking-wide flex-1 truncate text-left',
+            text.heading,
             'transition-all duration-300 ease-out',
             collapsed ? 'text-sm' : 'text-lg'
           )}
         >
           {centre.name}
         </h1>
-        
+
         {/* Tags - compact when collapsed */}
         <div className={cn(
           'flex items-center gap-1 shrink-0 transition-opacity duration-300',
@@ -123,20 +126,20 @@ function CentreHeader({ centre, collapsed }: { centre: CorrectionalCentre; colla
             {centre.is_federal ? 'FED' : 'PROV'}
           </Tag>
         </div>
-        
+
         {/* Map button - only in collapsed */}
         {collapsed && (
           <button
             onClick={() => centre.address && openInMaps(centre.address)}
-            className="p-1.5 rounded-md bg-slate-800/50 hover:bg-slate-700/50 transition-colors shrink-0"
+            className={cn("p-1.5 rounded-md transition-colors shrink-0", surface.control, surface.controlHover)}
           >
             <FaLocationDot className="w-4 h-4 text-blue-400" />
           </button>
         )}
       </div>
-      
+
       {/* Expandable content - uses grid for smooth height animation */}
-      <div 
+      <div
         className={cn(
           'grid transition-all duration-300 ease-out',
           collapsed ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'
@@ -147,13 +150,13 @@ function CentreHeader({ centre, collapsed }: { centre: CorrectionalCentre; colla
           {centre.address && (
             <button
               onClick={() => openInMaps(centre.address)}
-              className="flex items-center justify-start gap-1 text-xs mt-1 text-slate-500 hover:text-blue-400 transition-colors text-left"
+              className={cn("flex items-center justify-start gap-1 text-xs mt-1 transition-colors text-left", text.placeholder, "hover:text-blue-400")}
             >
               <FaLocationDot className="w-3 h-3 shrink-0" />
               <span className="text-left">{centre.address}</span>
             </button>
           )}
-          
+
           {/* Tags row: [Short form][Women] | [Region][Provincial] */}
           <div className="flex flex-wrap items-center justify-start gap-1.5 mt-2 pb-1">
             {centre.short_name && (
@@ -162,11 +165,11 @@ function CentreHeader({ centre, collapsed }: { centre: CorrectionalCentre; colla
             {centre.centre_type && centre.centre_type !== 'provincial' && centre.centre_type !== 'federal' && (
               <Tag color="slate">{centre.centre_type.toUpperCase()}</Tag>
             )}
-            <span className="text-slate-600">|</span>
+            <span className={text.disabled}>|</span>
             {region && (
-              <span className="px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
+              <span className={cn("px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase tracking-widest", surface.card, border.visible, text.hint)}>
                 <span>{region.code}</span>
-                <span className="text-slate-600">|</span>
+                <span className={text.disabled}>|</span>
                 <span>{region.name}</span>
               </span>
             )}

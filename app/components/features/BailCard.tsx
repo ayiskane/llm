@@ -2,8 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { FaBuildingColumns, FaChevronRight, FaCopy, FaClipboardCheck, FaEye, FaEyeSlash, FaCommentDots } from '@/lib/icons';
-import { cn } from '@/lib/utils';
-import { card, text, toggle, iconSize, getScheduleLabelClass } from '@/lib/config/theme';
+import { cn, card, text, toggle, iconSize, getScheduleLabelClass, surface, border } from '@/lib/config/theme';
 import { TeamsList } from './TeamsCard';
 import { isVBTriageLink, getBailHubTag, CONTACT_ROLES } from '@/lib/config/constants';
 import { useTruncationDetection } from '@/lib/hooks';
@@ -28,7 +27,7 @@ function ScheduleRow({ label, value, color }: ScheduleRowProps) {
       >
         {label}
       </span>
-      <span className={text.monoValue}>{value}</span>
+      <span className={text.mono}>{value}</span>
     </div>
   );
 }
@@ -179,7 +178,7 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
               onClick={() => onCopy?.(contact.email, contact.id)}
               className={cn(
                 "flex items-stretch cursor-pointer group transition-colors",
-                isFieldCopied ? "bg-emerald-500/10" : "hover:bg-slate-800/50"
+                isFieldCopied ? "bg-emerald-500/10" : surface.cardHover
               )}
             >
               {/* Vertical color bar - amber for bail */}
@@ -187,13 +186,14 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
               
               {/* Content: label + email stacked */}
               <div className="flex-1 py-2 px-3 min-w-0">
-                <div className="text-[9px] text-slate-500 uppercase tracking-wider">
+                <div className={cn("text-[9px] uppercase tracking-wider", text.placeholder)}>
                   {contact.label}
                 </div>
-                <div 
+                <div
                   ref={!showFull ? registerRef : undefined}
                   className={cn(
-                    "text-[11px] text-slate-300 font-mono",
+                    "text-[11px] font-mono",
+                    text.label,
                     showFull ? 'break-all whitespace-normal' : 'truncate'
                   )}
                 >
@@ -206,7 +206,7 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
                 {isFieldCopied ? (
                   <FaClipboardCheck className="w-3.5 h-3.5 text-emerald-400" />
                 ) : (
-                  <FaCopy className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400 transition-colors" />
+                  <FaCopy className={cn("w-3.5 h-3.5 group-hover:text-slate-400 transition-colors", text.disabled)} />
                 )}
               </div>
             </div>
@@ -243,7 +243,7 @@ export function BailHubLink({ bailCourt, onNavigate }: BailHubLinkProps) {
       onClick={() => onNavigate(bailCourt.court_id!)}
       className={cn(
         "w-full rounded-xl overflow-hidden",
-        "bg-slate-800/40 border border-slate-700/50",
+        surface.card, border.visible,
         "hover:bg-slate-800/60 hover:border-slate-600/50",
         "active:bg-slate-700/50",
         "transition-all duration-200"
@@ -254,10 +254,10 @@ export function BailHubLink({ bailCourt, onNavigate }: BailHubLinkProps) {
           <FaBuildingColumns className="w-5 h-5 text-amber-400" />
         </div>
         <div className="flex-1 min-w-0 text-left">
-          <div className="text-sm font-medium text-slate-200 truncate">{courtName}</div>
-          <div className="text-xs text-slate-500 mt-0.5">Tap to view court details</div>
+          <div className={cn("text-sm font-medium truncate", text.body)}>{courtName}</div>
+          <div className={cn("text-xs mt-0.5", text.placeholder)}>Tap to view court details</div>
         </div>
-        <FaChevronRight className="w-5 h-5 text-slate-500 shrink-0" />
+        <FaChevronRight className={cn("w-5 h-5 shrink-0", text.placeholder)} />
       </div>
     </button>
   );
@@ -281,7 +281,7 @@ function BailTab({ label, isActive, onClick }: BailTabProps) {
         "flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-all",
         isActive
           ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-          : "text-slate-400 hover:text-slate-300 hover:bg-slate-800/50"
+          : cn(text.hint, surface.cardHover)
       )}
     >
       {label}
@@ -380,7 +380,7 @@ function WeekendBailContent({ weekendBailCourts, onCopy, isCopied }: WeekendBail
   
   if (courtsWithTeams.length === 0) {
     return (
-      <div className="text-sm text-slate-500 text-center py-4">
+      <div className={cn("text-sm text-center py-4", text.placeholder)}>
         No evening/weekend bail information available
       </div>
     );
@@ -394,7 +394,7 @@ function WeekendBailContent({ weekendBailCourts, onCopy, isCopied }: WeekendBail
             {court.name}
           </div>
           {court.notes && (
-            <div className="text-xs text-slate-500 -mt-1">{court.notes}</div>
+            <div className={cn("text-xs -mt-1", text.placeholder)}>{court.notes}</div>
           )}
           <TeamsList links={teams} filterVBTriage={false} onCopy={onCopy} isCopied={isCopied} />
         </div>

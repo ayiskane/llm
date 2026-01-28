@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn, surface } from '@/lib/config/theme';
 
 interface StickyHeaderProps {
   children: React.ReactNode;
@@ -9,17 +9,12 @@ interface StickyHeaderProps {
 
 /**
  * Sticky header with backdrop blur.
- * Background: rgba(8,11,18,0.95) - matches backup branch
- * Border: subtle blue tint
+ * Uses theme token for consistent header styling.
  */
 export function StickyHeader({ children, className }: StickyHeaderProps) {
   return (
-    <div 
-      className={cn('flex-shrink-0 backdrop-blur-md', className)}
-      style={{
-        background: 'rgba(8,11,18,0.95)',
-        borderBottom: '1px solid rgba(59,130,246,0.08)',
-      }}
+    <div
+      className={cn('shrink-0 backdrop-blur-md border-b border-blue-500/10', surface.header, className)}
     >
       {children}
     </div>

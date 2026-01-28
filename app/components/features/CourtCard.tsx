@@ -1,7 +1,7 @@
 'use client';
 
 import { FaLocationDot, FaChevronRight } from '@/lib/icons';
-import { cn, iconSize } from '@/lib/config/theme';
+import { cn, iconSize, text, surface, border } from '@/lib/config/theme';
 import { openInMaps } from '@/lib/utils';
 import type { Court, CourtWithRegion } from '@/types';
 
@@ -21,21 +21,21 @@ export function CourtCard({ court, onClick, contactCount, cellCount, teamsCount 
       onClick={onClick}
       className={cn(
         'w-full text-left p-4 rounded-lg',
-        'bg-slate-800/30 border border-slate-700/50',
-        'hover:bg-slate-800/50 hover:border-slate-600/50',
+        surface.card, border.visible,
+        surface.cardHover, 'hover:border-slate-600/50',
         'transition-all duration-200'
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-slate-200 text-sm">
+          <h3 className={cn("font-medium text-sm", text.body)}>
             {court.name}
           </h3>
           
           {court.address && (
             <div className="flex items-start gap-1 mt-1">
-              <FaLocationDot className={cn(iconSize.xs, 'text-slate-500 mt-0.5 shrink-0')} />
-              <span className="text-xs text-slate-400 line-clamp-2">
+              <FaLocationDot className={cn(iconSize.xs, text.placeholder, 'mt-0.5 shrink-0')} />
+              <span className={cn("text-xs line-clamp-2", text.hint)}>
                 {court.address}
               </span>
             </div>
@@ -43,7 +43,7 @@ export function CourtCard({ court, onClick, contactCount, cellCount, teamsCount 
           
           <div className="flex items-center gap-2 mt-2">
             {region && (
-              <span className="text-xs text-slate-500">
+              <span className={cn("text-xs", text.placeholder)}>
                 {region.code} | {region.name}
               </span>
             )}
@@ -62,23 +62,23 @@ export function CourtCard({ court, onClick, contactCount, cellCount, teamsCount 
           </div>
         </div>
         
-        <FaChevronRight className={cn(iconSize.md, 'text-slate-500 shrink-0 mt-1')} />
+        <FaChevronRight className={cn(iconSize.md, text.placeholder, 'shrink-0 mt-1')} />
       </div>
       
       {(contactCount || cellCount || teamsCount) && (
-        <div className="flex gap-3 mt-3 pt-3 border-t border-slate-700/50">
+        <div className={cn("flex gap-3 mt-3 pt-3", border.divider.replace('border-b', 'border-t'))}>
           {contactCount !== undefined && contactCount > 0 && (
-            <span className="text-xs text-slate-500">
+            <span className={cn("text-xs", text.placeholder)}>
               {contactCount} Contacts
             </span>
           )}
           {cellCount !== undefined && cellCount > 0 && (
-            <span className="text-xs text-slate-500">
+            <span className={cn("text-xs", text.placeholder)}>
               {cellCount} Cells
             </span>
           )}
           {teamsCount !== undefined && teamsCount > 0 && (
-            <span className="text-xs text-slate-500">
+            <span className={cn("text-xs", text.placeholder)}>
               {teamsCount} Teams
             </span>
           )}
@@ -95,25 +95,25 @@ interface CourtHeaderProps {
 export function CourtHeader({ court }: CourtHeaderProps) {
   return (
     <div className="space-y-2">
-      <h1 className="text-lg font-semibold text-slate-100 uppercase tracking-wide">
+      <h1 className={cn("text-lg font-semibold uppercase tracking-wide", text.heading)}>
         {court.name}
       </h1>
-      
+
       {court.address && (
         <button
           onClick={() => openInMaps(court.address)}
           className="flex items-start gap-1 text-left group"
         >
-          <FaLocationDot className={cn(iconSize.sm, 'text-slate-500 mt-0.5 shrink-0 group-hover:text-blue-400 transition-colors')} />
-          <span className="text-sm text-slate-400 group-hover:text-blue-400 transition-colors">
+          <FaLocationDot className={cn(iconSize.sm, text.placeholder, 'mt-0.5 shrink-0 group-hover:text-blue-400 transition-colors')} />
+          <span className={cn("text-sm group-hover:text-blue-400 transition-colors", text.hint)}>
             {court.address}
           </span>
         </button>
       )}
-      
+
       <div className="flex items-center gap-2">
         {court.region && (
-          <span className="text-sm text-slate-500">
+          <span className={cn("text-sm", text.placeholder)}>
             {court.region.code} | {court.region.name}
           </span>
         )}
