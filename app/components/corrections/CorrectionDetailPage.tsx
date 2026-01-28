@@ -189,22 +189,22 @@ function CentreHeader({ centre, collapsed }: { centre: CorrectionalCentre; colla
 
 function ContactSection({ centre }: { centre: CorrectionalCentre }) {
   const phone = centre.general_phone;
-  const phoneDisplay = centre.general_phone_option 
+  const phoneDisplay = centre.general_phone_option
     ? `${phone} (${centre.general_phone_option})`
     : phone;
 
   return (
-    <div className="bg-slate-900/20">
+    <div className={surface.panel}>
       {/* GC Link Row - if available */}
       {centre.has_bc_gc_link && (
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
+        <div className={cn("flex items-center gap-3 px-4 py-3", border.divider)}>
           <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
             <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-slate-200">BC Government Calling Link</div>
+            <div className={cn("text-sm font-medium", text.body)}>BC Government Calling Link</div>
             <div className="text-xs text-blue-400">Available for this centre</div>
           </div>
           <Tag color="blue" size="sm">GC LINK</Tag>
@@ -212,54 +212,54 @@ function ContactSection({ centre }: { centre: CorrectionalCentre }) {
       )}
 
       {/* Phone Row */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
+      <div className={cn("flex items-center gap-3 px-4 py-3", border.divider)}>
         <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
           <FaPhone className="w-5 h-5 text-blue-400" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium text-slate-200">Phone</div>
+          <div className={cn("text-sm font-medium", text.body)}>Phone</div>
           <div className="text-xs text-blue-400 font-mono">{phoneDisplay}</div>
         </div>
         <div className="flex items-center gap-1.5">
-          <CopyButton text={phone} className="w-9 h-9 rounded-lg" />
+          <CopyButton copyText={phone} className="w-9 h-9 rounded-lg" />
           <CallButton phone={phone} className="w-9 h-9 rounded-lg" />
         </div>
       </div>
 
       {/* CDN Fax Row - uses FaPenLine icon */}
       {centre.cdn_fax && (
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
+        <div className={cn("flex items-center gap-3 px-4 py-3", border.divider)}>
           <div className="w-10 h-10 rounded-lg bg-slate-500/20 flex items-center justify-center">
-            <FaPenLine className="w-5 h-5 text-slate-400" />
+            <FaPenLine className={cn("w-5 h-5", text.hint)} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-slate-200">
-              <Link href="/faq" className="text-slate-400 hover:text-slate-300 hover:underline">
+            <div className={cn("text-sm font-medium", text.body)}>
+              <Link href="/faq" className={cn(text.hint, "hover:text-slate-300 hover:underline")}>
                 Fax
               </Link>
-              <span className="text-slate-400"> (CDN)</span>
+              <span className={text.hint}> (CDN)</span>
             </div>
-            <div className="text-xs text-slate-300 font-mono">{centre.cdn_fax}</div>
+            <div className={cn("text-xs font-mono", text.label)}>{centre.cdn_fax}</div>
           </div>
           <div className="flex items-center gap-1.5">
-            <CopyButton text={centre.cdn_fax} className="w-9 h-9 rounded-lg" />
+            <CopyButton copyText={centre.cdn_fax} className="w-9 h-9 rounded-lg" />
           </div>
         </div>
       )}
 
       {/* General Fax Row - uses FaFax icon */}
       {centre.general_fax && (
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
-          <div className="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center">
-            <FaFax className="w-5 h-5 text-slate-400" />
+        <div className={cn("flex items-center gap-3 px-4 py-3", border.divider)}>
+          <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", surface.control)}>
+            <FaFax className={cn("w-5 h-5", text.hint)} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-slate-200 flex items-center gap-2">
+            <div className={cn("text-sm font-medium flex items-center gap-2", text.body)}>
               <span>
-                <Link href="/faq" className="text-slate-400 hover:text-slate-300 hover:underline">
+                <Link href="/faq" className={cn(text.hint, "hover:text-slate-300 hover:underline")}>
                   Fax
                 </Link>
-                <span className="text-slate-500"> (General)</span>
+                <span className={text.placeholder}> (General)</span>
               </span>
               {/* Show CDN tag if accepts CDN but no dedicated CDN fax number */}
               {!centre.cdn_fax && centre.accepts_cdn_by_fax && (
@@ -269,10 +269,10 @@ function ContactSection({ centre }: { centre: CorrectionalCentre }) {
                 </span>
               )}
             </div>
-            <div className="text-xs text-slate-300 font-mono">{centre.general_fax}</div>
+            <div className={cn("text-xs font-mono", text.label)}>{centre.general_fax}</div>
           </div>
           <div className="flex items-center gap-1.5">
-            <CopyButton text={centre.general_fax} className="w-9 h-9 rounded-lg" />
+            <CopyButton copyText={centre.general_fax} className="w-9 h-9 rounded-lg" />
           </div>
         </div>
       )}
@@ -281,13 +281,13 @@ function ContactSection({ centre }: { centre: CorrectionalCentre }) {
       {centre.mailing_address && (
         <div className="p-4">
           <div
-            className="p-3 rounded-lg bg-slate-800/30 border border-slate-700/50 cursor-pointer hover:bg-slate-800/50 transition-colors"
+            className={cn("p-3 rounded-lg cursor-pointer transition-colors", surface.card, surface.cardHover, border.visible)}
             onClick={() => navigator.clipboard.writeText(centre.mailing_address!)}
           >
-            <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1">
+            <div className={cn("text-[9px] font-mono uppercase tracking-wider mb-1", text.placeholder)}>
               Mailing Address
             </div>
-            <div className="text-sm text-slate-300 whitespace-pre-line">
+            <div className={cn("text-sm whitespace-pre-line", text.label)}>
               {centre.mailing_address}
             </div>
           </div>
@@ -304,20 +304,20 @@ function ContactSection({ centre }: { centre: CorrectionalCentre }) {
 function CallbackSection({ centre }: { centre: CorrectionalCentre }) {
   const hasCallback1 = centre.callback_1_start && centre.callback_1_end;
   const hasCallback2 = centre.callback_2_start && centre.callback_2_end;
-  
+
   if (!hasCallback1 && !hasCallback2 && !centre.lawyer_callback_email) {
     return (
-      <div className="bg-slate-900/20 px-4 py-4">
-        <p className="text-sm text-slate-500">No callback information available</p>
+      <div className={cn(surface.panel, "px-4 py-4")}>
+        <p className={cn("text-sm", text.placeholder)}>No callback information available</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-900/20 divide-y divide-slate-700/30">
+    <div className={cn(surface.panel, "divide-y divide-slate-700/30")}>
       {hasCallback1 && (
         <div className="flex justify-between px-4 py-2.5">
-          <span className="text-sm text-slate-400">Window 1</span>
+          <span className={cn("text-sm", text.hint)}>Window 1</span>
           <span className="text-sm text-purple-400 font-mono">
             {centre.callback_1_start} – {centre.callback_1_end}
           </span>
@@ -325,15 +325,15 @@ function CallbackSection({ centre }: { centre: CorrectionalCentre }) {
       )}
       {hasCallback2 && (
         <div className="flex justify-between px-4 py-2.5">
-          <span className="text-sm text-slate-400">Window 2</span>
+          <span className={cn("text-sm", text.hint)}>Window 2</span>
           <span className="text-sm text-purple-400 font-mono">
             {centre.callback_2_start} – {centre.callback_2_end}
           </span>
         </div>
       )}
       {centre.lawyer_callback_email && (
-        <a href={`mailto:${centre.lawyer_callback_email}`} className="flex justify-between px-4 py-2.5 hover:bg-slate-800/20 active:bg-slate-800/30">
-          <span className="text-sm text-slate-400">Email</span>
+        <a href={`mailto:${centre.lawyer_callback_email}`} className={cn("flex justify-between px-4 py-2.5", surface.cardHover, "active:bg-slate-800/30")}>
+          <span className={cn("text-sm", text.hint)}>Email</span>
           <span className="text-sm text-blue-400 truncate ml-4">{centre.lawyer_callback_email}</span>
         </a>
       )}
@@ -346,52 +346,52 @@ function CallbackSection({ centre }: { centre: CorrectionalCentre }) {
 // =============================================================================
 
 function VisitsSection({ centre }: { centre: CorrectionalCentre }) {
-  const hasVisitInfo = centre.visit_hours_inperson || centre.visit_hours_virtual || 
+  const hasVisitInfo = centre.visit_hours_inperson || centre.visit_hours_virtual ||
                        centre.visit_request_phone || centre.visit_request_email;
-  
+
   if (!hasVisitInfo) {
     return (
-      <div className="bg-slate-900/20 px-4 py-4">
-        <p className="text-sm text-slate-500">No visit information available</p>
+      <div className={cn(surface.panel, "px-4 py-4")}>
+        <p className={cn("text-sm", text.placeholder)}>No visit information available</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-900/20 divide-y divide-slate-700/30">
+    <div className={cn(surface.panel, "divide-y divide-slate-700/30")}>
       {centre.visit_hours_inperson && (
         <div className="flex justify-between px-4 py-2.5">
-          <span className="text-sm text-slate-400">In-Person</span>
-          <span className="text-sm text-slate-300">{centre.visit_hours_inperson}</span>
+          <span className={cn("text-sm", text.hint)}>In-Person</span>
+          <span className={cn("text-sm", text.label)}>{centre.visit_hours_inperson}</span>
         </div>
       )}
       {centre.visit_hours_virtual && (
         <div className="flex justify-between px-4 py-2.5">
-          <span className="text-sm text-slate-400">Virtual</span>
-          <span className="text-sm text-slate-300">{centre.visit_hours_virtual}</span>
+          <span className={cn("text-sm", text.hint)}>Virtual</span>
+          <span className={cn("text-sm", text.label)}>{centre.visit_hours_virtual}</span>
         </div>
       )}
       {centre.visit_request_phone && (
-        <a href={`tel:${centre.visit_request_phone}`} className="flex justify-between px-4 py-2.5 hover:bg-slate-800/20 active:bg-slate-800/30">
-          <span className="text-sm text-slate-400">Request Phone</span>
+        <a href={`tel:${centre.visit_request_phone}`} className={cn("flex justify-between px-4 py-2.5", surface.cardHover, "active:bg-slate-800/30")}>
+          <span className={cn("text-sm", text.hint)}>Request Phone</span>
           <span className="text-sm text-blue-400">{centre.visit_request_phone}</span>
         </a>
       )}
       {centre.visit_request_email && (
-        <a href={`mailto:${centre.visit_request_email}`} className="flex justify-between px-4 py-2.5 hover:bg-slate-800/20 active:bg-slate-800/30">
-          <span className="text-sm text-slate-400">Request Email</span>
+        <a href={`mailto:${centre.visit_request_email}`} className={cn("flex justify-between px-4 py-2.5", surface.cardHover, "active:bg-slate-800/30")}>
+          <span className={cn("text-sm", text.hint)}>Request Email</span>
           <span className="text-sm text-blue-400 truncate ml-4">{centre.visit_request_email}</span>
         </a>
       )}
       {centre.virtual_visit_email && centre.virtual_visit_email !== centre.visit_request_email && (
-        <a href={`mailto:${centre.virtual_visit_email}`} className="flex justify-between px-4 py-2.5 hover:bg-slate-800/20 active:bg-slate-800/30">
-          <span className="text-sm text-slate-400">Virtual Email</span>
+        <a href={`mailto:${centre.virtual_visit_email}`} className={cn("flex justify-between px-4 py-2.5", surface.cardHover, "active:bg-slate-800/30")}>
+          <span className={cn("text-sm", text.hint)}>Virtual Email</span>
           <span className="text-sm text-blue-400 truncate ml-4">{centre.virtual_visit_email}</span>
         </a>
       )}
       {centre.visit_notes && (
         <div className="px-4 py-3">
-          <p className="text-xs text-slate-500">{centre.visit_notes}</p>
+          <p className={cn("text-xs", text.placeholder)}>{centre.visit_notes}</p>
         </div>
       )}
     </div>
@@ -410,22 +410,22 @@ function EDisclosureSection({ centre }: { centre: CorrectionalCentre }) {
   ];
 
   return (
-    <div className="rounded-lg overflow-hidden bg-slate-800/30 border border-slate-700/50">
+    <div className={cn("rounded-lg overflow-hidden", surface.card, border.visible)}>
       {/* Header - not clickable, always open */}
-      <div className="flex items-center gap-2.5 p-3 border-b border-slate-700/30 bg-slate-800/50">
-        <span className="flex-1 text-left text-[13px] uppercase tracking-wider text-slate-200 font-medium">
+      <div className={cn("flex items-center gap-2.5 p-3 border-b border-slate-700/30", surface.modal)}>
+        <span className={cn("flex-1 text-left text-[13px] uppercase tracking-wider font-medium", text.body)}>
           e-Disclosure
         </span>
       </div>
-      
+
       {/* 3-Column Table */}
-      <div className="bg-slate-900/20 p-4">
+      <div className={cn(surface.panel, "p-4")}>
         <table className="w-full">
           <thead>
             <tr>
               {formats.map((format) => (
                 <th key={format.label} className="text-center pb-2">
-                  <span className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
+                  <span className={cn("text-[10px] uppercase tracking-wider font-medium", text.placeholder)}>
                     {format.label}
                   </span>
                 </th>
@@ -451,9 +451,9 @@ function EDisclosureSection({ centre }: { centre: CorrectionalCentre }) {
             </tr>
           </tbody>
         </table>
-        
+
         {centre.disclosure_notes && (
-          <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-700/30">
+          <p className={cn("text-xs mt-3 pt-3 border-t border-slate-700/30", text.placeholder)}>
             {centre.disclosure_notes}
           </p>
         )}
@@ -553,7 +553,7 @@ export function CorrectionDetailPage({ centre, onBack, onSearch }: CorrectionDet
         <div className="flex items-center gap-2 px-3 py-2">
           <button
             onClick={onBack}
-            className="p-2 -ml-1 text-slate-400 hover:text-white transition-colors shrink-0"
+            className={cn("p-2 -ml-1 transition-colors shrink-0", text.hint, "hover:text-white")}
           >
             <FaArrowLeft className="w-5 h-5" />
           </button>
@@ -637,9 +637,9 @@ export function CorrectionDetailPage({ centre, onBack, onSearch }: CorrectionDet
 
           {/* Notes */}
           {centre.notes && (
-            <div className="rounded-lg overflow-hidden bg-slate-800/30 border border-slate-700/50 p-4">
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Notes</h3>
-              <p className="text-sm text-slate-400">{centre.notes}</p>
+            <div className={cn("rounded-lg overflow-hidden p-4", surface.card, border.visible)}>
+              <h3 className={cn("text-xs font-bold uppercase tracking-wider mb-2", text.placeholder)}>Notes</h3>
+              <p className={cn("text-sm", text.hint)}>{centre.notes}</p>
             </div>
           )}
         </div>
