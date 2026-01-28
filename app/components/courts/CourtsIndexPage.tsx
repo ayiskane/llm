@@ -189,14 +189,14 @@ function LetterSection({ letter, courts, onCourtClick }: {
       <div className="sticky top-0 z-10 px-4 py-2 bg-slate-950 border-b border-slate-800/50">
         <span className="text-sm font-bold text-blue-400">{letter}</span>
       </div>
-      <div className="divide-y divide-slate-800/50">
+      <div className="bg-slate-800/20">
         {courts.map((court) => (
           <button
             key={court.id}
             onClick={() => onCourtClick(court.id)}
-            className="w-full px-4 py-3 hover:bg-slate-800/30 active:bg-slate-800/50 text-left"
+            className="w-full text-left px-4 py-3 border-b border-slate-700/30 last:border-b-0 hover:bg-slate-800/30 active:bg-slate-800/50"
           >
-            <div className="text-sm font-medium text-white mb-1.5">{getCourtDisplayName(court)}</div>
+            <div className="text-sm font-medium text-slate-200 mb-1.5">{getCourtDisplayName(court)}</div>
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="px-2 py-1 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
                 <span>{REGION_CODE[court.region_id] || 'R?'}</span>
