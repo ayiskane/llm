@@ -3,31 +3,15 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaMagnifyingGlass, FaXmark, FaLocationDot, FaSliders } from '@/lib/icons';
-import { AlphabetNav } from '@/app/components/ui/AlphabetNav';
+import { AlphabetNav, FilterModal } from '@/app/components/ui';
 import { cn } from '@/lib/config/theme';
+import { REGIONS, REGION_COLORS } from '@/lib/config/constants';
 import { useCourts } from '@/lib/hooks/useCourts';
 import type { CourtWithRegionName } from '@/lib/hooks/useCourts';
 
 // =============================================================================
 // CONSTANTS
 // =============================================================================
-
-const REGIONS = [
-  { id: 0, name: 'All Regions', code: 'ALL' },
-  { id: 1, name: 'Island', code: 'R1' },
-  { id: 2, name: 'Vancouver Coastal', code: 'R2' },
-  { id: 3, name: 'Fraser', code: 'R3' },
-  { id: 4, name: 'Interior', code: 'R4' },
-  { id: 5, name: 'Northern', code: 'R5' },
-] as const;
-
-const REGION_COLORS: Record<number, { dot: string; tag: string }> = {
-  1: { dot: 'bg-amber-500', tag: 'bg-amber-500/15 text-amber-400' },
-  2: { dot: 'bg-blue-500', tag: 'bg-blue-500/15 text-blue-400' },
-  3: { dot: 'bg-emerald-500', tag: 'bg-emerald-500/15 text-emerald-400' },
-  4: { dot: 'bg-purple-500', tag: 'bg-purple-500/15 text-purple-400' },
-  5: { dot: 'bg-rose-500', tag: 'bg-rose-500/15 text-rose-400' },
-};
 
 const REGION_CODE: Record<number, string> = { 1: 'R1', 2: 'R2', 3: 'R3', 4: 'R4', 5: 'R5' };
 
@@ -103,55 +87,58 @@ function SearchBar({ value, onChange, onClear, onFilterClick, hasActiveFilters }
   );
 }
 
-function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: {
-  isOpen: boolean; filters: Filters; onFilterChange: (filters: Filters) => void; onClearAll: () => void;
+const COURT_TYPE_OPTIONS = [
+  { value: 'all' as const, label: 'All Courts' },
+  { value: 'staffed' as const, label: 'Staffed Only' },
+  { value: 'circuit' as const, label: 'Circuit Only' },
+];
+
+const COURT_LEVEL_OPTIONS = [
+  { value: 'all' as const, label: 'All Levels' },
+  { value: 'pc' as const, label: 'Provincial (PC)' },
+  { value: 'sc' as const, label: 'Supreme (SC)' },
+];
+
+function FilterModalContent({ filters, onFilterChange }: {
+  filters: Filters; onFilterChange: (filters: Filters) => void;
 }) {
-  if (!isOpen) return null;
-
-  const courtTypeOptions = [
-    { value: 'all' as const, label: 'All Courts' },
-    { value: 'staffed' as const, label: 'Staffed Only' },
-    { value: 'circuit' as const, label: 'Circuit Only' },
-  ];
-
-  const courtLevelOptions = [
-    { value: 'all' as const, label: 'All Levels' },
-    { value: 'pc' as const, label: 'Provincial (PC)' },
-    { value: 'sc' as const, label: 'Supreme (SC)' },
-  ];
-
-  const hasFilters = filters.region !== 0 || filters.courtType !== 'all' || filters.courtLevel !== 'all';
-
   return (
-    <div className="border-t border-slate-700/30 bg-slate-900/50 px-4 py-3 space-y-3">
+    <div className="space-y-6">
+      {/* Region */}
       <div>
-        <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">Region</label>
-        <div className="flex flex-wrap gap-1.5">
+        <label className="text-xs uppercase tracking-wider text-slate-400 font-medium mb-3 block">Region</label>
+        <div className="flex flex-wrap gap-2">
           {REGIONS.map((region) => (
             <button
               key={region.id}
               onClick={() => onFilterChange({ ...filters, region: region.id })}
               className={cn(
-                'px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5',
-                filters.region === region.id ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800/50 text-slate-400 border border-slate-700/50'
+                'px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all',
+                filters.region === region.id 
+                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' 
+                  : 'bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:border-slate-600'
               )}
             >
-              {region.id !== 0 && <span className={cn('w-1.5 h-1.5 rounded-full', REGION_COLORS[region.id]?.dot)} />}
+              {region.id !== 0 && <span className={cn('w-2 h-2 rounded-full', REGION_COLORS[region.id]?.dot)} />}
               {region.name}
             </button>
           ))}
         </div>
       </div>
+
+      {/* Court Type */}
       <div>
-        <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">Court Type</label>
-        <div className="flex gap-1.5">
-          {courtTypeOptions.map((opt) => (
+        <label className="text-xs uppercase tracking-wider text-slate-400 font-medium mb-3 block">Court Type</label>
+        <div className="flex flex-wrap gap-2">
+          {COURT_TYPE_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => onFilterChange({ ...filters, courtType: opt.value })}
               className={cn(
-                'px-2.5 py-1.5 rounded-lg text-xs font-medium',
-                filters.courtType === opt.value ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800/50 text-slate-400 border border-slate-700/50'
+                'px-3 py-2 rounded-xl text-sm font-medium transition-all',
+                filters.courtType === opt.value 
+                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' 
+                  : 'bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:border-slate-600'
               )}
             >
               {opt.label}
@@ -159,16 +146,20 @@ function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: {
           ))}
         </div>
       </div>
+
+      {/* Court Level */}
       <div>
-        <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">Court Level</label>
-        <div className="flex gap-1.5">
-          {courtLevelOptions.map((opt) => (
+        <label className="text-xs uppercase tracking-wider text-slate-400 font-medium mb-3 block">Court Level</label>
+        <div className="flex flex-wrap gap-2">
+          {COURT_LEVEL_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => onFilterChange({ ...filters, courtLevel: opt.value })}
               className={cn(
-                'px-2.5 py-1.5 rounded-lg text-xs font-medium',
-                filters.courtLevel === opt.value ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800/50 text-slate-400 border border-slate-700/50'
+                'px-3 py-2 rounded-xl text-sm font-medium transition-all',
+                filters.courtLevel === opt.value 
+                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' 
+                  : 'bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:border-slate-600'
               )}
             >
               {opt.label}
@@ -176,7 +167,6 @@ function FilterPanel({ isOpen, filters, onFilterChange, onClearAll }: {
           ))}
         </div>
       </div>
-      {hasFilters && <button onClick={onClearAll} className="text-xs text-slate-500 hover:text-slate-300">Clear all filters</button>}
     </div>
   );
 }
@@ -329,12 +319,22 @@ export function CourtsIndexPage() {
             value={searchQuery}
             onChange={setSearchQuery}
             onClear={() => setSearchQuery('')}
-            onFilterClick={() => setIsFilterOpen(!isFilterOpen)}
+            onFilterClick={() => setIsFilterOpen(true)}
             hasActiveFilters={hasActiveFilters}
           />
         </div>
-        <FilterPanel isOpen={isFilterOpen} filters={filters} onFilterChange={setFilters} onClearAll={clearAllFilters} />
       </div>
+
+      {/* Filter Modal */}
+      <FilterModal
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        title="Filter Courts"
+        onReset={clearAllFilters}
+        hasActiveFilters={hasActiveFilters}
+      >
+        <FilterModalContent filters={filters} onFilterChange={setFilters} />
+      </FilterModal>
 
       {/* Content area with AlphabetNav */}
       <div className="flex-1 min-h-0 relative">
