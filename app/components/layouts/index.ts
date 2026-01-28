@@ -1,2 +1,1 @@
-export { PageLayout } from './PageLayout';
-export { StickyHeader } from './StickyHeader';
+export * from '@/app/components/legacy/layouts/index';

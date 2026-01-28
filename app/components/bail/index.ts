@@ -1,2 +1,1 @@
-export { BailHubsIndexPage } from './BailHubsIndexPage';
-export { BailHubDetailPage } from './BailHubDetailPage';
+export * from '@/app/components/legacy/bail/index';

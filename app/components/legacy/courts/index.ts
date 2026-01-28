@@ -1,0 +1,1 @@
+export { CourtsIndexPage } from './CourtsIndexPage';

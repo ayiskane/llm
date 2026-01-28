@@ -1,1 +1,1 @@
-export { CorrectionsIndexPage } from './CorrectionsIndexPage';
+export * from '@/app/components/legacy/corrections/index';
