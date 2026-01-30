@@ -384,7 +384,7 @@ export function CourtsIndexPage() {
                   </div>
 
                   {/* Court list card */}
-                  <Card className={cn('mx-4 mb-4', card.divided)}>
+                  <Card className={cn('mx-4 mb-3', card.divided)}>
                     {group.courts.map((court) => (
                       <button
                         key={court.id}
@@ -392,24 +392,16 @@ export function CourtsIndexPage() {
                         onClick={() => handleCourtClick(court.id)}
                         className={card.row}
                       >
-                        <div className="flex items-center justify-between gap-2">
-                          <p className={cn(text.primary, 'truncate')}>
+                        <div className="flex items-center gap-2">
+                          <p className={cn(text.primary, 'flex-1 truncate')}>
                             {getCourtDisplayName(court)}
                           </p>
-                          <div className="flex items-center gap-1 shrink-0">
-                            {court.has_provincial && (
-                              <Badge variant="provincial">PC</Badge>
-                            )}
-                            {court.has_supreme && (
-                              <Badge variant="supreme">SC</Badge>
-                            )}
-                            {court.is_circuit && (
-                              <Badge variant="circuit">CIR</Badge>
-                            )}
-                          </div>
+                          {court.has_provincial && <Badge variant="provincial">PC</Badge>}
+                          {court.has_supreme && <Badge variant="supreme">SC</Badge>}
+                          {court.is_circuit && <Badge variant="circuit">CIR</Badge>}
                         </div>
                         <p className={text.secondary}>
-                          {REGION_CODES[court.region_id] || 'R?'} • {court.region_name}
+                          {REGION_CODES[court.region_id]} • {court.region_name}
                         </p>
                       </button>
                     ))}

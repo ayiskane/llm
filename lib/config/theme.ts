@@ -58,8 +58,8 @@ export const text = {
 
 export const card = {
   base: 'rounded-xl overflow-hidden',
-  divided: 'divide-y divide-border',
-  row: 'w-full text-left px-3 py-2.5 transition-colors hover:bg-muted/50 active:bg-muted',
+  divided: 'divide-y divide-border/50',
+  row: 'w-full text-left px-3 py-2 transition-colors hover:bg-muted/50 active:bg-muted',
 } as const;
 
 // ============================================================================
