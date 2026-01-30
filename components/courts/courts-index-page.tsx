@@ -17,6 +17,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { REGIONS, REGION_CODES } from '@/lib/config/constants';
 import { supabaseClient } from '@/lib/supabase/client';
@@ -332,24 +333,20 @@ export function CourtsIndexPage() {
             </Sheet>
           </div>
 
-          {/* Segmented Control for court type */}
-          <div className="flex p-1 bg-muted/50 rounded-lg">
-            {COURT_TYPE_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setFilters((prev) => ({ ...prev, courtType: option.value }))}
-                className={cn(
-                  'flex-1 py-1.5 text-xs font-medium rounded-md transition-colors',
-                  filters.courtType === option.value
-                    ? 'bg-card text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+          {/* Tabs for court type */}
+          <Tabs
+            value={filters.courtType}
+            onValueChange={(value) => setFilters((prev) => ({ ...prev, courtType: value as CourtTypeFilter }))}
+            className="w-full"
+          >
+            <TabsList className="w-full">
+              {COURT_TYPE_OPTIONS.map((option) => (
+                <TabsTrigger key={option.value} value={option.value} className="flex-1 text-xs">
+                  {option.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </div>
       </header>
 
@@ -386,31 +383,33 @@ export function CourtsIndexPage() {
                         key={court.id}
                         type="button"
                         onClick={() => handleCourtClick(court.id)}
-                        className="w-full text-left px-4 py-3 transition-colors hover:bg-muted/50 active:bg-muted"
+                        className="w-full text-left px-3 py-2.5 transition-colors hover:bg-muted/50 active:bg-muted"
                       >
-                        <p className="text-sm font-medium text-foreground mb-2">
-                          {getCourtDisplayName(court)}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <Badge variant="outline" className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                            {REGION_CODES[court.region_id] || 'R?'} • {court.region_name}
-                          </Badge>
-                          {court.has_provincial && (
-                            <Badge className="bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/20 text-[10px]">
-                              PC
-                            </Badge>
-                          )}
-                          {court.has_supreme && (
-                            <Badge className="bg-purple-500/15 text-purple-400 hover:bg-purple-500/20 text-[10px]">
-                              SC
-                            </Badge>
-                          )}
-                          {court.is_circuit && (
-                            <Badge className="bg-amber-500/15 text-amber-400 hover:bg-amber-500/20 text-[10px]">
-                              Circuit
-                            </Badge>
-                          )}
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {getCourtDisplayName(court)}
+                          </p>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {court.has_provincial && (
+                              <Badge className="bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/20 text-[9px] px-1.5 py-0">
+                                PC
+                              </Badge>
+                            )}
+                            {court.has_supreme && (
+                              <Badge className="bg-purple-500/15 text-purple-400 hover:bg-purple-500/20 text-[9px] px-1.5 py-0">
+                                SC
+                              </Badge>
+                            )}
+                            {court.is_circuit && (
+                              <Badge className="bg-amber-500/15 text-amber-400 hover:bg-amber-500/20 text-[9px] px-1.5 py-0">
+                                Circuit
+                              </Badge>
+                            )}
+                          </div>
                         </div>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          {REGION_CODES[court.region_id] || 'R?'} • {court.region_name}
+                        </p>
                       </button>
                     ))}
                   </Card>
