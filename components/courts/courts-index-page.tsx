@@ -21,12 +21,10 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { REGIONS, REGION_CODES } from '@/lib/config/constants';
 import {
   cn,
-  courtLevelBadges,
   filterButton,
   layout,
   text,
   card,
-  badge,
   iconSize,
 } from '@/lib/config/theme';
 import { supabaseClient } from '@/lib/supabase/client';
@@ -400,19 +398,13 @@ export function CourtsIndexPage() {
                           </p>
                           <div className="flex items-center gap-1 shrink-0">
                             {court.has_provincial && (
-                              <Badge className={cn(courtLevelBadges.provincial, badge.base)}>
-                                PC
-                              </Badge>
+                              <Badge variant="provincial">PC</Badge>
                             )}
                             {court.has_supreme && (
-                              <Badge className={cn(courtLevelBadges.supreme, badge.base)}>
-                                SC
-                              </Badge>
+                              <Badge variant="supreme">SC</Badge>
                             )}
                             {court.is_circuit && (
-                              <Badge className={cn(courtLevelBadges.circuit, badge.base)}>
-                                Circuit
-                              </Badge>
+                              <Badge variant="circuit">CIR</Badge>
                             )}
                           </div>
                         </div>

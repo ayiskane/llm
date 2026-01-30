@@ -11,27 +11,19 @@ export { cn } from '@/lib/utils';
 // ============================================================================
 
 export type BadgeColor = 'emerald' | 'purple' | 'amber' | 'blue' | 'rose' | 'sky' | 'slate';
-export type CourtLevel = 'provincial' | 'supreme' | 'circuit';
 
 // ============================================================================
-// BADGE COLOR MAPPINGS
+// BADGE COLOR MAPPINGS (for custom use cases outside Badge component)
 // ============================================================================
 
 export const badgeColors: Record<BadgeColor, string> = {
-  emerald: 'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/20',
-  purple: 'bg-purple-500/15 text-purple-400 hover:bg-purple-500/20',
-  amber: 'bg-amber-500/15 text-amber-400 hover:bg-amber-500/20',
-  blue: 'bg-blue-500/15 text-blue-400 hover:bg-blue-500/20',
-  rose: 'bg-rose-500/15 text-rose-400 hover:bg-rose-500/20',
-  sky: 'bg-sky-500/15 text-sky-400 hover:bg-sky-500/20',
-  slate: 'bg-slate-500/15 text-slate-400 hover:bg-slate-500/20',
-};
-
-// Court level badge colors
-export const courtLevelBadges: Record<CourtLevel, string> = {
-  provincial: badgeColors.emerald,
-  supreme: badgeColors.purple,
-  circuit: badgeColors.amber,
+  emerald: 'bg-emerald-500/15 text-emerald-400',
+  purple: 'bg-purple-500/15 text-purple-400',
+  amber: 'bg-amber-500/15 text-amber-400',
+  blue: 'bg-blue-500/15 text-blue-400',
+  rose: 'bg-rose-500/15 text-rose-400',
+  sky: 'bg-sky-500/15 text-sky-400',
+  slate: 'bg-slate-500/15 text-slate-400',
 };
 
 // ============================================================================
@@ -82,15 +74,6 @@ export const layout = {
 } as const;
 
 // ============================================================================
-// BADGE STYLES
-// ============================================================================
-
-export const badge = {
-  base: 'text-[9px] px-1.5 py-0',
-  pill: 'rounded-full text-xs h-8',
-} as const;
-
-// ============================================================================
 // FILTER BUTTON STYLES
 // ============================================================================
 
@@ -99,11 +82,3 @@ export const filterButton = {
   active: 'border-primary text-primary',
   badge: 'absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground',
 } as const;
-
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
-export function getCourtLevelBadge(level: CourtLevel): string {
-  return `${courtLevelBadges[level]} ${badge.base}`;
-}
