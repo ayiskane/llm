@@ -17,14 +17,15 @@ const badgeVariants = cva(
         provincial: 'bg-emerald-500/15 text-emerald-400',
         supreme: 'bg-purple-500/15 text-purple-400',
         circuit: 'bg-amber-500/15 text-amber-400',
-        // Region color variants
+        
         emerald: 'bg-emerald-500/15 text-emerald-400',
         blue: 'bg-blue-500/15 text-blue-400',
         amber: 'bg-amber-500/15 text-amber-400',
         purple: 'bg-purple-500/15 text-purple-400',
         rose: 'bg-rose-500/15 text-rose-400',
         sky: 'bg-sky-500/15 text-sky-400',
-        slate: 'bg-slate-500/15 text-slate-400',
+        // Region
+        region: 'bg-slate-500/15 text-slate-400',
       },
       size: {
         sm: 'px-1.5 py-0.5',

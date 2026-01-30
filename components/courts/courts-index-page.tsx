@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MapPin, Search, SlidersHorizontal, X } from 'lucide-react';
 import { AlphabetNav } from '@/components/ui/alphabet-nav';
-import { Badge } from '@/components/ui/badge';
+import { Badge, badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { REGIONS, REGION_CODES } from '@/lib/config/constants';
+import { REGIONS} from '@/lib/config/constants';
 import {
   cn,
   filterButton,
@@ -281,7 +281,7 @@ export function CourtsIndexPage() {
                           key={region.id}
                           variant={filters.region === region.id ? 'default' : 'outline'}
                           size="sm"
-                          className={cn('h-8 rounded-full text-xs', badge.pill)}
+                          className={cn('h-8 rounded-full text-xs')}
                           onClick={() => setFilters((prev) => ({ ...prev, region: region.id }))}
                         >
                           {region.name}
@@ -301,7 +301,7 @@ export function CourtsIndexPage() {
                           key={option.value}
                           variant={filters.courtType === option.value ? 'default' : 'outline'}
                           size="sm"
-                          className={cn('h-8 rounded-full text-xs', badge.pill)}
+                          className={cn('h-8 rounded-full text-xs')}
                           onClick={() => setFilters((prev) => ({ ...prev, courtType: option.value }))}
                         >
                           {option.label}
@@ -321,7 +321,7 @@ export function CourtsIndexPage() {
                           key={option.value}
                           variant={filters.courtLevel === option.value ? 'default' : 'outline'}
                           size="sm"
-                          className={cn('h-8 rounded-full text-xs', badge.pill)}
+                          className={cn('h-8 rounded-full text-xs')}
                           onClick={() => setFilters((prev) => ({ ...prev, courtLevel: option.value }))}
                         >
                           {option.label}
@@ -392,16 +392,16 @@ export function CourtsIndexPage() {
                         onClick={() => handleCourtClick(court.id)}
                         className={card.row}
                       >
-                        <div className="flex items-center gap-2">
+                        {/* <div className="flex items-center gap-2"> */}
                           <p className={cn(text.primary, 'flex-1 truncate')}>
                             {getCourtDisplayName(court)}
                           </p>
                           {court.has_provincial && <Badge variant="provincial">PC</Badge>}
                           {court.has_supreme && <Badge variant="supreme">SC</Badge>}
                           {court.is_circuit && <Badge variant="circuit">CIR</Badge>}
-                        </div>
+                        {/* </div> */}
                         <p className={text.secondary}>
-                          {REGION_CODES[court.region_id]} • {court.region_name}
+                          <Badge variant="region">{REGIONS[court.region_id]} • {REGIONS[court.region_id]}</Badge>
                         </p>
                       </button>
                     ))}
