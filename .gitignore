@@ -42,4 +42,4 @@ next-env.d.ts
 llm-legacy-ui-snapshot/
 
 # Reference files (not part of app)
-theme-reference.html
+designs/

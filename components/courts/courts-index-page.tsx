@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MapPin, Search, SlidersHorizontal, X } from 'lucide-react';
 import { AlphabetNav } from '@/components/ui/alphabet-nav';
-import { StickyHeader } from '@/components/layouts/sticky-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -19,7 +18,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import { REGIONS, REGION_CODES, REGION_COLORS } from '@/lib/config/constants';
+import { REGIONS, REGION_CODES } from '@/lib/config/constants';
 import { supabaseClient } from '@/lib/supabase/client';
 import type { CourtListItem, GroupedCourts } from '@/types';
 
@@ -27,9 +26,9 @@ type CourtTypeFilter = 'all' | 'staffed' | 'circuit';
 type CourtLevelFilter = 'all' | 'pc' | 'sc';
 
 const COURT_TYPE_OPTIONS = [
-  { value: 'all' as const, label: 'All Courts' },
-  { value: 'staffed' as const, label: 'Staffed Only' },
-  { value: 'circuit' as const, label: 'Circuit Only' },
+  { value: 'all' as const, label: 'All' },
+  { value: 'staffed' as const, label: 'Staffed' },
+  { value: 'circuit' as const, label: 'Circuit' },
 ];
 
 const COURT_LEVEL_OPTIONS = [
@@ -73,7 +72,6 @@ export function CourtsIndexPage() {
   });
   const [activeLetter, setActiveLetter] = useState<string | null>(null);
 
-  // Fetch courts from Supabase
   useEffect(() => {
     async function fetchCourts() {
       const { data, error } = await supabaseClient
@@ -114,6 +112,12 @@ export function CourtsIndexPage() {
 
   const hasActiveFilters =
     filters.region !== 0 || filters.courtType !== 'all' || filters.courtLevel !== 'all';
+
+  const activeFilterCount = [
+    filters.region !== 0,
+    filters.courtType !== 'all',
+    filters.courtLevel !== 'all',
+  ].filter(Boolean).length;
 
   const clearFilters = useCallback(() => {
     setFilters({ region: 0, courtType: 'all', courtLevel: 'all' });
@@ -166,7 +170,7 @@ export function CourtsIndexPage() {
       sections.forEach((section) => {
         const rect = section.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
-        if (rect.top <= containerRect.top + 64) {
+        if (rect.top <= containerRect.top + 48) {
           currentLetter = section.getAttribute('data-letter');
         }
       });
@@ -195,45 +199,41 @@ export function CourtsIndexPage() {
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-muted-foreground">Loading courts...</div>
+      <div className="h-full flex items-center justify-center bg-background">
+        <p className="text-sm text-muted-foreground">Loading courts...</p>
       </div>
     );
   }
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <StickyHeader>
-        <div className="px-4 pt-4 pb-3 space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-lg font-semibold text-foreground">BC Court Index</h1>
-              <p className="text-xs text-muted-foreground">
-                Browse all courts by region, type, and level.
-              </p>
-            </div>
-            <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">
-              {courts.length} Courts
-            </Badge>
+      {/* Compact Sticky Header */}
+      <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
+        <div className="px-4 py-3 space-y-2.5">
+          {/* Title row */}
+          <div className="flex items-baseline justify-between">
+            <h1 className="text-lg font-bold text-foreground">Courts</h1>
+            <span className="text-xs text-muted-foreground">{filteredCourts.length} locations</span>
           </div>
 
+          {/* Search + Filter */}
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search courts or regions"
-                className="pl-9 pr-10 h-11"
+                placeholder="Search"
+                className="pl-9 pr-8 h-9"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   aria-label="Clear search"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               )}
             </div>
@@ -241,29 +241,39 @@ export function CourtsIndexPage() {
             <Sheet>
               <SheetTrigger asChild>
                 <Button
-                  variant={hasActiveFilters ? 'default' : 'outline'}
-                  className="h-11 w-11 px-0"
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    'h-9 w-9 p-0 relative',
+                    hasActiveFilters && 'border-primary text-primary'
+                  )}
                   aria-label="Open filters"
                 >
                   <SlidersHorizontal className="h-4 w-4" />
+                  {activeFilterCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+                      {activeFilterCount}
+                    </span>
+                  )}
                 </Button>
               </SheetTrigger>
-              <SheetContent side="bottom" className="space-y-6">
-                <SheetHeader>
+              <SheetContent side="bottom" className="max-h-[85vh]">
+                <SheetHeader className="pb-4">
                   <SheetTitle>Filter Courts</SheetTitle>
                   <SheetDescription>Choose region, court type, and level.</SheetDescription>
                 </SheetHeader>
 
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Region</p>
+                <div className="space-y-5">
+                  {/* Region */}
+                  <div className="space-y-2.5">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Region</p>
                     <div className="flex flex-wrap gap-2">
                       {REGIONS.map((region) => (
                         <Button
                           key={region.id}
                           variant={filters.region === region.id ? 'default' : 'outline'}
                           size="sm"
-                          className="rounded-full text-xs"
+                          className="h-8 rounded-full text-xs"
                           onClick={() => setFilters((prev) => ({ ...prev, region: region.id }))}
                         >
                           {region.name}
@@ -274,15 +284,16 @@ export function CourtsIndexPage() {
 
                   <Separator />
 
-                  <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Court Type</p>
+                  {/* Court Type */}
+                  <div className="space-y-2.5">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Court Type</p>
                     <div className="flex flex-wrap gap-2">
                       {COURT_TYPE_OPTIONS.map((option) => (
                         <Button
                           key={option.value}
                           variant={filters.courtType === option.value ? 'default' : 'outline'}
                           size="sm"
-                          className="rounded-full text-xs"
+                          className="h-8 rounded-full text-xs"
                           onClick={() => setFilters((prev) => ({ ...prev, courtType: option.value }))}
                         >
                           {option.label}
@@ -293,15 +304,16 @@ export function CourtsIndexPage() {
 
                   <Separator />
 
-                  <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Court Level</p>
+                  {/* Court Level */}
+                  <div className="space-y-2.5">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Court Level</p>
                     <div className="flex flex-wrap gap-2">
                       {COURT_LEVEL_OPTIONS.map((option) => (
                         <Button
                           key={option.value}
                           variant={filters.courtLevel === option.value ? 'default' : 'outline'}
                           size="sm"
-                          className="rounded-full text-xs"
+                          className="h-8 rounded-full text-xs"
                           onClick={() => setFilters((prev) => ({ ...prev, courtLevel: option.value }))}
                         >
                           {option.label}
@@ -311,17 +323,37 @@ export function CourtsIndexPage() {
                   </div>
 
                   {hasActiveFilters && (
-                    <Button variant="ghost" className="w-full" onClick={clearFilters}>
-                      Clear filters
+                    <Button variant="ghost" className="w-full text-muted-foreground" onClick={clearFilters}>
+                      Clear all filters
                     </Button>
                   )}
                 </div>
               </SheetContent>
             </Sheet>
           </div>
-        </div>
-      </StickyHeader>
 
+          {/* Segmented Control for court type */}
+          <div className="flex p-1 bg-muted/50 rounded-lg">
+            {COURT_TYPE_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setFilters((prev) => ({ ...prev, courtType: option.value }))}
+                className={cn(
+                  'flex-1 py-1.5 text-xs font-medium rounded-md transition-colors',
+                  filters.courtType === option.value
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      {/* Scrollable Content */}
       <div className="flex-1 min-h-0 relative">
         <div ref={scrollContainerRef} className="h-full overflow-y-auto">
           {groupedCourts.length === 0 ? (
@@ -339,46 +371,42 @@ export function CourtsIndexPage() {
               )}
             </div>
           ) : (
-            <div className="space-y-6 py-4">
+            <div className="pb-20">
               {groupedCourts.map((group) => (
-                <div key={group.letter} id={`section-${group.letter}`} data-letter={group.letter}>
-                  <div className="sticky top-0 z-10 bg-background/95 backdrop-blur">
-                    <div className="px-4 py-2 flex items-center gap-2 text-xs font-semibold text-primary">
-                      <span>{group.letter}</span>
-                      <span className="text-muted-foreground">{group.courts.length} courts</span>
-                    </div>
-                    <Separator />
+                <section key={group.letter} id={`section-${group.letter}`} data-letter={group.letter}>
+                  {/* Letter header */}
+                  <div className="sticky top-0 z-10 px-4 py-1.5 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
+                    <span className="text-xs font-semibold text-muted-foreground">{group.letter}</span>
                   </div>
-                  <Card className="mx-4 mt-2 divide-y divide-border/60">
+
+                  {/* Court list card */}
+                  <Card className="mx-4 mb-4 divide-y divide-border">
                     {group.courts.map((court) => (
                       <button
                         key={court.id}
                         type="button"
                         onClick={() => handleCourtClick(court.id)}
-                        className={cn(
-                          'w-full text-left px-4 py-3 transition-colors',
-                          'hover:bg-muted/50 active:bg-muted'
-                        )}
+                        className="w-full text-left px-4 py-3 transition-colors hover:bg-muted/50 active:bg-muted"
                       >
-                        <div className="text-sm font-semibold text-foreground">
+                        <p className="text-sm font-medium text-foreground mb-2">
                           {getCourtDisplayName(court)}
-                        </div>
-                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                          <Badge className={cn('text-[10px] uppercase tracking-widest', REGION_COLORS[court.region_id]?.tag)}>
+                        </p>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Badge variant="outline" className="text-[10px] uppercase tracking-widest text-muted-foreground">
                             {REGION_CODES[court.region_id] || 'R?'} • {court.region_name}
                           </Badge>
                           {court.has_provincial && (
-                            <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20">
+                            <Badge className="bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/20 text-[10px]">
                               PC
                             </Badge>
                           )}
                           {court.has_supreme && (
-                            <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20">
+                            <Badge className="bg-purple-500/15 text-purple-400 hover:bg-purple-500/20 text-[10px]">
                               SC
                             </Badge>
                           )}
                           {court.is_circuit && (
-                            <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20">
+                            <Badge className="bg-amber-500/15 text-amber-400 hover:bg-amber-500/20 text-[10px]">
                               Circuit
                             </Badge>
                           )}
@@ -386,11 +414,13 @@ export function CourtsIndexPage() {
                       </button>
                     ))}
                   </Card>
-                </div>
+                </section>
               ))}
-              <div className="text-center text-xs text-muted-foreground pb-6">
+
+              {/* Footer count */}
+              <p className="text-center text-xs text-muted-foreground py-4">
                 {filteredCourts.length} {filteredCourts.length === 1 ? 'court' : 'courts'}
-              </div>
+              </p>
             </div>
           )}
         </div>
