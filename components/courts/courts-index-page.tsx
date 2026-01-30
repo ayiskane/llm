@@ -18,8 +18,17 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
 import { REGIONS, REGION_CODES } from '@/lib/config/constants';
+import {
+  cn,
+  courtLevelBadges,
+  filterButton,
+  layout,
+  text,
+  card,
+  badge,
+  iconSize,
+} from '@/lib/config/theme';
 import { supabaseClient } from '@/lib/supabase/client';
 import type { CourtListItem, GroupedCourts } from '@/types';
 
@@ -207,20 +216,20 @@ export function CourtsIndexPage() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-background">
+    <div className={layout.pageContainer}>
       {/* Compact Sticky Header */}
-      <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
+      <header className={layout.stickyHeader}>
         <div className="px-4 py-3 space-y-2.5">
           {/* Title row */}
           <div className="flex items-baseline justify-between">
-            <h1 className="text-lg font-bold text-foreground">Courts</h1>
-            <span className="text-xs text-muted-foreground">{filteredCourts.length} locations</span>
+            <h1 className={text.pageTitle}>Courts</h1>
+            <span className={text.pageSubtitle}>{filteredCourts.length} locations</span>
           </div>
 
           {/* Search + Filter */}
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className={cn('absolute left-3 top-1/2 -translate-y-1/2', iconSize.md, 'text-muted-foreground')} />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -245,14 +254,14 @@ export function CourtsIndexPage() {
                   variant="outline"
                   size="sm"
                   className={cn(
-                    'h-9 w-9 p-0 relative',
-                    hasActiveFilters && 'border-primary text-primary'
+                    filterButton.base,
+                    hasActiveFilters && filterButton.active
                   )}
                   aria-label="Open filters"
                 >
-                  <SlidersHorizontal className="h-4 w-4" />
+                  <SlidersHorizontal className={iconSize.md} />
                   {activeFilterCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+                    <span className={filterButton.badge}>
                       {activeFilterCount}
                     </span>
                   )}
@@ -267,14 +276,14 @@ export function CourtsIndexPage() {
                 <div className="space-y-5">
                   {/* Region */}
                   <div className="space-y-2.5">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Region</p>
+                    <p className={text.sectionHeader}>Region</p>
                     <div className="flex flex-wrap gap-2">
                       {REGIONS.map((region) => (
                         <Button
                           key={region.id}
                           variant={filters.region === region.id ? 'default' : 'outline'}
                           size="sm"
-                          className="h-8 rounded-full text-xs"
+                          className={cn('h-8 rounded-full text-xs', badge.pill)}
                           onClick={() => setFilters((prev) => ({ ...prev, region: region.id }))}
                         >
                           {region.name}
@@ -287,14 +296,14 @@ export function CourtsIndexPage() {
 
                   {/* Court Type */}
                   <div className="space-y-2.5">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Court Type</p>
+                    <p className={text.sectionHeader}>Court Type</p>
                     <div className="flex flex-wrap gap-2">
                       {COURT_TYPE_OPTIONS.map((option) => (
                         <Button
                           key={option.value}
                           variant={filters.courtType === option.value ? 'default' : 'outline'}
                           size="sm"
-                          className="h-8 rounded-full text-xs"
+                          className={cn('h-8 rounded-full text-xs', badge.pill)}
                           onClick={() => setFilters((prev) => ({ ...prev, courtType: option.value }))}
                         >
                           {option.label}
@@ -307,14 +316,14 @@ export function CourtsIndexPage() {
 
                   {/* Court Level */}
                   <div className="space-y-2.5">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Court Level</p>
+                    <p className={text.sectionHeader}>Court Level</p>
                     <div className="flex flex-wrap gap-2">
                       {COURT_LEVEL_OPTIONS.map((option) => (
                         <Button
                           key={option.value}
                           variant={filters.courtLevel === option.value ? 'default' : 'outline'}
                           size="sm"
-                          className="h-8 rounded-full text-xs"
+                          className={cn('h-8 rounded-full text-xs', badge.pill)}
                           onClick={() => setFilters((prev) => ({ ...prev, courtLevel: option.value }))}
                         >
                           {option.label}
@@ -352,7 +361,7 @@ export function CourtsIndexPage() {
 
       {/* Scrollable Content */}
       <div className="flex-1 min-h-0 relative">
-        <div ref={scrollContainerRef} className="h-full overflow-y-auto">
+        <div ref={scrollContainerRef} className={layout.scrollContainer}>
           {groupedCourts.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 py-16 px-6 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
@@ -372,42 +381,42 @@ export function CourtsIndexPage() {
               {groupedCourts.map((group) => (
                 <section key={group.letter} id={`section-${group.letter}`} data-letter={group.letter}>
                   {/* Letter header */}
-                  <div className="sticky top-0 z-10 px-4 py-1.5 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
+                  <div className={layout.stickySection}>
                     <span className="text-xs font-semibold text-muted-foreground">{group.letter}</span>
                   </div>
 
                   {/* Court list card */}
-                  <Card className="mx-4 mb-4 divide-y divide-border">
+                  <Card className={cn('mx-4 mb-4', card.divided)}>
                     {group.courts.map((court) => (
                       <button
                         key={court.id}
                         type="button"
                         onClick={() => handleCourtClick(court.id)}
-                        className="w-full text-left px-3 py-2.5 transition-colors hover:bg-muted/50 active:bg-muted"
+                        className={card.row}
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm font-medium text-foreground truncate">
+                          <p className={cn(text.primary, 'truncate')}>
                             {getCourtDisplayName(court)}
                           </p>
                           <div className="flex items-center gap-1 shrink-0">
                             {court.has_provincial && (
-                              <Badge className="bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/20 text-[9px] px-1.5 py-0">
+                              <Badge className={cn(courtLevelBadges.provincial, badge.base)}>
                                 PC
                               </Badge>
                             )}
                             {court.has_supreme && (
-                              <Badge className="bg-purple-500/15 text-purple-400 hover:bg-purple-500/20 text-[9px] px-1.5 py-0">
+                              <Badge className={cn(courtLevelBadges.supreme, badge.base)}>
                                 SC
                               </Badge>
                             )}
                             {court.is_circuit && (
-                              <Badge className="bg-amber-500/15 text-amber-400 hover:bg-amber-500/20 text-[9px] px-1.5 py-0">
+                              <Badge className={cn(courtLevelBadges.circuit, badge.base)}>
                                 Circuit
                               </Badge>
                             )}
                           </div>
                         </div>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                        <p className={text.secondary}>
                           {REGION_CODES[court.region_id] || 'R?'} • {court.region_name}
                         </p>
                       </button>
@@ -417,7 +426,7 @@ export function CourtsIndexPage() {
               ))}
 
               {/* Footer count */}
-              <p className="text-center text-xs text-muted-foreground py-4">
+              <p className={cn(text.muted, 'text-center py-4')}>
                 {filteredCourts.length} {filteredCourts.length === 1 ? 'court' : 'courts'}
               </p>
             </div>
