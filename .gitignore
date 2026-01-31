@@ -35,3 +35,5 @@ next-env.d.ts
 
 # Bundle analyzer
 .next/analyze
+llm-legacy-ui-snapshot
+designs
