@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { MapPin, Search, SlidersHorizontal, X } from 'lucide-react';
-import { AlphabetNav } from '@/components/ui/alphabet-nav';
-import { Badge, badgeVariants } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { MapPin, Search, SlidersHorizontal, X } from "lucide-react";
+import { AlphabetNav } from "@/components/ui/alphabet-nav";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardListItem } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -16,54 +16,42 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/components/ui/sheet';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { REGIONS} from '@/lib/config/constants';
-import {
-  cn,
-  filterButton,
-  layout,
-  text,
-  card,
-  iconSize,
-} from '@/lib/config/theme';
-import { supabaseClient } from '@/lib/supabase/client';
-import type { CourtListItem, GroupedCourts } from '@/types';
+} from "@/components/ui/sheet";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { REGIONS, REGION_CODES, REGION_NAMES } from "@/lib/config/constants";
+import { cn, filterButton, layout, text, iconSize } from "@/lib/config/theme";
+import { supabaseClient } from "@/lib/supabase/client";
+import type { CourtListItem, GroupedCourts } from "@/types";
 
-type CourtTypeFilter = 'all' | 'staffed' | 'circuit';
-type CourtLevelFilter = 'all' | 'pc' | 'sc';
+type CourtTypeFilter = "all" | "staffed" | "circuit";
+type CourtLevelFilter = "all" | "pc" | "sc";
 
 const COURT_TYPE_OPTIONS = [
-  { value: 'all' as const, label: 'All' },
-  { value: 'staffed' as const, label: 'Staffed' },
-  { value: 'circuit' as const, label: 'Circuit' },
+  { value: "all" as const, label: "All" },
+  { value: "staffed" as const, label: "Staffed" },
+  { value: "circuit" as const, label: "Circuit" },
 ];
 
 const COURT_LEVEL_OPTIONS = [
-  { value: 'all' as const, label: 'All Levels' },
-  { value: 'pc' as const, label: 'Provincial (PC)' },
-  { value: 'sc' as const, label: 'Supreme (SC)' },
+  { value: "all" as const, label: "All Levels" },
+  { value: "pc" as const, label: "Provincial (PC)" },
+  { value: "sc" as const, label: "Supreme (SC)" },
 ];
 
 function groupCourtsByLetter(courts: CourtListItem[]): GroupedCourts[] {
-  const grouped = courts.reduce((acc, court) => {
-    const firstChar = court.name.charAt(0).toUpperCase();
-    const letter = /[A-Z]/.test(firstChar) ? firstChar : '#';
-    (acc[letter] ??= []).push(court);
-    return acc;
-  }, {} as Record<string, CourtListItem[]>);
+  const grouped = courts.reduce(
+    (acc, court) => {
+      const firstChar = court.name.charAt(0).toUpperCase();
+      const letter = /[A-Z]/.test(firstChar) ? firstChar : "#";
+      (acc[letter] ??= []).push(court);
+      return acc;
+    },
+    {} as Record<string, CourtListItem[]>,
+  );
 
   return Object.entries(grouped)
-    .sort(([a], [b]) => (a === '#' ? 1 : b === '#' ? -1 : a.localeCompare(b)))
+    .sort(([a], [b]) => (a === "#" ? 1 : b === "#" ? -1 : a.localeCompare(b)))
     .map(([letter, courts]) => ({ letter, courts }));
-}
-
-function getCourtDisplayName(court: CourtListItem): string {
-  const name = court.name;
-  if (name.toLowerCase().includes('court')) return name;
-  if (court.is_circuit) return `${name} Provincial Court`;
-  if (court.has_provincial || court.has_supreme) return `${name} Law Courts`;
-  return name;
 }
 
 export function CourtsIndexPage() {
@@ -72,19 +60,20 @@ export function CourtsIndexPage() {
 
   const [courts, setCourts] = useState<CourtListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
     region: 0,
-    courtType: 'all' as CourtTypeFilter,
-    courtLevel: 'all' as CourtLevelFilter,
+    courtType: "all" as CourtTypeFilter,
+    courtLevel: "all" as CourtLevelFilter,
   });
   const [activeLetter, setActiveLetter] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchCourts() {
       const { data, error } = await supabaseClient
-        .from('v2_courts')
-        .select(`
+        .from("v2_courts")
+        .select(
+          `
           id,
           name,
           region_id,
@@ -92,11 +81,12 @@ export function CourtsIndexPage() {
           has_provincial,
           has_supreme,
           v2_regions!inner(name)
-        `)
-        .order('name');
+        `,
+        )
+        .order("name");
 
       if (error) {
-        console.error('Error fetching courts:', error);
+        console.error("Error fetching courts:", error);
         setLoading(false);
         return;
       }
@@ -105,7 +95,8 @@ export function CourtsIndexPage() {
         id: c.id,
         name: c.name,
         region_id: c.region_id,
-        region_name: (c.v2_regions as { name: string }[] | null)?.[0]?.name || '',
+        region_name:
+          (c.v2_regions as { name: string }[] | null)?.[0]?.name || "",
         is_circuit: c.is_circuit,
         has_provincial: c.has_provincial,
         has_supreme: c.has_supreme,
@@ -119,17 +110,19 @@ export function CourtsIndexPage() {
   }, []);
 
   const hasActiveFilters =
-    filters.region !== 0 || filters.courtType !== 'all' || filters.courtLevel !== 'all';
+    filters.region !== 0 ||
+    filters.courtType !== "all" ||
+    filters.courtLevel !== "all";
 
   const activeFilterCount = [
     filters.region !== 0,
-    filters.courtType !== 'all',
-    filters.courtLevel !== 'all',
+    filters.courtType !== "all",
+    filters.courtLevel !== "all",
   ].filter(Boolean).length;
 
   const clearFilters = useCallback(() => {
-    setFilters({ region: 0, courtType: 'all', courtLevel: 'all' });
-    setSearchQuery('');
+    setFilters({ region: 0, courtType: "all", courtLevel: "all" });
+    setSearchQuery("");
   }, []);
 
   const filteredCourts = useMemo(() => {
@@ -139,15 +132,15 @@ export function CourtsIndexPage() {
       result = result.filter((court) => court.region_id === filters.region);
     }
 
-    if (filters.courtType === 'staffed') {
+    if (filters.courtType === "staffed") {
       result = result.filter((court) => !court.is_circuit);
-    } else if (filters.courtType === 'circuit') {
+    } else if (filters.courtType === "circuit") {
       result = result.filter((court) => court.is_circuit);
     }
 
-    if (filters.courtLevel === 'pc') {
+    if (filters.courtLevel === "pc") {
       result = result.filter((court) => court.has_provincial);
-    } else if (filters.courtLevel === 'sc') {
+    } else if (filters.courtLevel === "sc") {
       result = result.filter((court) => court.has_supreme);
     }
 
@@ -156,45 +149,50 @@ export function CourtsIndexPage() {
       result = result.filter(
         (court) =>
           court.name.toLowerCase().includes(query) ||
-          getCourtDisplayName(court).toLowerCase().includes(query) ||
-          court.region_name.toLowerCase().includes(query)
+          court.region_name.toLowerCase().includes(query),
       );
     }
 
     return result;
   }, [courts, filters, searchQuery]);
 
-  const groupedCourts = useMemo(() => groupCourtsByLetter(filteredCourts), [filteredCourts]);
-  const availableLetters = useMemo(() => groupedCourts.map((group) => group.letter), [groupedCourts]);
+  const groupedCourts = useMemo(
+    () => groupCourtsByLetter(filteredCourts),
+    [filteredCourts],
+  );
+  const availableLetters = useMemo(
+    () => groupedCourts.map((group) => group.letter),
+    [groupedCourts],
+  );
 
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container || availableLetters.length === 0) return;
 
     const handleScroll = () => {
-      const sections = container.querySelectorAll('[data-letter]');
+      const sections = container.querySelectorAll("[data-letter]");
       let currentLetter: string | null = null;
 
       sections.forEach((section) => {
         const rect = section.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
         if (rect.top <= containerRect.top + 48) {
-          currentLetter = section.getAttribute('data-letter');
+          currentLetter = section.getAttribute("data-letter");
         }
       });
 
       setActiveLetter(currentLetter || availableLetters[0]);
     };
 
-    container.addEventListener('scroll', handleScroll, { passive: true });
+    container.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
-    return () => container.removeEventListener('scroll', handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
   }, [availableLetters]);
 
   const handleLetterChange = useCallback((letter: string) => {
     const section = document.getElementById(`section-${letter}`);
     if (section) {
-      section.scrollIntoView({ behavior: 'auto', block: 'start' });
+      section.scrollIntoView({ behavior: "auto", block: "start" });
     }
   }, []);
 
@@ -202,7 +200,7 @@ export function CourtsIndexPage() {
     (courtId: number) => {
       router.push(`/court/${courtId}`);
     },
-    [router]
+    [router],
   );
 
   if (loading) {
@@ -220,14 +218,19 @@ export function CourtsIndexPage() {
         <div className="px-4 py-3 space-y-2.5">
           {/* Title row */}
           <div className="flex items-baseline justify-between">
-            <h1 className={text.pageTitle}>Courts</h1>
-            <span className={text.pageSubtitle}>{filteredCourts.length} locations</span>
+            <h1 className={text.pageTitle}>BC Courts Index</h1>
           </div>
 
           {/* Search + Filter */}
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Search className={cn('absolute left-3 top-1/2 -translate-y-1/2', iconSize.md, 'text-muted-foreground')} />
+              <Search
+                className={cn(
+                  "absolute left-3 top-1/2 -translate-y-1/2",
+                  iconSize.md,
+                  "text-muted-foreground",
+                )}
+              />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -237,7 +240,7 @@ export function CourtsIndexPage() {
               {searchQuery && (
                 <button
                   type="button"
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => setSearchQuery("")}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   aria-label="Clear search"
                 >
@@ -253,7 +256,7 @@ export function CourtsIndexPage() {
                   size="sm"
                   className={cn(
                     filterButton.base,
-                    hasActiveFilters && filterButton.active
+                    hasActiveFilters && filterButton.active,
                   )}
                   aria-label="Open filters"
                 >
@@ -268,7 +271,9 @@ export function CourtsIndexPage() {
               <SheetContent side="bottom" className="max-h-[85vh]">
                 <SheetHeader className="pb-4">
                   <SheetTitle>Filter Courts</SheetTitle>
-                  <SheetDescription>Choose region, court type, and level.</SheetDescription>
+                  <SheetDescription>
+                    Choose region, court type, and level.
+                  </SheetDescription>
                 </SheetHeader>
 
                 <div className="space-y-5">
@@ -279,10 +284,17 @@ export function CourtsIndexPage() {
                       {REGIONS.map((region) => (
                         <Button
                           key={region.id}
-                          variant={filters.region === region.id ? 'default' : 'outline'}
+                          variant={
+                            filters.region === region.id ? "default" : "outline"
+                          }
                           size="sm"
-                          className={cn('h-8 rounded-full text-xs')}
-                          onClick={() => setFilters((prev) => ({ ...prev, region: region.id }))}
+                          className={cn("h-8 rounded-full text-xs")}
+                          onClick={() =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              region: region.id,
+                            }))
+                          }
                         >
                           {region.name}
                         </Button>
@@ -299,10 +311,19 @@ export function CourtsIndexPage() {
                       {COURT_TYPE_OPTIONS.map((option) => (
                         <Button
                           key={option.value}
-                          variant={filters.courtType === option.value ? 'default' : 'outline'}
+                          variant={
+                            filters.courtType === option.value
+                              ? "default"
+                              : "outline"
+                          }
                           size="sm"
-                          className={cn('h-8 rounded-full text-xs')}
-                          onClick={() => setFilters((prev) => ({ ...prev, courtType: option.value }))}
+                          className={cn("h-8 rounded-full text-xs")}
+                          onClick={() =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              courtType: option.value,
+                            }))
+                          }
                         >
                           {option.label}
                         </Button>
@@ -319,10 +340,19 @@ export function CourtsIndexPage() {
                       {COURT_LEVEL_OPTIONS.map((option) => (
                         <Button
                           key={option.value}
-                          variant={filters.courtLevel === option.value ? 'default' : 'outline'}
+                          variant={
+                            filters.courtLevel === option.value
+                              ? "default"
+                              : "outline"
+                          }
                           size="sm"
-                          className={cn('h-8 rounded-full text-xs')}
-                          onClick={() => setFilters((prev) => ({ ...prev, courtLevel: option.value }))}
+                          className={cn("h-8 rounded-full text-xs")}
+                          onClick={() =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              courtLevel: option.value,
+                            }))
+                          }
                         >
                           {option.label}
                         </Button>
@@ -331,7 +361,11 @@ export function CourtsIndexPage() {
                   </div>
 
                   {hasActiveFilters && (
-                    <Button variant="ghost" className="w-full text-muted-foreground" onClick={clearFilters}>
+                    <Button
+                      variant="ghost"
+                      className="w-full text-muted-foreground"
+                      onClick={clearFilters}
+                    >
                       Clear all filters
                     </Button>
                   )}
@@ -343,12 +377,21 @@ export function CourtsIndexPage() {
           {/* Tabs for court type */}
           <Tabs
             value={filters.courtType}
-            onValueChange={(value) => setFilters((prev) => ({ ...prev, courtType: value as CourtTypeFilter }))}
+            onValueChange={(value) =>
+              setFilters((prev) => ({
+                ...prev,
+                courtType: value as CourtTypeFilter,
+              }))
+            }
             className="w-full"
           >
             <TabsList className="w-full">
               {COURT_TYPE_OPTIONS.map((option) => (
-                <TabsTrigger key={option.value} value={option.value} className="flex-1 text-xs">
+                <TabsTrigger
+                  key={option.value}
+                  value={option.value}
+                  className="flex-1 text-xs"
+                >
                   {option.label}
                 </TabsTrigger>
               ))}
@@ -366,7 +409,9 @@ export function CourtsIndexPage() {
                 <MapPin className="h-5 w-5 text-muted-foreground" />
               </div>
               <p className="text-sm text-muted-foreground">
-                {searchQuery ? `No courts found for "${searchQuery}".` : 'No courts match your filters.'}
+                {searchQuery
+                  ? `No courts found for "${searchQuery}".`
+                  : "No courts match your filters."}
               </p>
               {(searchQuery || hasActiveFilters) && (
                 <Button variant="ghost" size="sm" onClick={clearFilters}>
@@ -377,41 +422,53 @@ export function CourtsIndexPage() {
           ) : (
             <div className="pb-20">
               {groupedCourts.map((group) => (
-                <section key={group.letter} id={`section-${group.letter}`} data-letter={group.letter}>
+                <section
+                  key={group.letter}
+                  id={`section-${group.letter}`}
+                  data-letter={group.letter}
+                >
                   {/* Letter header */}
                   <div className={layout.stickySection}>
-                    <span className="text-xs font-semibold text-muted-foreground">{group.letter}</span>
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {group.letter}
+                    </span>
                   </div>
 
                   {/* Court list card */}
-                  <Card className={cn('mx-4 mb-3', card.divided)}>
+                  <Card variant="list" className="mx-4 mb-2">
                     {group.courts.map((court) => (
-                      <button
+                      <CardListItem
                         key={court.id}
-                        type="button"
                         onClick={() => handleCourtClick(court.id)}
-                        className={card.row}
                       >
-                        {/* <div className="flex items-center gap-2"> */}
-                          <p className={cn(text.primary, 'flex-1 truncate')}>
-                            {getCourtDisplayName(court)}
-                          </p>
-                          {court.has_provincial && <Badge variant="provincial">PC</Badge>}
-                          {court.has_supreme && <Badge variant="supreme">SC</Badge>}
-                          {court.is_circuit && <Badge variant="circuit">CIR</Badge>}
-                        {/* </div> */}
-                        <p className={text.secondary}>
-                          <Badge variant="region">{REGIONS[court.region_id]} • {REGIONS[court.region_id]}</Badge>
-                        </p>
-                      </button>
+                        <div className={cn(text.primary, "mb-1.5")}>
+                          {court.name}
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Badge variant="region" size="md">
+                            {REGION_CODES[court.region_id]} |{" "}
+                            {REGION_NAMES[court.region_id]}
+                          </Badge>
+                          {court.has_provincial && (
+                            <Badge variant="provincial" size="sm">PC</Badge>
+                          )}
+                          {court.has_supreme && (
+                            <Badge variant="supreme" size="sm">SC</Badge>
+                          )}
+                          {court.is_circuit && (
+                            <Badge variant="circuit" size="sm">CIR</Badge>
+                          )}
+                        </div>
+                      </CardListItem>
                     ))}
                   </Card>
                 </section>
               ))}
 
               {/* Footer count */}
-              <p className={cn(text.muted, 'text-center py-4')}>
-                {filteredCourts.length} {filteredCourts.length === 1 ? 'court' : 'courts'}
+              <p className={cn(text.muted, "text-center py-4")}>
+                {filteredCourts.length}{" "}
+                {filteredCourts.length === 1 ? "court" : "courts"}
               </p>
             </div>
           )}

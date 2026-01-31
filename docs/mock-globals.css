@@ -1,3 +1,10 @@
+/* =============================================================================
+   MOCK GLOBALS.CSS - CENTRALIZED COLOR SYSTEM (SIMPLIFIED)
+   =============================================================================
+   Consolidated color palette from legacy UI. Colors are grouped by semantic
+   meaning rather than raw Tailwind values.
+   ============================================================================= */
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -26,40 +33,20 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
 }
-
-/* =============================================================================
-   CYBER OCEAN DARK THEME
-   ============================================================================= */
 
 :root {
   --radius: 0.75rem;
 
-  /* -------------------------------------------------------------------------
+  /* =========================================================================
      SHADCN SEMANTIC COLORS
-     ------------------------------------------------------------------------- */
+     ========================================================================= */
   --background: hsl(222.2 84% 4.9%);
   --foreground: hsl(210 40% 98%);
   --card: hsl(222.2 47.4% 11.2%);
@@ -80,26 +67,9 @@
   --input: hsl(217.2 32.6% 17.5%);
   --ring: hsl(224.3 76.3% 48%);
 
-  /* Charts */
-  --chart-1: hsl(220 70% 50%);
-  --chart-2: hsl(160 60% 45%);
-  --chart-3: hsl(30 80% 55%);
-  --chart-4: hsl(280 65% 60%);
-  --chart-5: hsl(340 75% 55%);
-
-  /* Sidebar */
-  --sidebar: hsl(222.2 47.4% 11.2%);
-  --sidebar-foreground: hsl(210 40% 98%);
-  --sidebar-primary: hsl(217.2 91.2% 59.8%);
-  --sidebar-primary-foreground: hsl(210 40% 98%);
-  --sidebar-accent: hsl(217.2 32.6% 17.5%);
-  --sidebar-accent-foreground: hsl(210 40% 98%);
-  --sidebar-border: hsl(217.2 32.6% 17.5%);
-  --sidebar-ring: hsl(224.3 76.3% 48%);
-
-  /* -------------------------------------------------------------------------
-     CORE COLOR PALETTE (OKLCH)
-     ------------------------------------------------------------------------- */
+  /* =========================================================================
+     CORE COLOR PALETTE (Simplified - 1 shade per color family)
+     ========================================================================= */
 
   /* Blue - Primary accent, links, active states, navigation */
   --color-blue: oklch(70.7% 0.165 254.624);
@@ -131,53 +101,59 @@
   /* Red - Errors, destructive actions */
   --color-red: oklch(70.4% 0.191 22.216);
 
-  /* Slate - Neutrals */
-  --color-slate-text: oklch(86.9% 0.022 252.894);
-  --color-slate-muted: oklch(70.4% 0.04 256.788);
-  --color-slate-disabled: oklch(55.4% 0.046 257.417);
-  --color-slate-border: oklch(37.2% 0.044 257.287);
-  --color-slate-surface: oklch(27.9% 0.041 260.031);
-  --color-slate-deep: oklch(20.8% 0.042 265.755);
+  /* Slate - Neutrals (4 key shades) */
+  --color-slate-text: oklch(86.9% 0.022 252.894);       /* ~300: body text */
+  --color-slate-muted: oklch(70.4% 0.04 256.788);       /* ~400: muted text, icons */
+  --color-slate-disabled: oklch(55.4% 0.046 257.417);   /* ~500: disabled, placeholders */
+  --color-slate-border: oklch(37.2% 0.044 257.287);     /* ~700: borders, dividers */
+  --color-slate-surface: oklch(27.9% 0.041 260.031);    /* ~800: card backgrounds */
+  --color-slate-deep: oklch(20.8% 0.042 265.755);       /* ~900: nav backgrounds */
 
-  /* -------------------------------------------------------------------------
+  /* =========================================================================
      BADGE COLORS (bg + text pairs)
-     ------------------------------------------------------------------------- */
+     Court levels, categories, status indicators
+     ========================================================================= */
 
-  /* Provincial Court (Emerald) */
+  /* Provincial Court */
   --badge-emerald-bg: oklch(76.5% 0.177 163.223 / 0.15);
   --badge-emerald-text: var(--color-emerald);
+  --badge-emerald-solid: var(--color-emerald);
 
-  /* Supreme Court (Purple) */
+  /* Supreme Court */
   --badge-purple-bg: oklch(71.4% 0.203 305.504 / 0.15);
   --badge-purple-text: var(--color-purple);
+  --badge-purple-solid: var(--color-purple);
 
-  /* Circuit Court / Bail (Amber) */
+  /* Circuit Court / Bail */
   --badge-amber-bg: oklch(82.8% 0.189 84.429 / 0.15);
   --badge-amber-text: var(--color-amber);
+  --badge-amber-solid: var(--color-amber);
 
-  /* Default / Court (Blue) */
+  /* Default / Court */
   --badge-blue-bg: oklch(70.7% 0.165 254.624 / 0.15);
   --badge-blue-text: var(--color-blue);
+  --badge-blue-solid: var(--color-blue);
 
-  /* Supreme Contacts (Rose) */
+  /* Supreme Contacts */
   --badge-rose-bg: oklch(71.2% 0.194 13.428 / 0.15);
   --badge-rose-text: var(--color-rose);
+  --badge-rose-solid: var(--color-rose);
 
-  /* Youth / Info (Sky) */
+  /* Youth / Info */
   --badge-sky-bg: oklch(74.6% 0.16 232.661 / 0.15);
   --badge-sky-text: var(--color-sky);
 
-  /* JCM / Teams / Federal (Indigo) */
+  /* JCM / Teams / Federal */
   --badge-indigo-bg: oklch(67.3% 0.182 276.935 / 0.15);
   --badge-indigo-text: var(--color-indigo);
 
-  /* Region / Neutral (Slate) */
+  /* Region / Neutral */
   --badge-slate-bg: oklch(55.4% 0.046 257.417 / 0.15);
   --badge-slate-text: var(--color-slate-muted);
 
-  /* -------------------------------------------------------------------------
+  /* =========================================================================
      SURFACE COLORS (backgrounds with opacity)
-     ------------------------------------------------------------------------- */
+     ========================================================================= */
 
   /* Card backgrounds */
   --surface-card: oklch(27.9% 0.041 260.031 / 0.3);
@@ -199,9 +175,9 @@
   /* Input fields */
   --surface-input: oklch(27.9% 0.041 260.031 / 0.5);
 
-  /* -------------------------------------------------------------------------
+  /* =========================================================================
      BUTTON COLORS
-     ------------------------------------------------------------------------- */
+     ========================================================================= */
 
   /* Primary (Blue) */
   --btn-primary-bg: var(--color-blue-solid);
@@ -245,9 +221,9 @@
   --btn-filter-inactive-border: oklch(37.2% 0.044 257.287 / 0.5);
   --btn-filter-inactive-text: var(--color-slate-muted);
 
-  /* -------------------------------------------------------------------------
+  /* =========================================================================
      BORDER COLORS
-     ------------------------------------------------------------------------- */
+     ========================================================================= */
 
   --border-default: oklch(37.2% 0.044 257.287 / 0.5);
   --border-subtle: oklch(37.2% 0.044 257.287 / 0.3);
@@ -263,9 +239,9 @@
   --border-error: oklch(70.4% 0.191 22.216 / 0.5);
   --border-error-subtle: oklch(70.4% 0.191 22.216 / 0.3);
 
-  /* -------------------------------------------------------------------------
+  /* =========================================================================
      CATEGORY ACCENT BARS (vertical color strips on contact cards)
-     ------------------------------------------------------------------------- */
+     ========================================================================= */
 
   --accent-court: var(--color-blue);
   --accent-provincial: var(--color-emerald);
@@ -273,18 +249,18 @@
   --accent-supreme: var(--color-rose);
   --accent-bail: var(--color-amber);
 
-  /* -------------------------------------------------------------------------
+  /* =========================================================================
      ICON BACKGROUNDS (circular icon containers)
-     ------------------------------------------------------------------------- */
+     ========================================================================= */
 
   --icon-bg-default: oklch(55.4% 0.046 257.417 / 0.2);
   --icon-bg-emerald: oklch(76.5% 0.177 163.223 / 0.15);
   --icon-bg-indigo: oklch(67.3% 0.182 276.935 / 0.15);
   --icon-bg-amber: oklch(82.8% 0.189 84.429 / 0.15);
 
-  /* -------------------------------------------------------------------------
+  /* =========================================================================
      STATE COLORS
-     ------------------------------------------------------------------------- */
+     ========================================================================= */
 
   /* Success (copy, confirm) */
   --state-success-bg: oklch(76.5% 0.177 163.223 / 0.1);
@@ -298,42 +274,6 @@
   /* Loading */
   --state-loading-ring: oklch(70.7% 0.165 254.624 / 0.3);
   --state-loading-spinner: var(--color-blue);
-}
-
-/* Keep .dark for compatibility */
-.dark {
-  --background: hsl(222.2 84% 4.9%);
-  --foreground: hsl(210 40% 98%);
-  --card: hsl(222.2 47.4% 11.2%);
-  --card-foreground: hsl(210 40% 98%);
-  --popover: hsl(222.2 47.4% 11.2%);
-  --popover-foreground: hsl(210 40% 98%);
-  --primary: hsl(217.2 91.2% 59.8%);
-  --primary-foreground: hsl(222.2 47.4% 11.2%);
-  --secondary: hsl(217.2 32.6% 17.5%);
-  --secondary-foreground: hsl(210 40% 98%);
-  --muted: hsl(217.2 32.6% 17.5%);
-  --muted-foreground: hsl(215 20.2% 65.1%);
-  --accent: hsl(217.2 32.6% 17.5%);
-  --accent-foreground: hsl(210 40% 98%);
-  --destructive: hsl(0 62.8% 30.6%);
-  --destructive-foreground: hsl(210 40% 98%);
-  --border: hsl(217.2 32.6% 17.5%);
-  --input: hsl(217.2 32.6% 17.5%);
-  --ring: hsl(224.3 76.3% 48%);
-  --chart-1: hsl(220 70% 50%);
-  --chart-2: hsl(160 60% 45%);
-  --chart-3: hsl(30 80% 55%);
-  --chart-4: hsl(280 65% 60%);
-  --chart-5: hsl(340 75% 55%);
-  --sidebar: hsl(222.2 47.4% 11.2%);
-  --sidebar-foreground: hsl(210 40% 98%);
-  --sidebar-primary: hsl(217.2 91.2% 59.8%);
-  --sidebar-primary-foreground: hsl(210 40% 98%);
-  --sidebar-accent: hsl(217.2 32.6% 17.5%);
-  --sidebar-accent-foreground: hsl(210 40% 98%);
-  --sidebar-border: hsl(217.2 32.6% 17.5%);
-  --sidebar-ring: hsl(224.3 76.3% 48%);
 }
 
 /* =============================================================================

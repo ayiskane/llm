@@ -5,32 +5,26 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-  'inline-flex items-center justify-center rounded border-transparent font-mono text-[9px] leading-none tracking-widest transition-colors',
+  'uppercase rounded items-center justify-center border-transparent tracking-widest transition-colors',
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground',
-        secondary: 'bg-secondary text-secondary-foreground',
-        destructive: 'bg-destructive text-white',
-        outline: 'border border-border text-foreground bg-transparent',
-        // Court level variants
-        provincial: 'bg-emerald-500/15 text-emerald-400',
-        supreme: 'bg-purple-500/15 text-purple-400',
-        circuit: 'bg-amber-500/15 text-amber-400',
-        
-        emerald: 'bg-emerald-500/15 text-emerald-400',
-        blue: 'bg-blue-500/15 text-blue-400',
-        amber: 'bg-amber-500/15 text-amber-400',
-        purple: 'bg-purple-500/15 text-purple-400',
-        rose: 'bg-rose-500/15 text-rose-400',
-        sky: 'bg-sky-500/15 text-sky-400',
-        // Region
-        region: 'bg-slate-500/15 text-slate-400',
+        default: 'text-[10px] font-medium bg-primary text-primary-foreground',
+        // Court level badges
+        provincial: 'badge-emerald',
+        supreme: 'badge-purple',
+        circuit: 'badge-amber',
+        // Other semantic badges
+        blue: 'badge-blue',
+        rose: 'badge-rose',
+        sky: 'badge-sky',
+        indigo: 'badge-indigo',
+        // Region badge (special styling)
+        region: 'badge-slate text-[9px] font-mono leading-none inline-flex border border-[var(--border-default)]',
       },
       size: {
-        sm: 'px-1.5 py-0.5',
-        md: 'px-2 py-1',
-        lg: 'px-2.5 py-1.5',
+        sm: 'px-1.5 py-0.5 text-[10px] font-medium',
+        md: 'px-2 py-1 text-[10px] font-medium',
       },
     },
     defaultVariants: {

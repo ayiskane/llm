@@ -2,29 +2,10 @@
 // LLM: LEGAL LEGENDS MANUAL - THEME CONFIGURATION
 // ============================================================================
 // Tailwind utility class strings for consistent styling across components
+// Uses CSS variables from globals.css for consistency
 // ============================================================================
 
 export { cn } from '@/lib/utils';
-
-// ============================================================================
-// TYPE DEFINITIONS
-// ============================================================================
-
-export type BadgeColor = 'emerald' | 'purple' | 'amber' | 'blue' | 'rose' | 'sky' | 'slate';
-
-// ============================================================================
-// BADGE COLOR MAPPINGS (for custom use cases outside Badge component)
-// ============================================================================
-
-export const badgeColors: Record<BadgeColor, string> = {
-  emerald: 'bg-emerald-500/15 text-emerald-400',
-  purple: 'bg-purple-500/15 text-purple-400',
-  amber: 'bg-amber-500/15 text-amber-400',
-  blue: 'bg-blue-500/15 text-blue-400',
-  rose: 'bg-rose-500/15 text-rose-400',
-  sky: 'bg-sky-500/15 text-sky-400',
-  slate: 'bg-slate-500/15 text-slate-400',
-};
 
 // ============================================================================
 // ICON SIZES
@@ -59,7 +40,7 @@ export const text = {
 export const card = {
   base: 'rounded-xl overflow-hidden',
   divided: 'divide-y divide-border/50',
-  row: 'w-full text-left px-3 py-2 transition-colors hover:bg-muted/50 active:bg-muted',
+  row: 'interactive-row px-3 py-2',
 } as const;
 
 // ============================================================================
@@ -82,3 +63,28 @@ export const filterButton = {
   active: 'border-primary text-primary',
   badge: 'absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground',
 } as const;
+
+// ============================================================================
+// BUTTON STYLES
+// ============================================================================
+
+export const button = {
+  teams: 'btn-teams',
+  call: 'btn-call',
+  copy: 'btn-copy',
+} as const;
+
+// ============================================================================
+// ICON CONTAINER STYLES
+// ============================================================================
+
+export const iconContainer = {
+  default: 'icon-container',
+  emerald: 'icon-container-emerald',
+  indigo: 'icon-container-indigo',
+  amber: 'icon-container-amber',
+} as const;
+
+// ============================================================================
+// ACCENT BAR STYLES (vertical color strips on contact cards)
+// ============================================================================
