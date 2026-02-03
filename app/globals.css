@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "tailwindcss-animate";
 
 /* ============================================================================
    TAILWIND V4 THEME - CYBER OCEAN
@@ -31,6 +32,80 @@
   --color-border: hsl(217.2 32.6% 17.5%);
   --color-input: hsl(217.2 32.6% 17.5%);
   --color-ring: hsl(224.3 76.3% 48%);
+
+  /* ==========================================================================
+     SEMANTIC COLOR ASSIGNMENTS
+     ==========================================================================
+     Blue    → General (registry, phone, interpreter)
+     Emerald → Provincial (JCM, Crown, FN Crown, prisons)
+     Purple  → Federal (Crown, prisons)
+     Rose    → Supreme Court
+     Amber   → Bail / Sheriff cells
+     Sky     → Youth
+     Cyan    → Fax (all types)
+     Indigo  → MS Teams
+     Slate   → Abbreviations (NFRCC, etc.)
+     Green   → Success / Call buttons
+     ========================================================================== */
+
+  /* Blue - General contacts (registry, phone, interpreter) */
+  --color-semantic-blue: #3b82f6;
+  --color-semantic-blue-bg: rgba(59, 130, 246, 0.15);
+  --color-semantic-blue-text: #60a5fa;
+
+  /* Emerald - Provincial (JCM, Crown, FN Crown, prisons) */
+  --color-semantic-emerald: #10b981;
+  --color-semantic-emerald-bg: rgba(16, 185, 129, 0.15);
+  --color-semantic-emerald-text: #34d399;
+
+  /* Purple - Federal (Crown, prisons) */
+  --color-semantic-purple: #a855f7;
+  --color-semantic-purple-bg: rgba(168, 85, 247, 0.15);
+  --color-semantic-purple-text: #c084fc;
+
+  /* Rose - Supreme Court */
+  --color-semantic-rose: #f43f5e;
+  --color-semantic-rose-bg: rgba(244, 63, 94, 0.15);
+  --color-semantic-rose-text: #fb7185;
+
+  /* Amber - Bail / Sheriff cells */
+  --color-semantic-amber: #f59e0b;
+  --color-semantic-amber-bg: rgba(245, 158, 11, 0.15);
+  --color-semantic-amber-text: #fbbf24;
+
+  /* Sky - Youth */
+  --color-semantic-sky: #0ea5e9;
+  --color-semantic-sky-bg: rgba(14, 165, 233, 0.15);
+  --color-semantic-sky-text: #38bdf8;
+
+  /* Cyan - Fax (all types) */
+  --color-semantic-cyan: #06b6d4;
+  --color-semantic-cyan-bg: rgba(6, 182, 212, 0.15);
+  --color-semantic-cyan-text: #22d3ee;
+
+  /* Indigo - MS Teams */
+  --color-semantic-indigo: #6366f1;
+  --color-semantic-indigo-bg: rgba(99, 102, 241, 0.15);
+  --color-semantic-indigo-text: #818cf8;
+
+  /* Slate - Abbreviations (NFRCC, etc.) */
+  --color-semantic-slate: #64748b;
+  --color-semantic-slate-bg: rgba(100, 116, 139, 0.15);
+  --color-semantic-slate-text: #94a3b8;
+
+  /* Green - Success / Call buttons */
+  --color-semantic-green: #22c55e;
+  --color-semantic-green-bg: rgba(34, 197, 94, 0.15);
+  --color-semantic-green-text: #4ade80;
+
+  /* ==========================================================================
+     LIST ITEM BACKGROUNDS
+     ==========================================================================
+     Matches legacy styling: bg-slate-800/20, hover:bg-slate-800/30, active:bg-slate-800/50
+     ========================================================================== */
+  --color-list-item-bg: rgba(30, 41, 59, 0.2);
+  --color-list-item-hover: rgba(30, 41, 59, 0.3);
+  --color-list-item-active: rgba(30, 41, 59, 0.5);
 
   /* Animations */
   --animate-fade-in: fade-in 0.2s ease-out;

@@ -178,12 +178,12 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
     <>
       {/* Scrub indicator */}
       {isScrubbing && scrubLetter && indicatorY !== null && (
-        <div 
+        <div
           className="fixed right-10 z-[60] pointer-events-none"
           style={{ top: indicatorY, transform: 'translateY(-50%)' }}
         >
-          <div className="w-12 h-12 rounded-xl bg-slate-800/95 border border-slate-600 shadow-xl flex items-center justify-center backdrop-blur-sm">
-            <span className="text-xl font-bold text-blue-400">{scrubLetter}</span>
+          <div className="w-12 h-12 rounded-xl bg-secondary/95 border border-border shadow-xl flex items-center justify-center backdrop-blur-sm">
+            <span className="text-xl font-bold text-primary">{scrubLetter}</span>
           </div>
         </div>
       )}
@@ -196,7 +196,7 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
           'flex flex-col items-center justify-center',
           'py-1 px-0.5',
           'select-none',
-          isScrubbing && 'bg-slate-900/80 rounded-l-lg'
+          isScrubbing && 'bg-background/80 rounded-l-lg'
         )}
         style={{ touchAction: 'none' }}
         onMouseDown={handleMouseDown}
@@ -208,10 +208,10 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
             return (
               <span
                 key={`dot-${idx}`}
-                className="text-[6px] text-slate-600 h-1.5 flex items-center justify-center"
+                className="text-[3px] text-muted-foreground/50 h-1.5 flex items-center justify-center"
                 aria-hidden="true"
               >
-                •
+                ⏺
               </span>
             );
           }
@@ -223,7 +223,7 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
               key={item.letter}
               className={cn(
                 'text-[9px] font-semibold w-4 h-3.5 flex items-center justify-center transition-all duration-50',
-                isHighlighted ? 'text-blue-400 scale-125 font-bold' : 'text-slate-500'
+                isHighlighted ? 'text-primary scale-125 font-bold' : 'text-muted-foreground'
               )}
             >
               {item.value}

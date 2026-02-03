@@ -8,14 +8,12 @@ import { cn } from "@/lib/utils"
 // =============================================================================
 
 const cardVariants = cva(
-  "rounded-xl text-card-foreground",
+  "text-card-foreground",
   {
     variants: {
       variant: {
         default: "border bg-card shadow",
-        // List variant - for grouped list items (like court index)
-        list: "bg-slate-800/20 divide-y divide-slate-700/30 overflow-hidden",
-        // Ghost variant - minimal styling
+        list: "bg-list-item-bg divide-y divide-border overflow-hidden",
         ghost: "bg-transparent",
       },
     },
@@ -43,6 +41,7 @@ Card.displayName = "Card"
 
 // =============================================================================
 // CARD LIST ITEM - Clickable row for list variant cards
+// Uses CSS variables from globals.css for consistent theming
 // =============================================================================
 
 const CardListItem = React.forwardRef<
@@ -54,8 +53,8 @@ const CardListItem = React.forwardRef<
     type="button"
     className={cn(
       "w-full text-left px-4 py-3 transition-colors",
-      "hover:bg-slate-800/30 active:bg-slate-800/50",
-      "focus-visible:outline-none focus-visible:bg-slate-800/30",
+      "hover:bg-list-item-hover active:bg-list-item-active",
+      "focus-visible:outline-none focus-visible:bg-list-item-hover",
       className
     )}
     {...props}
@@ -63,25 +62,17 @@ const CardListItem = React.forwardRef<
 ))
 CardListItem.displayName = "CardListItem"
 
-// =============================================================================
-// CARD LIST ITEM TITLE
-// =============================================================================
-
 const CardListItemTitle = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-sm font-medium text-slate-200", className)}
+    className={cn("text-sm font-medium text-foreground", className)}
     {...props}
   />
 ))
 CardListItemTitle.displayName = "CardListItemTitle"
-
-// =============================================================================
-// CARD LIST ITEM DESCRIPTION
-// =============================================================================
 
 const CardListItemDescription = React.forwardRef<
   HTMLDivElement,
@@ -89,10 +80,11 @@ const CardListItemDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center gap-1.5 flex-wrap mt-1.5", className)}
+    className={cn("flex items-center gap-1.5 flex-wrap mt-1.5 text-muted-foreground", className)}
     {...props}
   />
 ))
+
 CardListItemDescription.displayName = "CardListItemDescription"
 
 // =============================================================================
@@ -157,13 +149,11 @@ CardFooter.displayName = "CardFooter"
 
 export {
   Card,
-  cardVariants,
   CardHeader,
   CardFooter,
   CardTitle,
   CardDescription,
   CardContent,
-  // New list item components
   CardListItem,
   CardListItemTitle,
   CardListItemDescription,
