@@ -10,11 +10,11 @@ const badgeVariants = cva(
       variant: {
         default:
           "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80 px-2.5 py-0.5 text-xs",
-        // Court-specific variants
-        provincial: "border-transparent bg-emerald-500/15 text-emerald-400 ",
-        supreme: "border-transparent bg-purple-500/15 text-purple-400 ",
-        circuit: "border-transparent bg-amber-500/15 text-amber-400",
-        region: "border bg-white/5 border-slate-700/50 text-slate-400 font-mono",
+        // Court-specific variants using CSS variables from globals.css
+        provincial: "border-transparent bg-semantic-emerald-bg text-semantic-emerald-text",
+        supreme: "border-transparent bg-semantic-purple-bg text-semantic-purple-text",
+        circuit: "border-transparent bg-semantic-amber-bg text-semantic-amber-text",
+        region: "border bg-foreground/5 border-border/50 text-muted-foreground font-mono",
       },
     },
     defaultVariants: {

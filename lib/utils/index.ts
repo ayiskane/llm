@@ -197,3 +197,40 @@ export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/**
+ * Get display name for a court
+ * Adds appropriate suffix based on court type (Provincial Court, Law Courts)
+ * Handles special cases like Vancouver Provincial Court (222 Main)
+ */
+export function getCourtDisplayName(court: {
+  name: string;
+  is_circuit?: boolean;
+  has_provincial?: boolean;
+  has_supreme?: boolean;
+}): string {
+  const name = court.name;
+
+  // Special case: Vancouver Provincial Court is commonly known as "222 Main"
+  if (name === 'Vancouver Provincial Court') {
+    return 'Vancouver Provincial Court (222 Main)';
+  }
+
+  // Already has "Court" in the name - return as-is
+  if (name.toLowerCase().includes('court')) {
+    return name;
+  }
+
+  // Circuit courts → "[Location] Provincial Court"
+  if (court.is_circuit) {
+    return `${name} Provincial Court`;
+  }
+
+  // Staffed courthouses with provincial or supreme → "[Location] Law Courts"
+  if (court.has_provincial || court.has_supreme) {
+    return `${name} Law Courts`;
+  }
+
+  // Fallback: just the name (shouldn't happen for valid courts)
+  return name;
+}
+

@@ -9,17 +9,15 @@ interface StickyHeaderProps {
 
 /**
  * Sticky header with backdrop blur.
- * Background: rgba(8,11,18,0.95) - matches backup branch
- * Border: subtle blue tint
+ * Uses CSS variables for theming consistency.
  */
 export function StickyHeader({ children, className }: StickyHeaderProps) {
   return (
-    <div 
-      className={cn('flex-shrink-0 backdrop-blur-md', className)}
-      style={{
-        background: 'rgba(8,11,18,0.95)',
-        borderBottom: '1px solid rgba(59,130,246,0.08)',
-      }}
+    <div
+      className={cn(
+        'shrink-0 backdrop-blur-md bg-background/95 border-b border-primary/10',
+        className
+      )}
     >
       {children}
     </div>

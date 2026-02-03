@@ -18,6 +18,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { REGIONS } from "@/lib/config/constants";
 import { useCourts, type CourtWithRegionName } from "@/lib/hooks/useCourts";
+import { getCourtDisplayName } from "@/lib/utils";
 
 // =============================================================================
 // HELPER FUNCTIONS
@@ -49,13 +50,6 @@ function groupCourtsByLetter(courts: CourtWithRegionName[]): GroupedCourts[] {
     .map(([letter, courts]) => ({ letter, courts }));
 }
 
-function getCourtDisplayName(court: CourtWithRegionName): string {
-  const name = court.name;
-  if (name.toLowerCase().includes("court")) return name;
-  if (court.is_circuit) return `${name} Provincial Court`;
-  if (court.has_provincial || court.has_supreme) return `${name} Law Courts`;
-  return name;
-}
 // =============================================================================
 // TYPES
 // =============================================================================

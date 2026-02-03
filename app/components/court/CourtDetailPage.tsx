@@ -1,12 +1,25 @@
 'use client';
 
+// =============================================================================
+// TODO: SHADCN COMPONENT REPLACEMENTS
+// =============================================================================
+// 3. PillButton nav (line ~117) → Tabs or ToggleGroup
+// 4. Bail Hub button (line ~179) → Card clickable variant or CardListItem
+// 5. Access Code card (line ~225) → Card with onClick
+// 6. Toast (line ~240) → Sonner or keep custom (simple enough)
+// 7. Section accordion (lines ~146, ~163, ~204) → shadcn Accordion (optional)
+// TODO: PERFORMANCE OPTIMIZATIONS
+// =============================================================================
+// 1. navButtons array → useMemo (recreated every render)
+// 2. Consider React.memo for child components
+// =============================================================================
+
 import { useState, useRef, useCallback } from 'react';
-import { FaArrowLeft, FaAt, FaUserPoliceTie, FaBuildingColumns, FaVideo, FaChevronRight } from '@/lib/icons';
+import { FaArrowLeft, FaAt, FaUserPoliceTie, FaBuildingColumns, FaVideo, FaChevronRight, FaMagnifyingGlass, FaXmark } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { StickyHeader } from '../layouts/StickyHeader';
 import { Section, PillButton, Toast } from '../ui';
 import { CourtHeader } from './CourtHeader';
-import { SearchBar } from './SearchBar';
 import { CircuitCourtAlert } from './CircuitCourtAlert';
 import { TeamsList } from '../features/TeamsCard';
 import { CourtContactsStack, CrownContactsStack } from '../features/ContactCard';
@@ -14,6 +27,8 @@ import { CellList } from '../features/CellCard';
 import { JcmFxdScheduleCard } from '../features/JcmFxdCard';
 import { getBailHubTag } from '@/lib/config/constants';
 import { useCopyToClipboard } from '@/lib/hooks/useCopyToClipboard';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import type { CourtDetails } from '@/types';
 
 type AccordionSection = 'contacts' | 'cells' | 'teams' | null;
@@ -28,12 +43,12 @@ interface CourtDetailPageProps {
 
 export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCourt, onNavigateToBailHub }: CourtDetailPageProps) {
   const { court, contacts, cells, teamsLinks, bailCourt, jcmFxdSchedule } = courtDetails;
-  
+
   const [expandedSection, setExpandedSection] = useState<AccordionSection>('contacts');
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { copiedField, copyToClipboard, isCopied } = useCopyToClipboard();
-  
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const contactsRef = useRef<HTMLDivElement>(null);
   const cellsRef = useRef<HTMLDivElement>(null);
@@ -42,7 +57,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = e.currentTarget.scrollTop;
     const wasCollapsed = isHeaderCollapsed;
-    
+
     if (!wasCollapsed && scrollTop > 80) {
       setIsHeaderCollapsed(true);
     } else if (wasCollapsed && scrollTop < 30) {
@@ -52,13 +67,13 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
 
   const navigateToSection = useCallback((section: AccordionSection) => {
     setExpandedSection(section);
-    
+
     const refs: Record<string, React.RefObject<HTMLDivElement | null>> = {
       contacts: contactsRef, cells: cellsRef, teams: teamsRef,
     };
-    
+
     const ref = section ? refs[section] : null;
-    
+
     if (ref?.current) {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -78,6 +93,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
     }
   };
 
+  // TODO: Wrap in useMemo - recreated every render
   const navButtons = [
     { key: 'contacts', label: 'Contacts', icon: <FaAt className="w-4 h-4" />, count: contacts.length, show: contacts.length > 0 },
     { key: 'cells', label: 'Cells', icon: <FaUserPoliceTie className="w-4 h-4" />, count: cells.length, show: cells.length > 0 },
@@ -89,36 +105,55 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
       <StickyHeader>
         {/* Back button + Search bar row */}
         <div className="flex items-center gap-2 px-3 py-2">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onBack}
-            className="p-2 -ml-1 text-slate-400 hover:text-white transition-colors shrink-0"
+            className="-ml-1 text-muted-foreground hover:text-foreground shrink-0"
           >
             <FaArrowLeft className="w-5 h-5" />
-          </button>
-          
-          <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            onSubmit={handleSearchSubmit}
-            placeholder="Search courts, contacts, cells..."
-            className="flex-1"
-          />
+          </Button>
+
+          <div className="relative flex-1">
+            <FaMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+            <Input
+              type="text"
+              variant="search"
+              size="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
+              placeholder="Search courts, contacts, cells..."
+              className="pl-10 pr-9"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
+              >
+                <FaXmark className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
         </div>
-        
+
         {/* Court info section */}
         <CourtHeader court={court} collapsed={isHeaderCollapsed} />
-        
+
+        {/* TODO: Replace PillButton with Tabs or ToggleGroup */}
         {/* Pill navigation - with top border */}
-        <div className="flex gap-1.5 px-3 py-2 border-t border-slate-700/30">
+        <div className="flex gap-1.5 px-3 py-2 border-t border-border/30">
           {navButtons.filter(btn => btn.show).map((btn) => (
-            <PillButton className="flex-1 justify-center" 
-              key={btn.key} 
-              isActive={expandedSection === btn.key} 
+            <PillButton className="flex-1 justify-center"
+              key={btn.key}
+              isActive={expandedSection === btn.key}
               onClick={() => navigateToSection(btn.key as AccordionSection)}
             >
               {btn.icon}
               <span>{btn.label}</span>
-              <span className={expandedSection === btn.key ? 'text-white/70' : 'text-slate-500'}>
+              <span className={expandedSection === btn.key ? 'text-foreground/70' : 'text-muted-foreground'}>
                 {btn.count}
               </span>
             </PillButton>
@@ -138,6 +173,7 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
             />
           )}
 
+          {/* TODO: Section could be replaced with shadcn Accordion (optional - works fine) */}
           {/* Contacts section - for circuit courts, shows hub court's contacts */}
           {contacts.length > 0 && (
             <Section
@@ -171,27 +207,28 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
             </Section>
           )}
 
+          {/* TODO: Replace with Card clickable variant or CardListItem */}
           {/* Bail Hub Link */}
           {bailCourt && onNavigateToBailHub && (
             <button
               onClick={() => onNavigateToBailHub(bailCourt.id, `${court.name} Law Courts`)}
               className={cn(
                 "w-full rounded-xl overflow-hidden",
-                "bg-slate-800/40 border border-amber-500/30",
-                "hover:bg-slate-800/60 hover:border-amber-500/50",
-                "active:bg-slate-700/50",
+                "bg-secondary/40 border border-semantic-amber/30",
+                "hover:bg-secondary/60 hover:border-semantic-amber/50",
+                "active:bg-secondary/50",
                 "transition-all duration-200"
               )}
             >
               <div className="flex items-center gap-3 px-4 py-3">
-                <div className="w-10 h-10 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0">
-                  <FaBuildingColumns className="w-5 h-5 text-amber-400" />
+                <div className="w-10 h-10 rounded-lg bg-semantic-amber/15 flex items-center justify-center shrink-0">
+                  <FaBuildingColumns className="w-5 h-5 text-semantic-amber" />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <div className="text-sm font-medium text-slate-200">Virtual Bail</div>
-                  <div className="text-xs text-slate-500 mt-0.5">{getBailHubTag(bailCourt.name)} • Tap for schedule & contacts</div>
+                  <div className="text-sm font-medium text-foreground">Virtual Bail</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{getBailHubTag(bailCourt.name)} • Tap for schedule & contacts</div>
                 </div>
-                <FaChevronRight className="w-5 h-5 text-slate-500 shrink-0" />
+                <FaChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
               </div>
             </button>
           )}
@@ -217,16 +254,17 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
             </Section>
           )}
 
+          {/* TODO: Replace with Card clickable variant */}
           {/* Access code */}
           {court.access_code && (
             <div
               onClick={() => copyToClipboard(court.access_code!, 'access-code')}
-              className="p-3 rounded-lg bg-slate-800/30 border border-slate-700/50 cursor-pointer hover:bg-slate-800/50 transition-colors"
+              className="p-3 rounded-lg bg-secondary/30 border border-border/50 cursor-pointer hover:bg-secondary/50 transition-colors"
             >
-              <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1">
+              <div className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground mb-1">
                 Court Access Code
               </div>
-              <div className="text-sm font-mono text-slate-300">
+              <div className="text-sm font-mono text-foreground">
                 {court.access_code}
               </div>
             </div>
@@ -234,9 +272,8 @@ export function CourtDetailPage({ courtDetails, onBack, onSearch, onNavigateToCo
         </div>
       </div>
 
+      {/* TODO: Consider replacing with shadcn Sonner (optional - works fine) */}
       <Toast message="Copied to clipboard" isVisible={!!copiedField} />
     </div>
   );
 }
-
-
