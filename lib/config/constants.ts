@@ -51,6 +51,13 @@ export const CONTACT_ROLES = {
   COORDINATOR: 21,
   SHERIFF_VB_COORDINATOR: 22,
   FIRST_NATIONS_CROWN: 23,
+  // Court-level contacts (from court table fields)
+  COURT_REGISTRY_DIRECT: 100,
+  COURT_VB_LEAD: 101,
+  COURT_CROWN_OFFICE: 102,
+  COURT_JCM: 103,
+  COURT_SUPREME_SCHEDULING: 104,
+  COURT_SHERIFF: 200,
 } as const;
 
 // ============================================================================
