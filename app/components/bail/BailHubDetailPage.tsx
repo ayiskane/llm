@@ -5,7 +5,7 @@ import { FaArrowLeft, FaAt, FaVideo, FaCopy, FaClipboardCheck, FaEye, FaEyeSlash
 import { cn } from '@/lib/utils';
 import { card, text, toggle, iconSize, getScheduleLabelClass } from '@/lib/config/theme';
 import { StickyHeader } from '../layouts/StickyHeader';
-import { Section, PillButton, Toast } from '../ui';
+import { Section, PillButton } from '../ui';
 import { TeamsList } from '@/app/components/features/TeamsCard';
 import { CONTACT_ROLES } from '@/lib/config/constants';
 import { useCopyToClipboard, useTruncationDetection } from '@/lib/hooks';
@@ -284,7 +284,7 @@ export function BailHubDetailPage({ details, onBack, onNavigateToCourt, referrer
   
   const [expandedSection, setExpandedSection] = useState<AccordionSection>('schedule');
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
-  const { copiedField, copyToClipboard, isCopied } = useCopyToClipboard();
+  const { copyToClipboard, isCopied } = useCopyToClipboard();
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const scheduleRef = useRef<HTMLDivElement>(null);
@@ -438,8 +438,6 @@ export function BailHubDetailPage({ details, onBack, onNavigateToCourt, referrer
           )}
         </div>
       </div>
-
-      <Toast message="Copied to clipboard" isVisible={!!copiedField} />
     </div>
   );
 }

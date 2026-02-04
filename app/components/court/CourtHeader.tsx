@@ -2,24 +2,28 @@
 
 import { FaLocationDot } from "@/lib/icons";
 import { cn, getCourtDisplayName, openInMaps } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Court, CourtWithRegion } from "@/types";
+
+export type CourtViewMode = "provincial" | "supreme" | "bail";
 
 interface CourtHeaderProps {
   court: Court | CourtWithRegion;
   collapsed?: boolean;
   className?: string;
+  viewMode?: CourtViewMode;
+  onViewModeChange?: (mode: CourtViewMode) => void;
+  hasBailHub?: boolean;
 }
 
-/**
- * Mobile-first animated header with smooth height transition.
- * Uses CSS grid for smooth height animation (better than max-height hack).
- */
 export function CourtHeader({
   court,
   collapsed = false,
   className,
+  viewMode,
+  onViewModeChange,
+  hasBailHub = false,
 }: CourtHeaderProps) {
   const displayName = getCourtDisplayName(court);
 
@@ -30,9 +34,14 @@ export function CourtHeader({
         ? { code: court.region_code, name: court.region_name || "" }
         : null;
 
+  const hasProvincial = court.has_provincial;
+  const hasSupreme = court.has_supreme;
+  const hasBail = hasBailHub;
+
+  const showTabs = (hasProvincial && hasSupreme) || hasBail;
+
   return (
     <div className={cn("px-4 py-2", className)}>
-      {/* Title row - always visible, changes size */}
       <div className="flex items-center gap-2">
         <h1
           className={cn(
@@ -44,19 +53,6 @@ export function CourtHeader({
           {displayName}
         </h1>
 
-        {/* Tags - compact when collapsed */}
-        <div
-          className={cn(
-            "flex items-center gap-1 shrink-0 transition-opacity duration-300",
-            collapsed ? "opacity-100" : "opacity-0 hidden",
-          )}
-        >
-          {court.has_provincial && <Badge variant="provincial">PC</Badge>}
-          {court.has_supreme && <Badge variant="supreme">SC</Badge>}
-          {court.is_circuit && <Badge variant="circuit">CIR</Badge>}
-        </div>
-
-        {/* Map button - only in collapsed */}
         {court.address && collapsed && (
           <Button
             variant="ghost"
@@ -69,7 +65,6 @@ export function CourtHeader({
         )}
       </div>
 
-      {/* Expandable content - uses grid for smooth height animation */}
       <div
         className={cn(
           "grid transition-all duration-300 ease-out",
@@ -79,7 +74,6 @@ export function CourtHeader({
         )}
       >
         <div className="overflow-hidden text-left">
-          {/* Address - explicitly left aligned */}
           {court.address && (
             <Button
               variant="link"
@@ -90,22 +84,57 @@ export function CourtHeader({
               <span className="text-left">{court.address}</span>
             </Button>
           )}
-
-          {/* Region and tags row */}
-          <div className="flex flex-wrap items-center justify-start gap-1.5 mt-2 pb-1">
-            {region && (
-              <Badge variant="region" className="gap-1">
-                <span>{region.code}</span>
-                <span className="text-muted-foreground/50">|</span>
-                <span>{region.name}</span>
-              </Badge>
-            )}
-            {court.has_provincial && <Badge variant="provincial">PROVINCIAL</Badge>}
-            {court.has_supreme && <Badge variant="supreme">SUPREME</Badge>}
-            {court.is_circuit && <Badge variant="circuit">CIRCUIT</Badge>}
-          </div>
         </div>
       </div>
+
+      {/* Three-tab system: Provincial | Supreme | Bail */}
+      {showTabs && viewMode && onViewModeChange && (
+        <div className="mt-2">
+          <Tabs
+            value={viewMode}
+            onValueChange={(v) => onViewModeChange(v as CourtViewMode)}
+          >
+            <TabsList className="w-full h-8">
+              {hasProvincial && (
+                <TabsTrigger
+                  value="provincial"
+                  className={cn(
+                    "flex-1 text-[10px] gap-1 tracking-widest",
+                    viewMode === "provincial" &&
+                      "data-[state=active]:bg-semantic-emerald/20 data-[state=active]:text-semantic-emerald",
+                  )}
+                >
+                  PROVINCIAL
+                </TabsTrigger>
+              )}
+              {hasSupreme && (
+                <TabsTrigger
+                  value="supreme"
+                  className={cn(
+                    "flex-1 text-[10px] gap-1 tracking-widest",
+                    viewMode === "supreme" &&
+                      "data-[state=active]:bg-semantic-purple/20 data-[state=active]:text-semantic-purple",
+                  )}
+                >
+                  SUPREME
+                </TabsTrigger>
+              )}
+              {hasBail && (
+                <TabsTrigger
+                  value="bail"
+                  className={cn(
+                    "flex-1 text-[10px] gap-1 tracking-widest",
+                    viewMode === "bail" &&
+                      "data-[state=active]:bg-semantic-amber/20 data-[state=active]:text-semantic-amber",
+                  )}
+                >
+                  BAIL
+                </TabsTrigger>
+              )}
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
     </div>
   );
 }

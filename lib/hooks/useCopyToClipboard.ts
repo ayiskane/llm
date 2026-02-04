@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { UI_CONFIG } from '@/lib/config/constants';
+import { toast } from 'sonner';
 
 export function useCopyToClipboard() {
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -10,29 +10,24 @@ export function useCopyToClipboard() {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedField(fieldId);
-      
+      toast.success('Copied to clipboard');
+
+      // Reset copiedField for isCopied() check (visual feedback on the field)
       setTimeout(() => {
         setCopiedField(null);
-      }, UI_CONFIG.TOAST_DURATION_MS);
-      
+      }, 2000);
+
       return true;
     } catch (error) {
       console.error('Failed to copy:', error);
+      toast.error('Failed to copy');
       return false;
     }
-  }, []);
-
-  const showCopiedToast = useCallback((fieldId: string) => {
-    setCopiedField(fieldId);
-    setTimeout(() => {
-      setCopiedField(null);
-    }, UI_CONFIG.TOAST_DURATION_MS);
   }, []);
 
   return {
     copiedField,
     copyToClipboard,
-    showCopiedToast,
     isCopied: (fieldId: string) => copiedField === fieldId,
   };
 }

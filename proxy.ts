@@ -3,10 +3,10 @@ import type { NextRequest } from 'next/server';
 
 // ============================================================================
 // 🚧 LOGIN TEMPORARILY DISABLED FOR DEVELOPMENT
-// To re-enable: restore the original middleware with JWT verification
+// To re-enable: restore the original proxy with JWT verification from proxy.auth.ts
 // ============================================================================
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Allow all requests through without authentication
   return NextResponse.next();
 }

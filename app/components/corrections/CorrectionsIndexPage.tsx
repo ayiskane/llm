@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { FaMagnifyingGlass, FaXmark, FaSliders, FaBuildingShield } from '@/lib/icons';
 import { AlphabetNav, FilterModal } from '@/app/components/ui';
 import { cn } from '@/lib/config/theme';
-import { REGION_COLORS } from '@/lib/config/constants';
 import { useCorrectionalCentres } from '@/lib/hooks/useCorrectionsCentres';
 import type { CorrectionalCentre } from '@/lib/hooks/useCorrectionsCentres';
 
@@ -121,7 +120,7 @@ function FilterModalContent({ filters, onFilterChange }: {
                   : 'bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:border-slate-600'
               )}
             >
-              {r.id !== 0 && <span className={cn('w-2 h-2 rounded-full', REGION_COLORS[r.id]?.dot)} />}
+              {/* {r.id !== 0 && <span className={cn('w-2 h-2 rounded-full', REGION_COLORS[r.id]?.dot)} />} */}
               {r.name}
             </button>
           ))}

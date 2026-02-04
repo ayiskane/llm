@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 /**
- * RESTORE LOGIN MIDDLEWARE
- * 
+ * RESTORE LOGIN PROXY
+ *
  * Run this script to re-enable the login system:
- * 
+ *
  *   GITHUB_TOKEN=your_token node restore-login.js
- * 
+ *
  * Or set the token in your environment first:
  *   export GITHUB_TOKEN=your_token
  *   node restore-login.js
@@ -23,37 +23,37 @@ if (!GITHUB_TOKEN) {
 }
 
 async function restore() {
-  console.log('🔐 Restoring login middleware...\n');
+  console.log('🔐 Restoring login proxy...\n');
 
-  // 1. Get the backup file content
+  // 1. Get the backup file content (proxy.auth.ts)
   const backupRes = await fetch(
-    `https://api.github.com/repos/${REPO}/contents/middleware.auth.ts`,
+    `https://api.github.com/repos/${REPO}/contents/proxy.auth.ts`,
     { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
   );
   const backupData = await backupRes.json();
-  
+
   if (!backupData.content) {
-    console.error('❌ Failed to fetch backup file');
+    console.error('❌ Failed to fetch backup file (proxy.auth.ts)');
     console.error(backupData);
     process.exit(1);
   }
 
-  // 2. Get current middleware SHA
+  // 2. Get current proxy SHA
   const currentRes = await fetch(
-    `https://api.github.com/repos/${REPO}/contents/middleware.ts`,
+    `https://api.github.com/repos/${REPO}/contents/proxy.ts`,
     { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
   );
   const currentData = await currentRes.json();
-  
+
   if (!currentData.sha) {
-    console.error('❌ Failed to get current middleware SHA');
+    console.error('❌ Failed to get current proxy SHA');
     console.error(currentData);
     process.exit(1);
   }
 
-  // 3. Update middleware.ts with backup content
+  // 3. Update proxy.ts with backup content from proxy.auth.ts
   const updateRes = await fetch(
-    `https://api.github.com/repos/${REPO}/contents/middleware.ts`,
+    `https://api.github.com/repos/${REPO}/contents/proxy.ts`,
     {
       method: 'PUT',
       headers: {
@@ -67,9 +67,9 @@ async function restore() {
       }),
     }
   );
-  
+
   const result = await updateRes.json();
-  
+
   if (result.commit?.sha) {
     console.log(`✅ Login restored! Commit: ${result.commit.sha.slice(0, 7)}`);
     console.log('⏳ Wait for Vercel to redeploy (1-2 minutes)...');

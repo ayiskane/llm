@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { FaMagnifyingGlass, FaXmark, FaSliders, FaScaleBalanced } from '@/lib/icons';
 import { AlphabetNav, FilterModal } from '@/app/components/ui';
 import { cn } from '@/lib/config/theme';
-import { REGION_COLORS } from '@/lib/config/constants';
 import { useBailCourts, type BailCourtWithRegion } from '@/lib/hooks';
 
 // =============================================================================
@@ -138,7 +137,7 @@ function FilterModalContent({ regionFilter, onRegionChange }: {
                   : 'bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:border-slate-600'
               )}
             >
-              {r.id !== 0 && r.id !== 6 && <span className={cn('w-2 h-2 rounded-full', REGION_COLORS[r.id]?.dot)} />}
+              {/* {r.id !== 0 && r.id !== 6 && <span className={cn('w-2 h-2 rounded-full', REGION_COLORS[r.id]?.dot)} />} */}
               {r.name}
             </button>
           ))}

@@ -2,13 +2,18 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
+// ============================================================================
+// AUTH PROXY - JWT Authentication Handler
+// Copy this to proxy.ts to enable authentication
+// ============================================================================
+
 const SESSION_COOKIE_NAME = 'llm-session';
 const ENCODED_KEY = new TextEncoder().encode(process.env.SESSION_SECRET || 'fallback-secret-change-in-production-min-32-chars');
 
 // Routes that don't require authentication
 const PUBLIC_ROUTES = ['/login', '/api/auth', '/api/whatsapp'];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
   // Allow public routes
