@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { FaArrowLeft, FaMagnifyingGlass, FaXmark } from "@/lib/icons";
 import { StickyHeader } from "../layouts/StickyHeader";
 import { CourtHeader, type CourtViewMode } from "./CourtHeader";
@@ -17,7 +17,92 @@ import {
 import { useCopyToClipboard } from "@/lib/hooks/useCopyToClipboard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { CourtDetails } from "@/types";
+import { CONTACT_ROLES } from "@/lib/config/constants";
+import type { CourtDetails, CourtWithRegion, ContactWithRole } from "@/types";
+
+// ============================================================================
+// Helper to build contacts from court fields based on viewMode
+// ============================================================================
+function buildCourtFieldContacts(
+  court: CourtWithRegion,
+  viewMode: "provincial" | "supreme"
+): ContactWithRole[] {
+  const contacts: ContactWithRole[] = [];
+
+  let idCounter = 10000; // Start high to avoid collision with real contact IDs
+
+  // Common contacts (both Provincial & Supreme)
+  // Registry (email, phone)
+  if (court.registry_email || court.registry_phone) {
+    contacts.push({
+      id: idCounter++,
+      name: "Registry",
+      title: null,
+      email: court.registry_email,
+      phone: court.registry_phone,
+      role_id: CONTACT_ROLES.COURT_REGISTRY_DIRECT,
+      role_name: "Registry",
+    });
+  }
+
+  // Criminal Fax
+  if (court.criminal_fax) {
+    contacts.push({
+      id: idCounter++,
+      name: "Criminal Registry Fax",
+      title: null,
+      email: null,
+      phone: court.criminal_fax,
+      role_id: CONTACT_ROLES.CRIMINAL_REGISTRY,
+      role_name: "Criminal Fax",
+    });
+  }
+
+  // Crown Office
+  if (court.crown_office_email || court.crown_office_phone) {
+    contacts.push({
+      id: idCounter++,
+      name: "Crown Office",
+      title: null,
+      email: court.crown_office_email,
+      phone: court.crown_office_phone,
+      role_id: CONTACT_ROLES.COURT_CROWN_OFFICE,
+      role_name: "Crown Office",
+    });
+  }
+
+  // Provincial-specific: JCM
+  if (viewMode === "provincial") {
+    if (court.jcm_email || court.jcm_phone) {
+      contacts.push({
+        id: idCounter++,
+        name: "JCM",
+        title: null,
+        email: court.jcm_email,
+        phone: court.jcm_phone,
+        role_id: CONTACT_ROLES.COURT_JCM,
+        role_name: "JCM",
+      });
+    }
+  }
+
+  // Supreme-specific: Scheduling
+  if (viewMode === "supreme") {
+    if (court.supreme_scheduling_phone || court.supreme_scheduling_fax || court.supreme_toll_free) {
+      contacts.push({
+        id: idCounter++,
+        name: "Supreme Scheduling",
+        title: null,
+        email: null,
+        phone: court.supreme_scheduling_phone || court.supreme_toll_free,
+        role_id: CONTACT_ROLES.COURT_SUPREME_SCHEDULING,
+        role_name: "Supreme Scheduling",
+      });
+    }
+  }
+
+  return contacts;
+}
 
 interface CourtDetailPageProps {
   courtDetails: CourtDetails;
@@ -62,9 +147,16 @@ export function CourtDetailPage({
   // A court is a bail hub if bailHub.court_id matches the current court's id
   const isBailHubLocation = bailHub?.court_id === court.id;
 
-  // TODO: Filter data by court level when database field is added
-  // For now, show all data regardless of selected tab (provincial/supreme)
-  const filteredContacts = contacts;
+  // Build contacts from court fields based on viewMode (provincial/supreme)
+  const courtFieldContacts = useMemo(() => {
+    if (isBailMode) return [];
+    return buildCourtFieldContacts(court, viewMode as "provincial" | "supreme");
+  }, [court, viewMode, isBailMode]);
+
+  // Combine court field contacts with any entity_contacts
+  // For now, entity_contacts (from contacts prop) are kept separate
+  // Court field contacts are the primary contacts for Provincial/Supreme modes
+  const filteredContacts = courtFieldContacts;
   const filteredCells = cells;
   const filteredTeamsLinks = teamsLinks;
 
