@@ -18,7 +18,6 @@ const BAIL_REGIONS = [
   { id: 3, name: 'Fraser', code: 'R3' },
   { id: 4, name: 'Interior', code: 'R4' },
   { id: 5, name: 'Northern', code: 'R5' },
-  { id: 6, name: 'Federal', code: 'FED' },
 ] as const;
 
 const REGION_CODE: Record<number, string> = { 1: 'R1', 2: 'R2', 3: 'R3', 4: 'R4', 5: 'R5', 6: 'FED' };
@@ -27,62 +26,21 @@ const REGION_CODE: Record<number, string> = { 1: 'R1', 2: 'R2', 3: 'R3', 4: 'R4'
 // TYPES & HELPERS
 // =============================================================================
 
-type ScheduleTab = 'weekday' | 'weekend';
-
-function groupByLetter(courts: BailCourtWithRegion[]) {
-  const grouped = courts.reduce((acc, c) => {
-    const letter = /[A-Z]/.test(c.name[0]) ? c.name[0].toUpperCase() : '#';
-    (acc[letter] ??= []).push(c);
+function groupByLetter(hubs: BailCourtWithRegion[]) {
+  const grouped = hubs.reduce((acc, h) => {
+    const letter = /[A-Z]/.test(h.name[0]) ? h.name[0].toUpperCase() : '#';
+    (acc[letter] ??= []).push(h);
     return acc;
   }, {} as Record<string, BailCourtWithRegion[]>);
 
   return Object.entries(grouped)
     .sort(([a], [b]) => (a === '#' ? 1 : b === '#' ? -1 : a.localeCompare(b)))
-    .map(([letter, courts]) => ({ letter, courts }));
+    .map(([letter, hubs]) => ({ letter, hubs }));
 }
 
 // =============================================================================
 // SUB-COMPONENTS
 // =============================================================================
-
-function ScheduleTabs({ activeTab, onTabChange, counts }: {
-  activeTab: ScheduleTab;
-  onTabChange: (tab: ScheduleTab) => void;
-  counts: { weekday: number; weekend: number };
-}) {
-  return (
-    <div className="flex gap-2">
-      <button
-        onClick={() => onTabChange('weekday')}
-        className={cn(
-          'flex-1 py-1.5 px-3 rounded-lg text-xs font-medium transition-all',
-          activeTab === 'weekday'
-            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-            : 'bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:bg-slate-800/70'
-        )}
-      >
-        Weekday
-        <span className={cn('ml-1.5', activeTab === 'weekday' ? 'text-amber-400/70' : 'text-slate-500')}>
-          {counts.weekday}
-        </span>
-      </button>
-      <button
-        onClick={() => onTabChange('weekend')}
-        className={cn(
-          'flex-1 py-1.5 px-3 rounded-lg text-xs font-medium transition-all',
-          activeTab === 'weekend'
-            ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-            : 'bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:bg-slate-800/70'
-        )}
-      >
-        Evening / Weekend
-        <span className={cn('ml-1.5', activeTab === 'weekend' ? 'text-purple-400/70' : 'text-slate-500')}>
-          {counts.weekend}
-        </span>
-      </button>
-    </div>
-  );
-}
 
 function SearchBar({ value, onChange, onClear, onFilterClick, hasActiveFilters }: {
   value: string; onChange: (v: string) => void; onClear: () => void; onFilterClick: () => void; hasActiveFilters: boolean;
@@ -132,12 +90,11 @@ function FilterModalContent({ regionFilter, onRegionChange }: {
               onClick={() => onRegionChange(r.id)}
               className={cn(
                 'px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all',
-                regionFilter === r.id 
-                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' 
+                regionFilter === r.id
+                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40'
                   : 'bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:border-slate-600'
               )}
             >
-              {/* {r.id !== 0 && r.id !== 6 && <span className={cn('w-2 h-2 rounded-full', REGION_COLORS[r.id]?.dot)} />} */}
               {r.name}
             </button>
           ))}
@@ -147,23 +104,23 @@ function FilterModalContent({ regionFilter, onRegionChange }: {
   );
 }
 
-function BailCourtListItem({ court, onClick }: { court: BailCourtWithRegion; onClick: () => void }) {
+function BailHubListItem({ hub, onClick }: { hub: BailCourtWithRegion; onClick: () => void }) {
   return (
     <button onClick={onClick} className="w-full text-left px-4 py-3 border-b border-slate-700/30 last:border-b-0 hover:bg-slate-800/30 active:bg-slate-800/50">
-      <div className="text-sm font-medium text-slate-200 mb-1.5">{court.name}</div>
+      <div className="text-sm font-medium text-slate-200 mb-1.5">{hub.name}</div>
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="px-2 py-1 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
-          <span>{REGION_CODE[court.region_id] || 'R?'}</span>
+          <span>{REGION_CODE[hub.region_id] || 'R?'}</span>
           <span className="text-slate-600">|</span>
-          <span>{court.region_name}</span>
+          <span>{hub.region_name}</span>
         </span>
       </div>
     </button>
   );
 }
 
-function LetterSection({ letter, courts, onCourtClick }: {
-  letter: string; courts: BailCourtWithRegion[]; onCourtClick: (id: number) => void;
+function LetterSection({ letter, hubs, onHubClick }: {
+  letter: string; hubs: BailCourtWithRegion[]; onHubClick: (id: number) => void;
 }) {
   return (
     <div id={`section-${letter}`} data-letter={letter}>
@@ -171,7 +128,7 @@ function LetterSection({ letter, courts, onCourtClick }: {
         <span className="text-sm font-bold text-blue-400">{letter}</span>
       </div>
       <div className="bg-slate-800/20">
-        {courts.map((c) => <BailCourtListItem key={c.id} court={c} onClick={() => onCourtClick(c.id)} />)}
+        {hubs.map((h) => <BailHubListItem key={h.id} hub={h} onClick={() => onHubClick(h.id)} />)}
       </div>
     </div>
   );
@@ -184,8 +141,7 @@ function LetterSection({ letter, courts, onCourtClick }: {
 export function BailHubsIndexPage() {
   const router = useRouter();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { bailCourts, isLoading, error } = useBailCourts();
-  const [activeTab, setActiveTab] = useState<ScheduleTab>('weekday');
+  const { bailCourts: bailHubs, isLoading, error } = useBailCourts();
   const [regionFilter, setRegionFilter] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -193,35 +149,25 @@ export function BailHubsIndexPage() {
 
   const hasActiveFilters = regionFilter !== 0;
   const clearAllFilters = useCallback(() => { setRegionFilter(0); setSearchQuery(''); }, []);
-  const handleCourtClick = useCallback((courtId: number) => router.push(`/bail/${courtId}`), [router]);
+  const handleHubClick = useCallback((hubId: number) => router.push(`/bail/${hubId}`), [router]);
 
-  // Count for tabs
-  const tabCounts = useMemo(() => ({
-    weekday: bailCourts.filter(c => c.is_daytime).length,
-    weekend: bailCourts.filter(c => !c.is_daytime).length,
-  }), [bailCourts]);
-
-  const filteredCourts = useMemo(() => {
-    let result = bailCourts;
-    // Filter by active tab
-    if (activeTab === 'weekday') result = result.filter(c => c.is_daytime);
-    else result = result.filter(c => !c.is_daytime);
+  const filteredHubs = useMemo(() => {
+    let result = bailHubs;
     // Filter by region
-    if (regionFilter !== 0) result = result.filter(c => c.region_id === regionFilter);
+    if (regionFilter !== 0) result = result.filter(h => h.region_id === regionFilter);
     // Filter by search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      result = result.filter(c => 
-        c.name.toLowerCase().includes(q) || 
-        c.region_name.toLowerCase().includes(q) ||
-        c.notes?.toLowerCase().includes(q)
+      result = result.filter(h =>
+        h.name.toLowerCase().includes(q) ||
+        h.region_name.toLowerCase().includes(q)
       );
     }
     return result;
-  }, [bailCourts, activeTab, regionFilter, searchQuery]);
+  }, [bailHubs, regionFilter, searchQuery]);
 
-  const groupedCourts = useMemo(() => groupByLetter(filteredCourts), [filteredCourts]);
-  const availableLetters = useMemo(() => groupedCourts.map(g => g.letter), [groupedCourts]);
+  const groupedHubs = useMemo(() => groupByLetter(filteredHubs), [filteredHubs]);
+  const availableLetters = useMemo(() => groupedHubs.map(g => g.letter), [groupedHubs]);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -279,17 +225,13 @@ export function BailHubsIndexPage() {
   return (
     <div className="h-full flex flex-col bg-slate-950">
       {/* Header */}
-      <div className="flex-shrink-0 bg-slate-950 border-b border-slate-800/50">
+      <div className="shrink-0 bg-slate-950 border-b border-slate-800/50">
         <div className="px-4 pt-4 pb-2">
           <h1 className="text-xl font-bold text-white">BC Bail Hubs</h1>
         </div>
         {/* Search */}
-        <div className="px-4 pb-2">
-          <SearchBar value={searchQuery} onChange={setSearchQuery} onClear={() => setSearchQuery('')} onFilterClick={() => setIsFilterOpen(true)} hasActiveFilters={hasActiveFilters} />
-        </div>
-        {/* Schedule Tabs */}
         <div className="px-4 pb-3">
-          <ScheduleTabs activeTab={activeTab} onTabChange={setActiveTab} counts={tabCounts} />
+          <SearchBar value={searchQuery} onChange={setSearchQuery} onClear={() => setSearchQuery('')} onFilterClick={() => setIsFilterOpen(true)} hasActiveFilters={hasActiveFilters} />
         </div>
       </div>
 
@@ -308,7 +250,7 @@ export function BailHubsIndexPage() {
       <div className="flex-1 min-h-0 relative">
         {/* Scrollable content */}
         <div ref={scrollContainerRef} className="h-full overflow-y-auto">
-          {groupedCourts.length === 0 ? (
+          {groupedHubs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 px-4">
               <FaScaleBalanced className="w-12 h-12 text-slate-700 mb-4" />
               <p className="text-slate-400 text-center">{searchQuery ? `No bail hubs found for "${searchQuery}"` : 'No bail hubs match your filters'}</p>
@@ -318,11 +260,11 @@ export function BailHubsIndexPage() {
             </div>
           ) : (
             <>
-              {groupedCourts.map((group) => (
-                <LetterSection key={group.letter} letter={group.letter} courts={group.courts} onCourtClick={handleCourtClick} />
+              {groupedHubs.map((group) => (
+                <LetterSection key={group.letter} letter={group.letter} hubs={group.hubs} onHubClick={handleHubClick} />
               ))}
               <div className="py-4 text-center">
-                <span className="text-xs text-slate-500">{filteredCourts.length} bail {filteredCourts.length === 1 ? 'hub' : 'hubs'}</span>
+                <span className="text-xs text-slate-500">{filteredHubs.length} bail {filteredHubs.length === 1 ? 'hub' : 'hubs'}</span>
               </div>
             </>
           )}
@@ -330,10 +272,10 @@ export function BailHubsIndexPage() {
 
         {/* AlphabetNav */}
         {!searchQuery && availableLetters.length > 1 && (
-          <AlphabetNav 
-            availableLetters={availableLetters} 
+          <AlphabetNav
+            availableLetters={availableLetters}
             activeLetter={activeLetter}
-            onLetterChange={handleLetterChange} 
+            onLetterChange={handleLetterChange}
           />
         )}
       </div>

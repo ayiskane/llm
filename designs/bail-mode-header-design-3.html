@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bail Mode Header - Design 3: Three-Tab System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: '#0a0a0a',
+            foreground: '#fafafa',
+            muted: '#27272a',
+            'muted-foreground': '#a1a1aa',
+            primary: '#3b82f6',
+            border: '#27272a',
+            'semantic-amber': '#f59e0b',
+            'semantic-emerald': '#10b981',
+            'semantic-purple': '#a855f7',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  </style>
+</head>
+<body class="bg-background text-foreground min-h-screen p-4">
+  <div class="max-w-md mx-auto space-y-8">
+
+    <h1 class="text-xl font-bold text-center mb-8">Design 3: Three-Tab System (Provincial | Supreme | Bail)</h1>
+
+    <!-- Provincial Selected -->
+    <div class="border border-semantic-emerald/30 rounded-xl overflow-hidden">
+      <div class="bg-background/95 backdrop-blur-md border-b border-border/50">
+        <!-- Back + Search Row -->
+        <div class="flex items-center gap-2 px-3 py-2">
+          <button class="p-2 text-muted-foreground">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <div class="flex-1 relative">
+            <input type="text" placeholder="Search..." class="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm">
+          </div>
+        </div>
+
+        <!-- Court Name -->
+        <div class="px-4 py-2">
+          <h1 class="text-lg font-semibold uppercase tracking-wide">Abbotsford Law Courts</h1>
+
+          <!-- Address -->
+          <button class="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary mt-1">
+            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+            <span>32203 South Fraser Way, Abbotsford</span>
+          </button>
+
+          <!-- Three-Tab System: Provincial | Supreme | Bail -->
+          <div class="mt-3 flex bg-muted rounded-lg p-1 gap-0.5">
+            <button class="flex-1 py-2 text-[9px] tracking-widest bg-semantic-emerald/20 text-semantic-emerald rounded-md flex items-center justify-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-semantic-emerald"></span>
+              PROVINCIAL
+            </button>
+            <button class="flex-1 py-2 text-[9px] tracking-widest text-muted-foreground flex items-center justify-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-semantic-purple/50"></span>
+              SUPREME
+            </button>
+            <button class="flex-1 py-2 text-[9px] tracking-widest text-muted-foreground flex items-center justify-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-semantic-amber/50"></span>
+              BAIL
+            </button>
+          </div>
+        </div>
+
+        <!-- Nav Pills - Court Mode -->
+        <div class="flex gap-1.5 px-3 py-2 border-t border-border/30">
+          <button class="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-semantic-emerald/20 text-semantic-emerald rounded-lg text-sm">
+            <span>Contacts</span><span class="opacity-70">5</span>
+          </button>
+          <button class="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-muted-foreground rounded-lg text-sm">
+            <span>Cells</span><span>3</span>
+          </button>
+          <button class="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-muted-foreground rounded-lg text-sm">
+            <span>Teams</span><span>12</span>
+          </button>
+        </div>
+      </div>
+      <div class="p-4 text-center text-semantic-emerald/50 text-sm">
+        Provincial court content...
+      </div>
+    </div>
+
+    <!-- Supreme Selected -->
+    <div class="border border-semantic-purple/30 rounded-xl overflow-hidden">
+      <div class="bg-background/95 backdrop-blur-md border-b border-border/50">
+        <!-- Back + Search Row -->
+        <div class="flex items-center gap-2 px-3 py-2">
+          <button class="p-2 text-muted-foreground">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <div class="flex-1 relative">
+            <input type="text" placeholder="Search..." class="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm">
+          </div>
+        </div>
+
+        <!-- Court Name -->
+        <div class="px-4 py-2">
+          <h1 class="text-lg font-semibold uppercase tracking-wide">Abbotsford Law Courts</h1>
+
+          <!-- Address -->
+          <button class="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary mt-1">
+            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+            <span>32203 South Fraser Way, Abbotsford</span>
+          </button>
+
+          <!-- Three-Tab System: Provincial | Supreme | Bail -->
+          <div class="mt-3 flex bg-muted rounded-lg p-1 gap-0.5">
+            <button class="flex-1 py-2 text-[9px] tracking-widest text-muted-foreground flex items-center justify-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-semantic-emerald/50"></span>
+              PROVINCIAL
+            </button>
+            <button class="flex-1 py-2 text-[9px] tracking-widest bg-semantic-purple/20 text-semantic-purple rounded-md flex items-center justify-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-semantic-purple"></span>
+              SUPREME
+            </button>
+            <button class="flex-1 py-2 text-[9px] tracking-widest text-muted-foreground flex items-center justify-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-semantic-amber/50"></span>
+              BAIL
+            </button>
+          </div>
+        </div>
+
+        <!-- Nav Pills - Court Mode -->
+        <div class="flex gap-1.5 px-3 py-2 border-t border-border/30">
+          <button class="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-semantic-purple/20 text-semantic-purple rounded-lg text-sm">
+            <span>Contacts</span><span class="opacity-70">2</span>
+          </button>
+          <button class="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-muted-foreground rounded-lg text-sm">
+            <span>Cells</span><span>3</span>
+          </button>
+          <button class="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-muted-foreground rounded-lg text-sm">
+            <span>Teams</span><span>4</span>
+          </button>
+        </div>
+      </div>
+      <div class="p-4 text-center text-semantic-purple/50 text-sm">
+        Supreme court content...
+      </div>
+    </div>
+
+    <!-- Bail Selected -->
+    <div class="border border-semantic-amber/50 rounded-xl overflow-hidden">
+      <div class="bg-background/95 backdrop-blur-md border-b border-semantic-amber/30">
+        <!-- Back + Search Row -->
+        <div class="flex items-center gap-2 px-3 py-2">
+          <button class="p-2 text-muted-foreground">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <div class="flex-1 relative">
+            <input type="text" placeholder="Search..." class="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm">
+          </div>
+        </div>
+
+        <!-- Court Name -->
+        <div class="px-4 py-2">
+          <h1 class="text-lg font-semibold uppercase tracking-wide">Abbotsford Law Courts</h1>
+
+          <!-- Address -->
+          <button class="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary mt-1">
+            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+            <span>32203 South Fraser Way, Abbotsford</span>
+          </button>
+
+          <!-- Three-Tab System: Provincial | Supreme | Bail (Bail selected) -->
+          <div class="mt-3 flex bg-muted rounded-lg p-1 gap-0.5">
+            <button class="flex-1 py-2 text-[9px] tracking-widest text-muted-foreground flex items-center justify-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-semantic-emerald/50"></span>
+              PROVINCIAL
+            </button>
+            <button class="flex-1 py-2 text-[9px] tracking-widest text-muted-foreground flex items-center justify-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-semantic-purple/50"></span>
+              SUPREME
+            </button>
+            <button class="flex-1 py-2 text-[9px] tracking-widest bg-semantic-amber/20 text-semantic-amber rounded-md flex items-center justify-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-semantic-amber"></span>
+              BAIL
+            </button>
+          </div>
+        </div>
+
+        <!-- Bail Nav Pills -->
+        <div class="flex gap-1.5 px-3 py-2 border-t border-semantic-amber/20">
+          <button class="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-semantic-amber/20 text-semantic-amber rounded-lg text-sm">
+            <span>Schedule</span>
+          </button>
+          <button class="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-muted-foreground rounded-lg text-sm">
+            <span>Contacts</span><span>3</span>
+          </button>
+          <button class="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-muted-foreground rounded-lg text-sm">
+            <span>Teams</span><span>2</span>
+          </button>
+        </div>
+      </div>
+      <div class="p-4 text-center text-semantic-amber/50 text-sm">
+        Bail content here (schedule, bail contacts, bail teams)...
+      </div>
+    </div>
+
+    <p class="text-center text-muted-foreground text-xs">
+      <strong>Design 3:</strong> Three tabs in one row: Provincial | Supreme | Bail.<br>
+      Each has its own color (emerald, purple, amber).<br>
+      Simpler hierarchy - bail is just another "view" of the court.
+    </p>
+
+  </div>
+</body>
+</html>

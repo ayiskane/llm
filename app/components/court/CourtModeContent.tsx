@@ -3,7 +3,6 @@
 import { useRef, useCallback, useMemo } from "react";
 import {
   FaAt,
-  FaUserPoliceTie,
   FaVideo,
   FaBuildingColumns,
   FaChevronRight,
@@ -16,23 +15,18 @@ import {
   CourtContactsStack,
   CrownContactsStack,
 } from "../features/ContactCard";
-import { CellList } from "../features/CellCard";
-import { JcmFxdScheduleCard } from "../features/JcmFxdCard";
 import { getBailHubTag } from "@/lib/config/constants";
 import type {
   CourtWithRegion,
   ContactWithRole,
-  ShellCell,
   TeamsLink,
-  BailCourt,
-  JcmFxdSchedule,
+  BailHub,
 } from "@/types";
 
-export type CourtAccordionSection = "contacts" | "cells" | "teams" | null;
+export type CourtAccordionSection = "contacts" | "teams" | null;
 
 interface CourtModeNavProps {
   contacts: ContactWithRole[];
-  cells: ShellCell[];
   teamsLinks: TeamsLink[];
   expandedSection: CourtAccordionSection;
   onNavigateToSection: (section: CourtAccordionSection) => void;
@@ -40,7 +34,6 @@ interface CourtModeNavProps {
 
 export function CourtModeNav({
   contacts,
-  cells,
   teamsLinks,
   expandedSection,
   onNavigateToSection,
@@ -55,13 +48,6 @@ export function CourtModeNav({
         show: contacts.length > 0,
       },
       {
-        key: "cells",
-        label: "Cells",
-        icon: <FaUserPoliceTie className="w-4 h-4" />,
-        count: cells.length,
-        show: cells.length > 0,
-      },
-      {
         key: "teams",
         label: "Teams",
         icon: <FaVideo className="w-4 h-4" />,
@@ -69,7 +55,7 @@ export function CourtModeNav({
         show: teamsLinks.length > 0,
       },
     ],
-    [contacts.length, cells.length, teamsLinks.length],
+    [contacts.length, teamsLinks.length],
   );
 
   return (
@@ -103,25 +89,21 @@ export function CourtModeNav({
 interface CourtModeContentProps {
   court: CourtWithRegion;
   contacts: ContactWithRole[];
-  cells: ShellCell[];
   teamsLinks: TeamsLink[];
-  bailCourt: BailCourt | null;
-  jcmFxdSchedule: JcmFxdSchedule | null;
+  bailHub: BailHub | null;
   expandedSection: CourtAccordionSection;
   onExpandedSectionChange: (section: CourtAccordionSection) => void;
   onCopy: (text: string, id: string) => void;
   isCopied: (id: string) => boolean;
   onNavigateToCourt?: (courtId: number) => void;
-  onNavigateToBailHub?: (bailCourtId: number, fromName: string) => void;
+  onNavigateToBailHub?: (bailHubId: number, fromName: string) => void;
 }
 
 export function CourtModeContent({
   court,
   contacts,
-  cells,
   teamsLinks,
-  bailCourt,
-  jcmFxdSchedule,
+  bailHub,
   expandedSection,
   onExpandedSectionChange,
   onCopy,
@@ -130,7 +112,6 @@ export function CourtModeContent({
   onNavigateToBailHub,
 }: CourtModeContentProps) {
   const contactsRef = useRef<HTMLDivElement>(null);
-  const cellsRef = useRef<HTMLDivElement>(null);
   const teamsRef = useRef<HTMLDivElement>(null);
 
   const toggleSection = useCallback(
@@ -143,10 +124,10 @@ export function CourtModeContent({
   return (
     <div className="p-3 space-y-2.5 pb-20">
       {/* Circuit court alert */}
-      {court.is_circuit && court.contact_hub_name && (
+      {court.is_circuit && court.parent_court && (
         <CircuitCourtAlert
-          hubCourtName={court.contact_hub_name}
-          hubCourtId={court.contact_hub_id}
+          hubCourtName={court.parent_court.name}
+          hubCourtId={court.parent_court.id}
           onNavigateToHub={onNavigateToCourt}
         />
       )}
@@ -176,27 +157,11 @@ export function CourtModeContent({
         </Section>
       )}
 
-      {/* Cells section */}
-      {cells.length > 0 && (
-        <Section
-          ref={cellsRef}
-          color="blue"
-          title="Sheriff Cells"
-          count={cells.length}
-          isExpanded={expandedSection === "cells"}
-          onToggle={() => toggleSection("cells")}
-        >
-          <div className="p-3">
-            <CellList cells={cells} />
-          </div>
-        </Section>
-      )}
-
       {/* Bail Hub Link - only show if court uses a bail hub but is NOT the bail hub location */}
-      {bailCourt && onNavigateToBailHub && bailCourt.court_id !== court.id && (
+      {bailHub && onNavigateToBailHub && bailHub.court_id !== court.id && (
         <button
           onClick={() =>
-            onNavigateToBailHub(bailCourt.id, `${court.name} Law Courts`)
+            onNavigateToBailHub(bailHub.id, `${court.name} Law Courts`)
           }
           className={cn(
             "w-full rounded-xl overflow-hidden",
@@ -215,7 +180,7 @@ export function CourtModeContent({
                 Virtual Bail
               </div>
               <div className="text-xs text-muted-foreground mt-0.5">
-                {getBailHubTag(bailCourt.name)} • Tap for schedule & contacts
+                {getBailHubTag(bailHub.name)} • Tap for contacts
               </div>
             </div>
             <FaChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
@@ -235,11 +200,6 @@ export function CourtModeContent({
         >
           <div className="p-3">
             <TeamsList links={teamsLinks} onCopy={onCopy} isCopied={isCopied} />
-            {jcmFxdSchedule && (
-              <div className="mt-3">
-                <JcmFxdScheduleCard schedule={jcmFxdSchedule} />
-              </div>
-            )}
           </div>
         </Section>
       )}

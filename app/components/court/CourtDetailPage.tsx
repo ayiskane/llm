@@ -24,7 +24,7 @@ interface CourtDetailPageProps {
   onBack?: () => void;
   onSearch?: (query: string) => void;
   onNavigateToCourt?: (courtId: number) => void;
-  onNavigateToBailHub?: (bailCourtId: number, fromName: string) => void;
+  onNavigateToBailHub?: (bailHubId: number, fromName: string) => void;
 }
 
 export function CourtDetailPage({
@@ -39,10 +39,9 @@ export function CourtDetailPage({
     contacts,
     cells,
     teamsLinks,
-    bailCourt,
+    bailHub,
     bailTeams,
     bailContacts,
-    jcmFxdSchedule,
   } = courtDetails;
 
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
@@ -54,14 +53,14 @@ export function CourtDetailPage({
   const [courtExpandedSection, setCourtExpandedSection] =
     useState<CourtAccordionSection>("contacts");
   const [bailExpandedSection, setBailExpandedSection] =
-    useState<BailAccordionSection>("schedule");
+    useState<BailAccordionSection>("contacts");
 
   // Determine if we're in bail mode
   const isBailMode = viewMode === "bail";
 
   // Check if this court IS a bail hub location (not just uses one)
-  // A court is a bail hub if bailCourt.court_id matches the current court's id
-  const isBailHubLocation = bailCourt?.court_id === court.id;
+  // A court is a bail hub if bailHub.court_id matches the current court's id
+  const isBailHubLocation = bailHub?.court_id === court.id;
 
   // TODO: Filter data by court level when database field is added
   // For now, show all data regardless of selected tab (provincial/supreme)
@@ -140,18 +139,18 @@ export function CourtDetailPage({
         />
 
         {/* Mode-specific nav pills */}
-        {isBailMode && bailCourt ? (
+        {isBailMode && bailHub ? (
           <BailModeNav
-            bailCourt={bailCourt}
+            bailHub={bailHub}
             bailContacts={bailContacts}
             bailTeams={bailTeams}
+            cells={filteredCells}
             expandedSection={bailExpandedSection}
             onNavigateToSection={setBailExpandedSection}
           />
         ) : (
           <CourtModeNav
             contacts={filteredContacts}
-            cells={filteredCells}
             teamsLinks={filteredTeamsLinks}
             expandedSection={courtExpandedSection}
             onNavigateToSection={setCourtExpandedSection}
@@ -165,11 +164,12 @@ export function CourtDetailPage({
         className="flex-1 min-h-0 overflow-y-auto scroll-smooth"
         onScroll={handleScroll}
       >
-        {isBailMode && bailCourt ? (
+        {isBailMode && bailHub ? (
           <BailModeContent
-            bailCourt={bailCourt}
+            bailHub={bailHub}
             bailContacts={bailContacts}
             bailTeams={bailTeams}
+            cells={filteredCells}
             expandedSection={bailExpandedSection}
             onExpandedSectionChange={setBailExpandedSection}
             onCopy={copyToClipboard}
@@ -179,10 +179,8 @@ export function CourtDetailPage({
           <CourtModeContent
             court={court}
             contacts={filteredContacts}
-            cells={filteredCells}
             teamsLinks={filteredTeamsLinks}
-            bailCourt={bailCourt}
-            jcmFxdSchedule={jcmFxdSchedule}
+            bailHub={bailHub}
             expandedSection={courtExpandedSection}
             onExpandedSectionChange={setCourtExpandedSection}
             onCopy={copyToClipboard}

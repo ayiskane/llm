@@ -1,0 +1,1 @@
+export { CorrectionsIndexPage } from './CorrectionsIndexPage';
