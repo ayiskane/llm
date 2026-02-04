@@ -1,94 +1,20 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { FaBuildingColumns, FaChevronRight, FaCopy, FaClipboardCheck, FaEye, FaEyeSlash, FaCommentDots } from '@/lib/icons';
+import { FaBuildingColumns, FaChevronRight, FaCopy, FaClipboardCheck, FaEye, FaEyeSlash } from '@/lib/icons';
 import { cn } from '@/lib/utils';
-import { card, text, toggle, iconSize, getScheduleLabelClass } from '@/lib/config/theme';
+import { card, text, toggle, iconSize } from '@/lib/config/theme';
 import { TeamsList } from './TeamsCard';
 import { isVBTriageLink, getBailHubTag, CONTACT_ROLES } from '@/lib/config/constants';
 import { useTruncationDetection } from '@/lib/hooks';
-import type { BailCourt, BailTeam, TeamsLink, WeekendBailCourtWithTeams, BailContact, ContactWithRole } from '@/types';
-
-// ============================================================================
-// SCHEDULE ROW COMPONENT
-// ============================================================================
-
-interface ScheduleRowProps {
-  label: string;
-  value: string;
-  color?: 'amber' | 'sky';
-}
-
-function ScheduleRow({ label, value, color }: ScheduleRowProps) {
-  return (
-    <div className={card.flexRow}>
-      <span 
-        className={getScheduleLabelClass(color)}
-        style={{ letterSpacing: '1px' }}
-      >
-        {label}
-      </span>
-      <span className={text.monoValue}>{value}</span>
-    </div>
-  );
-}
-
-// ============================================================================
-// BAIL SCHEDULE COMPONENT
-// ============================================================================
-
-interface BailScheduleProps {
-  bailCourt: BailCourt;
-}
-
-export function BailSchedule({ bailCourt }: BailScheduleProps) {
-  const hasSchedule = bailCourt.triage_time_am || bailCourt.triage_time_pm || 
-                      bailCourt.court_start_am || bailCourt.cutoff_new_arrests ||
-                      (bailCourt.youth_custody_day && bailCourt.youth_custody_time);
-  
-  if (!hasSchedule) return null;
-
-  return (
-    <div className="space-y-1.5">
-      <h4 className={text.sectionHeader}>Schedule</h4>
-      
-      <div className={card.divided}>
-        {(bailCourt.triage_time_am || bailCourt.triage_time_pm) && (
-          <ScheduleRow 
-            label="Triage" 
-            value={[bailCourt.triage_time_am, bailCourt.triage_time_pm].filter(Boolean).join(' / ')} 
-          />
-        )}
-
-        {(bailCourt.court_start_am || bailCourt.court_start_pm) && (
-          <ScheduleRow 
-            label="Court" 
-            value={[bailCourt.court_start_am, bailCourt.court_start_pm].filter(Boolean).join(' / ')} 
-          />
-        )}
-
-        {bailCourt.cutoff_new_arrests && (
-          <ScheduleRow label="Cutoff" value={bailCourt.cutoff_new_arrests} />
-        )}
-
-        {bailCourt.youth_custody_day && bailCourt.youth_custody_time && (
-          <ScheduleRow 
-            label="Youth" 
-            value={`${bailCourt.youth_custody_day} ${bailCourt.youth_custody_time}`}
-            color="sky"
-          />
-        )}
-      </div>
-    </div>
-  );
-}
+import type { BailHub, TeamsLink, WeekendBailHubWithTeams, BailContact, ContactWithRole } from '@/types';
 
 // ============================================================================
 // BAIL HUB LINK COMPONENT
 // ============================================================================
 
 interface BailHubLinkProps {
-  bailCourt: BailCourt;
+  bailHub: BailHub;
   onNavigate: (courtId: number) => void;
 }
 
@@ -106,55 +32,42 @@ interface BailContactsStackProps {
 function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailContactsStackProps) {
   const [showFull, setShowFull] = useState(false);
   const { registerRef, hasTruncation } = useTruncationDetection();
-  
-  // Get sheriff coordinator Teams chat separately
-  const sheriffCoord = bailContacts.find(bc => bc.role_id === CONTACT_ROLES.SHERIFF_VB_COORDINATOR);
-  const sheriffTeamsChat = sheriffCoord?.teams_chat || null;
-  
+
   const bailContactsList = useMemo(() => {
     const result: { label: string; email: string; id: string }[] = [];
 
-    // 1. Bail JCM first (from contacts table)
-    const bailJcm = contacts.find(c => c.contact_role_id === CONTACT_ROLES.BAIL_JCM);
-    if (bailJcm) {
-      const email = bailJcm.emails?.[0] || bailJcm.email;
-      if (email) {
-        result.push({ label: 'Bail JCM', email, id: `bail-jcm-${bailJcm.id}` });
-      }
+    // 1. Bail JCM first (from contacts table via entity_contacts)
+    const bailJcm = contacts.find(c => c.role_id === CONTACT_ROLES.BAIL_JCM);
+    if (bailJcm?.email) {
+      result.push({ label: 'Bail JCM', email: bailJcm.email, id: `bail-jcm-${bailJcm.id}` });
     }
 
-    // 2. Sheriff VB Coordinator (from bailContacts table)
+    // 2. Sheriff VB Coordinator (from bailContacts)
+    const sheriffCoord = bailContacts.find(bc => bc.role_id === CONTACT_ROLES.SHERIFF_VB_COORDINATOR);
     if (sheriffCoord?.email) {
-      result.push({ 
-        label: 'Sheriff Coordinator', 
-        email: sheriffCoord.email, 
+      result.push({
+        label: 'Sheriff Coordinator',
+        email: sheriffCoord.email,
         id: `sheriff-coord-${sheriffCoord.id}`
       });
     }
 
-    // 3. Bail Crown (from bailContacts table)
+    // 3. Bail Crown (from bailContacts)
     const bailCrown = bailContacts.find(bc => bc.role_id === CONTACT_ROLES.CROWN);
     if (bailCrown?.email) {
       result.push({ label: 'Bail Crown', email: bailCrown.email, id: `bail-crown-${bailCrown.id}` });
     }
 
-    // 4. Federal Crown (from bailContacts table)
+    // 4. Federal Crown (from bailContacts)
     const fedCrown = bailContacts.find(bc => bc.role_id === CONTACT_ROLES.FEDERAL_CROWN);
     if (fedCrown?.email) {
       result.push({ label: 'Federal Crown', email: fedCrown.email, id: `fed-crown-${fedCrown.id}` });
     }
 
     return result;
-  }, [contacts, bailContacts, sheriffCoord]);
+  }, [contacts, bailContacts]);
 
   if (bailContactsList.length === 0) return null;
-
-  const handleTeamsClick = () => {
-    if (sheriffTeamsChat) {
-      const teamsUrl = `https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(sheriffTeamsChat)}`;
-      window.open(teamsUrl, '_blank');
-    }
-  };
 
   return (
     <div className="space-y-2">
@@ -174,7 +87,7 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
         {bailContactsList.map((contact) => {
           const isFieldCopied = isCopied ? isCopied(contact.id) : false;
           return (
-            <div 
+            <div
               key={contact.id}
               onClick={() => onCopy?.(contact.email, contact.id)}
               className={cn(
@@ -184,13 +97,13 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
             >
               {/* Vertical color bar - amber for bail */}
               <div className="w-1 flex-shrink-0 bg-amber-400" />
-              
+
               {/* Content: label + email stacked */}
               <div className="flex-1 py-2 px-3 min-w-0">
                 <div className="text-[9px] text-slate-500 uppercase tracking-wider">
                   {contact.label}
                 </div>
-                <div 
+                <div
                   ref={!showFull ? registerRef : undefined}
                   className={cn(
                     "text-[11px] text-slate-300 font-mono",
@@ -200,7 +113,7 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
                   {contact.email}
                 </div>
               </div>
-              
+
               {/* Copy icon */}
               <div className="flex items-center px-2">
                 {isFieldCopied ? (
@@ -213,34 +126,18 @@ function BailContactsStack({ contacts, bailContacts, onCopy, isCopied }: BailCon
           );
         })}
       </div>
-      
-      {/* Teams Chat Button - separate from contact list */}
-      {sheriffTeamsChat && (
-        <button
-          onClick={handleTeamsClick}
-          className={cn(
-            "w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-md",
-            "bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700",
-            "text-white text-sm font-medium shadow-sm",
-            "transition-colors duration-150"
-          )}
-        >
-          <FaCommentDots className="w-4 h-4" />
-          <span>Chat with Sheriff Coordinator</span>
-        </button>
-      )}
     </div>
   );
 }
 
-export function BailHubLink({ bailCourt, onNavigate }: BailHubLinkProps) {
-  if (!bailCourt.court_id) return null;
+export function BailHubLink({ bailHub, onNavigate }: BailHubLinkProps) {
+  if (!bailHub.court_id) return null;
 
-  const courtName = `${bailCourt.name.replace(' Virtual Bail', '')} Law Courts`;
+  const courtName = `${bailHub.name.replace(' Virtual Bail', '')} Law Courts`;
 
   return (
     <button
-      onClick={() => onNavigate(bailCourt.court_id!)}
+      onClick={() => onNavigate(bailHub.court_id!)}
       className={cn(
         "w-full rounded-xl overflow-hidden",
         "bg-slate-800/40 border border-slate-700/50",
@@ -294,7 +191,7 @@ function BailTab({ label, isActive, onClick }: BailTabProps) {
 // ============================================================================
 
 interface WeekdayBailContentProps {
-  bailCourt: BailCourt;
+  bailHub: BailHub;
   currentCourtId: number;
   bailTeams: TeamsLink[];
   courtTeams: TeamsLink[];
@@ -306,7 +203,7 @@ interface WeekdayBailContentProps {
 }
 
 function WeekdayBailContent({
-  bailCourt,
+  bailHub,
   currentCourtId,
   bailTeams,
   courtTeams,
@@ -316,36 +213,36 @@ function WeekdayBailContent({
   onCopy,
   isCopied,
 }: WeekdayBailContentProps) {
-  const isHub = bailCourt.court_id === currentCourtId;
-  
+  const isHub = bailHub.court_id === currentCourtId;
+
   const allBailTeams = useMemo(() => {
     // Include VB Triage from courtTeams in Virtual Bail
-    const vbTriageFromCourt = courtTeams.filter(t => isVBTriageLink(t.name || t.courtroom));
+    const vbTriageFromCourt = courtTeams.filter(t => isVBTriageLink(t.courtroom || t.type_name));
     const combined = [...bailTeams, ...vbTriageFromCourt];
-    
+
     const seen = new Set<number>();
     const unique = combined.filter(t => {
       if (seen.has(t.id)) return false;
       seen.add(t.id);
       return true;
     });
-    
+
     // Helper to extract number from courtroom name (e.g., "CR 201" -> 201)
     const extractNumber = (name: string): number => {
       const match = name.match(/\d+/);
       return match ? parseInt(match[0], 10) : Infinity;
     };
-    
+
     return unique.sort((a, b) => {
-      const aName = a.name || a.courtroom || '';
-      const bName = b.name || b.courtroom || '';
-      
+      const aName = a.courtroom || a.type_name || '';
+      const bName = b.courtroom || b.type_name || '';
+
       // 1. VB Triage links come first
       const aIsTriage = isVBTriageLink(aName);
       const bIsTriage = isVBTriageLink(bName);
       if (aIsTriage && !bIsTriage) return -1;
       if (!aIsTriage && bIsTriage) return 1;
-      
+
       // 2. Sort by number ascending (CR 201 before CR 204)
       return extractNumber(aName) - extractNumber(bName);
     });
@@ -353,10 +250,9 @@ function WeekdayBailContent({
 
   return (
     <div className="space-y-3">
-      {!isHub && bailCourt.court_id && onNavigateToHub && (
-        <BailHubLink bailCourt={bailCourt} onNavigate={onNavigateToHub} />
+      {!isHub && bailHub.court_id && onNavigateToHub && (
+        <BailHubLink bailHub={bailHub} onNavigate={onNavigateToHub} />
       )}
-      <BailSchedule bailCourt={bailCourt} />
       <BailContactsStack contacts={contacts} bailContacts={bailContacts} onCopy={onCopy} isCopied={isCopied} />
       {allBailTeams.length > 0 && (
         <TeamsList links={allBailTeams} filterVBTriage={false} onCopy={onCopy} isCopied={isCopied} />
@@ -370,15 +266,15 @@ function WeekdayBailContent({
 // ============================================================================
 
 interface WeekendBailContentProps {
-  weekendBailCourts: WeekendBailCourtWithTeams[];
+  weekendBailHubs: WeekendBailHubWithTeams[];
   onCopy?: (text: string, id: string) => void;
   isCopied?: (id: string) => boolean;
 }
 
-function WeekendBailContent({ weekendBailCourts, onCopy, isCopied }: WeekendBailContentProps) {
-  const courtsWithTeams = weekendBailCourts.filter(wc => wc.teams.length > 0);
-  
-  if (courtsWithTeams.length === 0) {
+function WeekendBailContent({ weekendBailHubs, onCopy, isCopied }: WeekendBailContentProps) {
+  const hubsWithTeams = weekendBailHubs.filter(wh => wh.teams.length > 0);
+
+  if (hubsWithTeams.length === 0) {
     return (
       <div className="text-sm text-slate-500 text-center py-4">
         No evening/weekend bail information available
@@ -388,14 +284,11 @@ function WeekendBailContent({ weekendBailCourts, onCopy, isCopied }: WeekendBail
 
   return (
     <div className="space-y-4">
-      {courtsWithTeams.map(({ court, teams }) => (
-        <div key={court.id} className="space-y-2">
+      {hubsWithTeams.map(({ bailHub, teams }) => (
+        <div key={bailHub.id} className="space-y-2">
           <div className="text-xs font-medium text-purple-400/80 uppercase tracking-wider">
-            {court.name}
+            {bailHub.name}
           </div>
-          {court.notes && (
-            <div className="text-xs text-slate-500 -mt-1">{court.notes}</div>
-          )}
           <TeamsList links={teams} filterVBTriage={false} onCopy={onCopy} isCopied={isCopied} />
         </div>
       ))}
@@ -408,58 +301,58 @@ function WeekendBailContent({ weekendBailCourts, onCopy, isCopied }: WeekendBail
 // ============================================================================
 
 interface BailSectionContentProps {
-  bailCourt: BailCourt;
+  bailHub: BailHub;
   currentCourtId: number;
   currentCourtName: string;
-  bailTeams: BailTeam[];
+  bailTeams: TeamsLink[];
   courtTeams: TeamsLink[];
   contacts: ContactWithRole[];
   bailContacts: BailContact[];
-  weekendBailCourts?: WeekendBailCourtWithTeams[];
+  weekendBailHubs?: WeekendBailHubWithTeams[];
   onNavigateToHub?: (courtId: number) => void;
-  onNavigateToBailHub?: (bailCourtId: number, fromName: string) => void;
+  onNavigateToBailHub?: (bailHubId: number, fromName: string) => void;
   onCopy?: (text: string, id: string) => void;
   isCopied?: (id: string) => boolean;
 }
 
 export function BailSectionContent({
-  bailCourt,
+  bailHub,
   currentCourtId,
   currentCourtName,
   bailTeams,
   courtTeams,
   contacts,
   bailContacts,
-  weekendBailCourts = [],
+  weekendBailHubs = [],
   onNavigateToHub,
   onNavigateToBailHub,
   onCopy,
   isCopied,
 }: BailSectionContentProps) {
   const [activeTab, setActiveTab] = useState<'weekday' | 'weekend'>('weekday');
-  
-  const hasWeekendBail = weekendBailCourts.some(wc => wc.teams.length > 0);
+
+  const hasWeekendBail = weekendBailHubs.some(wh => wh.teams.length > 0);
 
   return (
     <div className="space-y-3">
       {/* Tabs */}
       <div className="flex gap-2">
-        <BailTab 
-          label="Weekday" 
-          isActive={activeTab === 'weekday'} 
-          onClick={() => setActiveTab('weekday')} 
+        <BailTab
+          label="Weekday"
+          isActive={activeTab === 'weekday'}
+          onClick={() => setActiveTab('weekday')}
         />
-        <BailTab 
-          label="Evening / Weekend" 
-          isActive={activeTab === 'weekend'} 
-          onClick={() => setActiveTab('weekend')} 
+        <BailTab
+          label="Evening / Weekend"
+          isActive={activeTab === 'weekend'}
+          onClick={() => setActiveTab('weekend')}
         />
       </div>
 
       {/* Tab Content */}
       {activeTab === 'weekday' ? (
         <WeekdayBailContent
-          bailCourt={bailCourt}
+          bailHub={bailHub}
           currentCourtId={currentCourtId}
           bailTeams={bailTeams}
           courtTeams={courtTeams}
@@ -471,7 +364,7 @@ export function BailSectionContent({
         />
       ) : (
         <WeekendBailContent
-          weekendBailCourts={weekendBailCourts}
+          weekendBailHubs={weekendBailHubs}
           onCopy={onCopy}
           isCopied={isCopied}
         />
@@ -480,7 +373,7 @@ export function BailSectionContent({
       {/* View full bail hub details link */}
       {onNavigateToBailHub && (
         <button
-          onClick={() => onNavigateToBailHub(bailCourt.id, currentCourtName)}
+          onClick={() => onNavigateToBailHub(bailHub.id, currentCourtName)}
           className="w-full text-center text-sm text-blue-400 hover:text-blue-300 py-2 transition-colors"
         >
           View full bail hub details →
@@ -491,8 +384,3 @@ export function BailSectionContent({
 }
 
 export { getBailHubTag };
-
-
-
-
-

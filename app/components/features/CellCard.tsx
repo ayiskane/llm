@@ -3,17 +3,19 @@
 import { FaPhoneSolid, FaCopy, FaCheck, FaBadgeSheriff, FaDungeon } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { cellIcon } from '@/lib/config/theme';
-import type { ShellCell } from '@/types';
+import type { SheriffCell } from '@/types';
 import { useState, useCallback } from 'react';
 
 // ============================================================================
 // HELPERS
 // ============================================================================
 
-function isPoliceCell(cell: ShellCell): boolean {
-  const cellType = cell.cell_type?.toLowerCase() || '';
+function isPoliceCell(cell: SheriffCell): boolean {
+  // In v2 schema, type_id determines the cell type, type_name is joined
+  const typeName = cell.type_name?.toLowerCase() || '';
   const name = cell.name?.toLowerCase() || '';
-  return cellType !== 'ch' && cellType !== 'courthouse' && 
+  // Courthouse cells have type like "Courthouse" or "CH"
+  return typeName !== 'ch' && typeName !== 'courthouse' &&
          !name.includes('courthouse') && !name.includes(' ch');
 }
 
@@ -108,7 +110,7 @@ function CallButton({ phone, className }: CallButtonProps) {
 // ============================================================================
 
 interface SinglePhoneRowProps {
-  cell: ShellCell;
+  cell: SheriffCell;
   isPolice: boolean;
 }
 
@@ -138,7 +140,7 @@ function SinglePhoneRow({ cell, isPolice }: SinglePhoneRowProps) {
 // ============================================================================
 
 interface MultiplePhoneRowProps {
-  cell: ShellCell;
+  cell: SheriffCell;
   isPolice: boolean;
 }
 
@@ -178,7 +180,7 @@ function MultiplePhoneRow({ cell, isPolice }: MultiplePhoneRowProps) {
 // ============================================================================
 
 interface CellRowProps {
-  cell: ShellCell;
+  cell: SheriffCell;
   showBorder?: boolean;
 }
 
@@ -225,7 +227,7 @@ function CellRow({ cell, showBorder = true }: CellRowProps) {
 // ============================================================================
 
 interface CellCardProps {
-  cell: ShellCell;
+  cell: SheriffCell;
 }
 
 export function CellCard({ cell }: CellCardProps) {
@@ -237,7 +239,7 @@ export function CellCard({ cell }: CellCardProps) {
 // ============================================================================
 
 interface CellListProps {
-  cells: ShellCell[];
+  cells: SheriffCell[];
   maxDisplay?: number;
 }
 

@@ -21,16 +21,17 @@ interface TeamsCardProps {
 
 export function TeamsCard({ link, onCopy, isCopied }: TeamsCardProps) {
   const [showDialIn, setShowDialIn] = useState(false);
-  
-  const displayName = formatCourtroomName(link.courtroom || link.name);
-  const hasDialInInfo = link.phone || link.conference_id;
-  
+
+  // v2 uses courtroom field for display name, type_name for type
+  const displayName = formatCourtroomName(link.courtroom || link.type_name || '');
+  const hasDialInInfo = link.phone_number || link.conference_id;
+
   const handleCopyAll = () => {
     if (!onCopy) return;
     const copyText = [
-      link.teams_link,
-      link.phone,
-      link.phone_toll_free,
+      link.url,
+      link.phone_number,
+      link.toll_free_number,
       link.conference_id && `Conference ID: ${link.conference_id}`,
     ].filter(Boolean).join('\n');
     onCopy(copyText, `teams-${link.id}`);
@@ -43,15 +44,15 @@ export function TeamsCard({ link, onCopy, isCopied }: TeamsCardProps) {
           <FaMicrosoftTeams className={cn(iconSize.md, 'text-slate-400 flex-shrink-0')} />
           <span className={cn(text.secondary, 'text-sm font-medium truncate')}>{displayName}</span>
         </div>
-        
+
         <div className="flex items-center gap-2 shrink-0">
           {hasDialInInfo && (
             <button
               onClick={() => setShowDialIn(!showDialIn)}
               className={cn(
                 'flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-colors',
-                showDialIn 
-                  ? 'bg-slate-700/50 text-slate-300' 
+                showDialIn
+                  ? 'bg-slate-700/50 text-slate-300'
                   : 'text-slate-500 hover:text-slate-300 hover:bg-slate-700/30'
               )}
             >
@@ -59,33 +60,33 @@ export function TeamsCard({ link, onCopy, isCopied }: TeamsCardProps) {
               <span>{showDialIn ? 'Hide' : 'Dial-in'}</span>
             </button>
           )}
-          
-          {link.teams_link && (
-            <Button variant="join" size="sm" onClick={() => joinTeamsMeeting(link.teams_link)}>
+
+          {link.url && (
+            <Button variant="join" size="sm" onClick={() => joinTeamsMeeting(link.url!)}>
               <FaMicrosoftTeams className="w-3.5 h-3.5" />
               Join
             </Button>
           )}
         </div>
       </div>
-      
+
       {hasDialInInfo && showDialIn && (
-        <div 
+        <div
           className="mt-2 p-2.5 rounded bg-slate-950/70 border border-dashed border-slate-600/50 cursor-pointer hover:border-slate-500/50 transition-colors"
           onClick={handleCopyAll}
         >
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0 space-y-1 font-mono text-xs">
-              {link.phone && (
+              {link.phone_number && (
                 <div className="flex items-center gap-2 text-slate-300">
                   <FaPhone className={cn(iconSize.sm, 'text-slate-500 shrink-0')} />
-                  <span>{link.phone}</span>
+                  <span>{link.phone_number}</span>
                 </div>
               )}
-              {link.phone_toll_free && (
+              {link.toll_free_number && (
                 <div className="flex items-center gap-2 text-slate-400">
                   <FaPhone className={cn(iconSize.sm, 'text-slate-500 shrink-0')} />
-                  <span>{link.phone_toll_free}</span>
+                  <span>{link.toll_free_number}</span>
                 </div>
               )}
               {link.conference_id && (
@@ -95,7 +96,7 @@ export function TeamsCard({ link, onCopy, isCopied }: TeamsCardProps) {
                 </div>
               )}
             </div>
-            
+
             {isCopied?.(`teams-${link.id}`) ? (
               <FaClipboardCheck className={cn(iconSize.md, 'text-emerald-400 flex-shrink-0')} />
             ) : (
@@ -123,60 +124,43 @@ export function TeamsList({ links, filterVBTriage = true, onCopy, isCopied }: Te
   const filteredLinks = useMemo(() => {
     // If not filtering VB Triage (bail section), return links as-is (already sorted by caller)
     if (!filterVBTriage) return links;
-    
-    // Filter out triage for MS Teams card
-    let result = links.filter(link => !isVBTriageLink(link.name || link.courtroom));
-    
+
+    // Filter out triage for MS Teams card (use courtroom or type_name)
+    let result = links.filter(link => !isVBTriageLink(link.courtroom || link.type_name || ''));
+
     // Helper to extract number from courtroom name (e.g., "CR 201" -> 201)
     const extractNumber = (name: string): number => {
       const match = name.match(/\d+/);
       return match ? parseInt(match[0], 10) : Infinity;
     };
-    
+
     // Helper to check if it's a JCM FXD link
     const isJcmFxd = (name: string): boolean => {
       const upper = name.toUpperCase();
       return upper.includes('JCM') && upper.includes('FXD');
     };
-    
+
     // Sort: JCM FXD first, then by number ascending
     return [...result].sort((a, b) => {
-      const aName = a.name || a.courtroom || '';
-      const bName = b.name || b.courtroom || '';
-      
+      const aName = a.courtroom || a.type_name || '';
+      const bName = b.courtroom || b.type_name || '';
+
       // 1. JCM FXD links come first
       const aIsJcmFxd = isJcmFxd(aName);
       const bIsJcmFxd = isJcmFxd(bName);
       if (aIsJcmFxd && !bIsJcmFxd) return -1;
       if (!aIsJcmFxd && bIsJcmFxd) return 1;
-      
+
       // 2. Sort by number ascending (CR 201 before CR 204)
       return extractNumber(aName) - extractNumber(bName);
     });
   }, [links, filterVBTriage]);
-  
-  const lastUpdated = useMemo(() => {
-    const dates = filteredLinks
-      .map(l => 'source_updated_at' in l ? l.source_updated_at : null)
-      .filter((d): d is string => !!d)
-      .map(d => new Date(d))
-      .filter(d => !isNaN(d.getTime()));
-    
-    if (dates.length === 0) return null;
-    
-    const mostRecent = new Date(Math.max(...dates.map(d => d.getTime())));
-    return mostRecent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  }, [filteredLinks]);
 
+  // Note: v2 doesn't have source_updated_at field, skip last updated
   if (filteredLinks.length === 0) return null;
 
   return (
     <div className="space-y-1.5">
-      {/* Last Updated - uses same style as "Court Contacts" / "Crown Contacts" headers */}
-      {lastUpdated && (
-        <h4 className={text.sectionHeader}>Last Updated: {lastUpdated}</h4>
-      )}
-      
       {filteredLinks.map((link) => (
         <TeamsCard key={link.id} link={link} onCopy={onCopy} isCopied={isCopied} />
       ))}

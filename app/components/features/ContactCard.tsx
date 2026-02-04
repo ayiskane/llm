@@ -150,26 +150,26 @@ export function CourtContactsStack({ contacts, onCopy, isCopied }: CourtContacts
 
   const orderedContacts = useMemo(() => {
     const result: { label: string; emails: string[]; category: ContactCategory; id: number }[] = [];
-    
-    let criminalRegistryEmails: string[] = [];
-    const criminalRegistry = contacts.find(c => c.contact_role_id === CONTACT_ROLES.CRIMINAL_REGISTRY);
-    if (criminalRegistry) {
-      criminalRegistryEmails = criminalRegistry.emails || (criminalRegistry.email ? [criminalRegistry.email] : []);
-    }
+
+    // First check for criminal registry to detect duplicates
+    const criminalRegistry = contacts.find(c => c.role_id === CONTACT_ROLES.CRIMINAL_REGISTRY);
+    const criminalRegistryEmail = criminalRegistry?.email || null;
 
     contactConfig.forEach(config => {
-      const contact = contacts.find(c => c.contact_role_id === config.roleId);
-      if (contact) {
-        const contactEmails = contact.emails?.length ? contact.emails : (contact.email ? [contact.email] : []);
-        
-        if (contactEmails.length > 0) {
-          if (config.roleId === CONTACT_ROLES.COURT_REGISTRY && 
-              criminalRegistryEmails.length > 0 && 
-              contactEmails[0] === criminalRegistryEmails[0]) {
-            return;
-          }
-          result.push({ label: config.label, emails: contactEmails, category: config.category, id: contact.id });
+      const contact = contacts.find(c => c.role_id === config.roleId);
+      if (contact && contact.email) {
+        // Skip court registry if it's same as criminal registry
+        if (config.roleId === CONTACT_ROLES.COURT_REGISTRY &&
+            criminalRegistryEmail &&
+            contact.email === criminalRegistryEmail) {
+          return;
         }
+        result.push({
+          label: config.label,
+          emails: [contact.email],
+          category: config.category,
+          id: contact.id
+        });
       }
     });
 
@@ -222,28 +222,19 @@ export function CrownContactsStack({ contacts, onCopy, isCopied }: CrownContacts
   const crownContacts = useMemo(() => {
     const result: { label: string; emails: string[]; category: ContactCategory; id: string }[] = [];
 
-    const provCrown = contacts.find(c => c.contact_role_id === CONTACT_ROLES.CROWN);
-    if (provCrown) {
-      const emails = provCrown.emails?.length ? provCrown.emails : (provCrown.email ? [provCrown.email] : []);
-      if (emails.length > 0) {
-        result.push({ label: 'Provincial Crown', emails, category: 'provincial', id: `prov-crown-${provCrown.id}` });
-      }
+    const provCrown = contacts.find(c => c.role_id === CONTACT_ROLES.CROWN);
+    if (provCrown?.email) {
+      result.push({ label: 'Provincial Crown', emails: [provCrown.email], category: 'provincial', id: `prov-crown-${provCrown.id}` });
     }
 
-    const fedCrown = contacts.find(c => c.contact_role_id === CONTACT_ROLES.FEDERAL_CROWN);
-    if (fedCrown) {
-      const emails = fedCrown.emails?.length ? fedCrown.emails : (fedCrown.email ? [fedCrown.email] : []);
-      if (emails.length > 0) {
-        result.push({ label: 'Federal Crown', emails, category: 'federal', id: `fed-crown-${fedCrown.id}` });
-      }
+    const fedCrown = contacts.find(c => c.role_id === CONTACT_ROLES.FEDERAL_CROWN);
+    if (fedCrown?.email) {
+      result.push({ label: 'Federal Crown', emails: [fedCrown.email], category: 'federal', id: `fed-crown-${fedCrown.id}` });
     }
 
-    const fnCrown = contacts.find(c => c.contact_role_id === CONTACT_ROLES.FIRST_NATIONS_CROWN);
-    if (fnCrown) {
-      const emails = fnCrown.emails?.length ? fnCrown.emails : (fnCrown.email ? [fnCrown.email] : []);
-      if (emails.length > 0) {
-        result.push({ label: 'First Nations Crown', emails, category: 'provincial', id: `fn-crown-${fnCrown.id}` });
-      }
+    const fnCrown = contacts.find(c => c.role_id === CONTACT_ROLES.FIRST_NATIONS_CROWN);
+    if (fnCrown?.email) {
+      result.push({ label: 'First Nations Crown', emails: [fnCrown.email], category: 'provincial', id: `fn-crown-${fnCrown.id}` });
     }
 
     return result;

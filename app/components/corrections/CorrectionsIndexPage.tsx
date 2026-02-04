@@ -6,26 +6,18 @@ import { FaMagnifyingGlass, FaXmark, FaSliders, FaBuildingShield } from '@/lib/i
 import { AlphabetNav, FilterModal } from '@/app/components/ui';
 import { cn } from '@/lib/config/theme';
 import { useCorrectionalCentres } from '@/lib/hooks/useCorrectionsCentres';
+import { REGION_CODES, REGION_NAMES } from '@/types';
 import type { CorrectionalCentre } from '@/lib/hooks/useCorrectionsCentres';
 
 // =============================================================================
 // CONSTANTS
 // =============================================================================
 
-const LOCATION_TO_REGION: Record<string, { id: number; code: string; name: string }> = {
-  'Victoria': { id: 1, code: 'R1', name: 'Island' },
-  'Nanaimo': { id: 1, code: 'R1', name: 'Island' },
-  'Oliver': { id: 4, code: 'R4', name: 'Interior' },
-  'Kamloops': { id: 4, code: 'R4', name: 'Interior' },
-  'Prince George': { id: 5, code: 'R5', name: 'Northern' },
-  'Surrey': { id: 3, code: 'R3', name: 'Fraser' },
-  'Port Coquitlam': { id: 3, code: 'R3', name: 'Fraser' },
-  'Maple Ridge': { id: 3, code: 'R3', name: 'Fraser' },
-  'Chilliwack': { id: 3, code: 'R3', name: 'Fraser' },
-  'Abbotsford': { id: 3, code: 'R3', name: 'Fraser' },
-  'Agassiz': { id: 3, code: 'R3', name: 'Fraser' },
-  'Mission': { id: 3, code: 'R3', name: 'Fraser' },
-};
+// Correctional centre type IDs from the database
+const CENTRE_TYPE = {
+  PROVINCIAL: 1,
+  FEDERAL: 2,
+} as const;
 
 const CORRECTIONS_REGIONS = [
   { id: 0, name: 'All Regions', code: 'ALL' },
@@ -41,7 +33,18 @@ const JURISDICTION_OPTIONS = [
   { value: 'federal' as const, label: 'Federal' },
 ] as const;
 
-const getRegion = (location: string) => LOCATION_TO_REGION[location] ?? { id: 0, code: 'UNK', name: 'Unknown' };
+// Helper to get region info from region_id
+const getRegionInfo = (regionId: number | null) => {
+  if (!regionId) return { id: 0, code: 'UNK', name: 'Unknown' };
+  return {
+    id: regionId,
+    code: REGION_CODES[regionId] || 'UNK',
+    name: REGION_NAMES[regionId] || 'Unknown'
+  };
+};
+
+// Helper to check if centre is federal
+const isFederal = (centre: CorrectionalCentre) => centre.type_id === CENTRE_TYPE.FEDERAL;
 
 // =============================================================================
 // TYPES & HELPERS
@@ -152,7 +155,8 @@ function FilterModalContent({ filters, onFilterChange }: {
 }
 
 function CentreListItem({ centre, onClick }: { centre: CorrectionalCentre; onClick: () => void }) {
-  const region = getRegion(centre.location);
+  const region = getRegionInfo(centre.region_id);
+  const federal = isFederal(centre);
   return (
     <button onClick={onClick} className="w-full text-left px-4 py-3 border-b border-slate-700/30 last:border-b-0 hover:bg-slate-800/30 active:bg-slate-800/50">
       <div className="text-sm font-medium text-slate-200 mb-1.5">{centre.name}</div>
@@ -162,8 +166,8 @@ function CentreListItem({ centre, onClick }: { centre: CorrectionalCentre; onCli
           <span className="text-slate-600">|</span>
           <span>{region.name}</span>
         </span>
-        <span className={cn('px-1.5 py-1 text-[9px] font-bold uppercase tracking-wide rounded', centre.is_federal ? 'bg-purple-500/15 text-purple-400' : 'bg-emerald-500/15 text-emerald-400')}>
-          {centre.is_federal ? 'Federal' : 'Provincial'}
+        <span className={cn('px-1.5 py-1 text-[9px] font-bold uppercase tracking-wide rounded', federal ? 'bg-purple-500/15 text-purple-400' : 'bg-emerald-500/15 text-emerald-400')}>
+          {federal ? 'Federal' : 'Provincial'}
         </span>
         {centre.short_name && (
           <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400">{centre.short_name}</span>
@@ -207,12 +211,16 @@ export function CorrectionsIndexPage() {
 
   const filteredCentres = useMemo(() => {
     let result = centres;
-    if (filters.region !== 0) result = result.filter(c => getRegion(c.location).id === filters.region);
-    if (filters.jurisdiction === 'provincial') result = result.filter(c => !c.is_federal);
-    else if (filters.jurisdiction === 'federal') result = result.filter(c => c.is_federal);
+    if (filters.region !== 0) result = result.filter(c => c.region_id === filters.region);
+    if (filters.jurisdiction === 'provincial') result = result.filter(c => !isFederal(c));
+    else if (filters.jurisdiction === 'federal') result = result.filter(c => isFederal(c));
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      result = result.filter(c => c.name.toLowerCase().includes(q) || c.location.toLowerCase().includes(q) || c.short_name?.toLowerCase().includes(q));
+      result = result.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.short_name?.toLowerCase().includes(q) ||
+        c.region_name?.toLowerCase().includes(q)
+      );
     }
     return result;
   }, [centres, filters, searchQuery]);
