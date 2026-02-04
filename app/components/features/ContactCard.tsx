@@ -140,7 +140,14 @@ export function CourtContactsStack({ contacts, onCopy, isCopied }: CourtContacts
   const [showFull, setShowFull] = useState(false);
   const { registerRef, hasTruncation } = useTruncationDetection();
 
+  // Configuration for court-level contacts (from court table fields)
   const contactConfig: { roleId: number; category: ContactCategory; label: string }[] = [
+    { roleId: CONTACT_ROLES.COURT_REGISTRY_DIRECT, category: 'court', label: 'Criminal Registry' },
+    { roleId: CONTACT_ROLES.COURT_VB_LEAD, category: 'court', label: 'Registry VB Lead' },
+    { roleId: CONTACT_ROLES.COURT_JCM, category: 'provincial', label: 'JCM' },
+    { roleId: CONTACT_ROLES.COURT_SUPREME_SCHEDULING, category: 'supreme', label: 'Supreme Scheduling' },
+    { roleId: CONTACT_ROLES.COURT_SHERIFF, category: 'other', label: 'Sheriff' },
+    // Legacy role IDs (from entity_contacts if any)
     { roleId: CONTACT_ROLES.CRIMINAL_REGISTRY, category: 'court', label: 'Criminal Registry' },
     { roleId: CONTACT_ROLES.COURT_REGISTRY, category: 'court', label: 'Court Registry' },
     { roleId: CONTACT_ROLES.JCM, category: 'provincial', label: 'Provincial JCM' },
@@ -149,27 +156,26 @@ export function CourtContactsStack({ contacts, onCopy, isCopied }: CourtContacts
   ];
 
   const orderedContacts = useMemo(() => {
-    const result: { label: string; emails: string[]; category: ContactCategory; id: number }[] = [];
-
-    // First check for criminal registry to detect duplicates
-    const criminalRegistry = contacts.find(c => c.role_id === CONTACT_ROLES.CRIMINAL_REGISTRY);
-    const criminalRegistryEmail = criminalRegistry?.email || null;
+    const result: { label: string; value: string; category: ContactCategory; id: number }[] = [];
+    const seenRoles = new Set<number>();
 
     contactConfig.forEach(config => {
+      // Skip if we've already added a contact for a similar role
+      if (seenRoles.has(config.roleId)) return;
+      
       const contact = contacts.find(c => c.role_id === config.roleId);
-      if (contact && contact.email) {
-        // Skip court registry if it's same as criminal registry
-        if (config.roleId === CONTACT_ROLES.COURT_REGISTRY &&
-            criminalRegistryEmail &&
-            contact.email === criminalRegistryEmail) {
-          return;
+      if (contact) {
+        // Use email if available, otherwise phone
+        const value = contact.email || contact.phone;
+        if (value) {
+          result.push({
+            label: contact.name || config.label,
+            value,
+            category: config.category,
+            id: contact.id
+          });
+          seenRoles.add(config.roleId);
         }
-        result.push({
-          label: config.label,
-          emails: [contact.email],
-          category: config.category,
-          id: contact.id
-        });
       }
     });
 
@@ -191,7 +197,7 @@ export function CourtContactsStack({ contacts, onCopy, isCopied }: CourtContacts
           <ContactRow 
             key={contact.id}
             label={contact.label}
-            emails={contact.emails}
+            emails={[contact.value]}
             category={contact.category}
             showFull={showFull}
             onCopy={onCopy}
@@ -220,21 +226,30 @@ export function CrownContactsStack({ contacts, onCopy, isCopied }: CrownContacts
   const { registerRef, hasTruncation } = useTruncationDetection();
 
   const crownContacts = useMemo(() => {
-    const result: { label: string; emails: string[]; category: ContactCategory; id: string }[] = [];
+    const result: { label: string; value: string; category: ContactCategory; id: string }[] = [];
 
+    // Crown Office from court table fields
+    const crownOffice = contacts.find(c => c.role_id === CONTACT_ROLES.COURT_CROWN_OFFICE);
+    if (crownOffice?.email) {
+      result.push({ label: 'Crown Office', value: crownOffice.email, category: 'provincial', id: `crown-office-${crownOffice.id}` });
+    }
+
+    // Provincial Crown from entity_contacts (legacy)
     const provCrown = contacts.find(c => c.role_id === CONTACT_ROLES.CROWN);
     if (provCrown?.email) {
-      result.push({ label: 'Provincial Crown', emails: [provCrown.email], category: 'provincial', id: `prov-crown-${provCrown.id}` });
+      result.push({ label: 'Provincial Crown', value: provCrown.email, category: 'provincial', id: `prov-crown-${provCrown.id}` });
     }
 
+    // Federal Crown
     const fedCrown = contacts.find(c => c.role_id === CONTACT_ROLES.FEDERAL_CROWN);
     if (fedCrown?.email) {
-      result.push({ label: 'Federal Crown', emails: [fedCrown.email], category: 'federal', id: `fed-crown-${fedCrown.id}` });
+      result.push({ label: 'Federal Crown', value: fedCrown.email, category: 'federal', id: `fed-crown-${fedCrown.id}` });
     }
 
+    // First Nations Crown
     const fnCrown = contacts.find(c => c.role_id === CONTACT_ROLES.FIRST_NATIONS_CROWN);
     if (fnCrown?.email) {
-      result.push({ label: 'First Nations Crown', emails: [fnCrown.email], category: 'provincial', id: `fn-crown-${fnCrown.id}` });
+      result.push({ label: 'First Nations Crown', value: fnCrown.email, category: 'provincial', id: `fn-crown-${fnCrown.id}` });
     }
 
     return result;
@@ -255,7 +270,7 @@ export function CrownContactsStack({ contacts, onCopy, isCopied }: CrownContacts
           <ContactRow 
             key={contact.id}
             label={contact.label}
-            emails={contact.emails}
+            emails={[contact.value]}
             category={contact.category}
             showFull={showFull}
             onCopy={onCopy}
