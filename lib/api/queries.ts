@@ -108,9 +108,114 @@ export async function fetchCourtsWithRegions(): Promise<CourtWithRegionName[]> {
 }
 
 // =============================================================================
-// CONTACTS (via entity_contacts junction table)
+// CONTACTS - Extracted from court fields
 // =============================================================================
 
+// Contact role IDs for court-level contacts (synthetic IDs for UI)
+const COURT_CONTACT_ROLES = {
+  REGISTRY: 100,
+  REGISTRY_VB_LEAD: 101,
+  CROWN_OFFICE: 102,
+  JCM: 103,
+  SUPREME_SCHEDULING: 104,
+} as const;
+
+/**
+ * Extract contacts from court's direct email/phone fields
+ * Courts store contacts directly on the table, not in entity_contacts
+ */
+export function extractContactsFromCourt(court: CourtWithRegion): ContactWithRole[] {
+  const contacts: ContactWithRole[] = [];
+  let idCounter = 1;
+
+  // Registry contact
+  if (court.registry_email || court.registry_phone) {
+    contacts.push({
+      id: idCounter++,
+      name: 'Criminal Registry',
+      title: null,
+      email: court.registry_email || null,
+      phone: court.registry_phone || null,
+      role_id: COURT_CONTACT_ROLES.REGISTRY,
+      role_name: 'Criminal Registry',
+      notes: court.registry_fax ? `Fax: ${court.registry_fax}` : null,
+    });
+  }
+
+  // Registry VB Lead (named contact)
+  if (court.registry_vb_lead_email || court.registry_vb_lead_phone) {
+    contacts.push({
+      id: idCounter++,
+      name: court.registry_vb_lead_name || 'Registry VB Lead',
+      title: 'Registry VB Lead',
+      email: court.registry_vb_lead_email || null,
+      phone: court.registry_vb_lead_phone || null,
+      role_id: COURT_CONTACT_ROLES.REGISTRY_VB_LEAD,
+      role_name: 'Registry VB Lead',
+      notes: null,
+    });
+  }
+
+  // Crown Office (Provincial)
+  if (court.crown_office_email || court.crown_office_phone) {
+    contacts.push({
+      id: idCounter++,
+      name: 'Crown Office',
+      title: null,
+      email: court.crown_office_email || null,
+      phone: court.crown_office_phone || null,
+      role_id: COURT_CONTACT_ROLES.CROWN_OFFICE,
+      role_name: 'Crown Office',
+      notes: null,
+    });
+  }
+
+  // JCM (Provincial)
+  if (court.jcm_email || court.jcm_phone) {
+    contacts.push({
+      id: idCounter++,
+      name: 'JCM',
+      title: null,
+      email: court.jcm_email || null,
+      phone: court.jcm_phone || null,
+      role_id: COURT_CONTACT_ROLES.JCM,
+      role_name: 'JCM',
+      notes: null,
+    });
+  }
+
+  // Supreme Scheduling
+  if (court.supreme_scheduling_phone || court.supreme_scheduling_fax || court.supreme_toll_free) {
+    contacts.push({
+      id: idCounter++,
+      name: 'Supreme Scheduling',
+      title: null,
+      email: null,
+      phone: court.supreme_scheduling_phone || court.supreme_toll_free || null,
+      role_id: COURT_CONTACT_ROLES.SUPREME_SCHEDULING,
+      role_name: 'Supreme Scheduling',
+      notes: court.supreme_scheduling_fax ? `Fax: ${court.supreme_scheduling_fax}` : null,
+    });
+  }
+
+  // Sheriff
+  if (court.sheriff_phone) {
+    contacts.push({
+      id: idCounter++,
+      name: 'Sheriff',
+      title: null,
+      email: null,
+      phone: court.sheriff_phone,
+      role_id: 200, // Sheriff role
+      role_name: 'Sheriff',
+      notes: null,
+    });
+  }
+
+  return contacts;
+}
+
+// Legacy function for entity_contacts (kept for bail hubs and regions)
 export async function fetchContactsByCourtId(courtId: number): Promise<ContactWithRole[]> {
   const { data, error } = await supabase
     .from('entity_contacts')
@@ -578,13 +683,18 @@ export async function fetchCourtDetails(courtId: number): Promise<CourtDetails |
   const court = await fetchCourtById(courtId);
   if (!court) return null;
 
-  // For circuit courts, fetch contacts from their parent court
-  const contactSourceId = (court.is_circuit && court.parent_court_id)
-    ? court.parent_court_id
-    : courtId;
+  // Extract contacts from court's direct fields
+  const contacts = extractContactsFromCourt(court);
 
-  const [contacts, cells, teamsLinks, schedules] = await Promise.all([
-    fetchContactsByCourtId(contactSourceId),
+  // For circuit courts, also try to get contacts from parent court if current court has none
+  if (court.is_circuit && court.parent_court_id && contacts.length === 0) {
+    const parentCourt = await fetchCourtById(court.parent_court_id);
+    if (parentCourt) {
+      contacts.push(...extractContactsFromCourt(parentCourt));
+    }
+  }
+
+  const [cells, teamsLinks, schedules] = await Promise.all([
     fetchCellsByCourtId(courtId),
     fetchTeamsLinksByCourtId(courtId),
     fetchSchedulesByCourtId(courtId),
