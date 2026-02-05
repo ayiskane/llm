@@ -16,6 +16,14 @@
 # Misc
 .DS_Store
 *.pem
+/.claude
+.mcp.json
+
+# Non-app assets
+/designs/
+/llm-legacy-ui-snapshot/
+/scripts/
+/supabase/
 
 # Debug
 npm-debug.log*
