@@ -9,14 +9,7 @@ export { useCourtDetails } from './useCourtDetails';
 
 // Courts list hook (React Query with caching)
 export { useCourts } from './useCourts';
-export type { CourtWithRegionName } from './useCourts';
-
-// Bail courts hook (React Query with caching)
-export { useBailCourts } from './useBailCourts';
-export type { BailCourtWithRegion } from './useBailCourts';
-
-// Bail hub details hook (React Query with caching)
-export { useBailHubDetails } from './useBailHubDetails';
+export type { CourtIndexItem } from './useCourts';
 
 // Other hooks
 export { useCopyToClipboard } from './useCopyToClipboard';

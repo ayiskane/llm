@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { REGIONS } from "@/lib/config/constants";
-import { useCourts, type CourtWithRegionName } from "@/lib/hooks/useCourts";
+import { useCourts, type CourtIndexItem } from "@/lib/hooks/useCourts";
 import { getCourtDisplayName } from "@/lib/utils";
 
 // =============================================================================
@@ -30,11 +30,23 @@ const REGION_CODE_MAP = Object.fromEntries(
 ) as Record<number, string>;
 
 /** Get region code by ID from pre-computed map */
-function getRegionCode(regionId: number): string {
+function getRegionCode(regionId: number | null | undefined): string {
+  if (!regionId) return "R?";
   return REGION_CODE_MAP[regionId] || "R?";
 }
 
-function groupCourtsByLetter(courts: CourtWithRegionName[]): GroupedCourts[] {
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const handle = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(handle);
+  }, [value, delayMs]);
+
+  return debounced;
+}
+
+function groupCourtsByLetter(courts: CourtIndexItem[]): GroupedCourts[] {
   const grouped = courts.reduce(
     (acc, court) => {
       const firstChar = court.name.charAt(0).toUpperCase();
@@ -42,7 +54,7 @@ function groupCourtsByLetter(courts: CourtWithRegionName[]): GroupedCourts[] {
       (acc[letter] ??= []).push(court);
       return acc;
     },
-    {} as Record<string, CourtWithRegionName[]>,
+    {} as Record<string, CourtIndexItem[]>,
   );
 
   return Object.entries(grouped)
@@ -56,7 +68,7 @@ function groupCourtsByLetter(courts: CourtWithRegionName[]): GroupedCourts[] {
 
 interface GroupedCourts {
   letter: string;
-  courts: CourtWithRegionName[];
+  courts: CourtIndexItem[];
 }
 type CourtTypeFilter = "all" | "staffed" | "circuit";
 type CourtLevelFilter = "all" | "pc" | "sc";
@@ -187,7 +199,7 @@ function CourtListItems({
   onCourtClick,
 }: {
   letter: string;
-  courts: CourtWithRegionName[];
+  courts: CourtIndexItem[];
   onCourtClick: (id: number) => void;
 }) {
   return (
@@ -227,7 +239,6 @@ export function CourtsIndexPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { courts, isLoading, error } = useCourts();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -237,17 +248,19 @@ export function CourtsIndexPage() {
     courtType: (searchParams.get("type") as CourtTypeFilter) || "all",
     courtLevel: (searchParams.get("level") as CourtLevelFilter) || "all",
   });
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 250);
+  const { courts, isLoading, error } = useCourts();
 
   useEffect(() => {
     const params = new URLSearchParams();
     if (filters.region !== 0) params.set("region", String(filters.region));
     if (filters.courtType !== "all") params.set("type", filters.courtType);
     if (filters.courtLevel !== "all") params.set("level", filters.courtLevel);
-    if (searchQuery) params.set("q", searchQuery);
+    if (debouncedSearchQuery) params.set("q", debouncedSearchQuery);
     router.replace(params.toString() ? `?${params.toString()}` : "/", {
       scroll: false,
     });
-  }, [filters, searchQuery, router]);
+  }, [filters, debouncedSearchQuery, router]);
 
   const hasActiveFilters =
     filters.region !== 0 ||
@@ -270,8 +283,8 @@ export function CourtsIndexPage() {
       result = result.filter((c) => c.has_provincial);
     else if (filters.courtLevel === "sc")
       result = result.filter((c) => c.has_supreme);
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (debouncedSearchQuery.trim()) {
+      const q = debouncedSearchQuery.toLowerCase();
       result = result.filter(
         (c) =>
           c.name.toLowerCase().includes(q) ||
@@ -280,7 +293,7 @@ export function CourtsIndexPage() {
       );
     }
     return result;
-  }, [courts, filters, searchQuery]);
+  }, [courts, filters, debouncedSearchQuery]);
 
   const groupedCourts = useMemo(
     () => groupCourtsByLetter(filteredCourts),
