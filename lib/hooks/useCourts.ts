@@ -11,10 +11,12 @@ import {
 export type { CourtIndexItem } from '@/lib/api/courtsIndex';
 
 const COURTS_CACHE_KEY = 'courts-index-cache-v1';
+const COURTS_STAMP_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 type CourtsCache = {
   updatedAt: string;
   data: CourtIndexItem[];
+  checkedAt: number;
 };
 
 function readCourtsCache(): CourtsCache | null {
@@ -24,6 +26,7 @@ function readCourtsCache(): CourtsCache | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as CourtsCache;
     if (!parsed?.updatedAt || !Array.isArray(parsed?.data)) return null;
+    if (typeof parsed.checkedAt !== 'number') return null;
     return parsed;
   } catch {
     return null;
@@ -44,15 +47,19 @@ export function useCourts() {
     queryKey: ['courts-index'],
     queryFn: async () => {
       const cached = readCourtsCache();
-      const latestStamp = await fetchCourtsIndexStamp();
+      const now = Date.now();
+      const isFreshCheck = cached && now - cached.checkedAt < COURTS_STAMP_TTL_MS;
+
+      const latestStamp = isFreshCheck ? cached.updatedAt : await fetchCourtsIndexStamp();
 
       if (cached && latestStamp && cached.updatedAt === latestStamp) {
+        writeCourtsCache({ ...cached, checkedAt: now });
         return cached.data;
       }
 
       const data = await fetchCourtsIndex();
       const stampToStore = latestStamp ?? new Date().toISOString();
-      writeCourtsCache({ updatedAt: stampToStore, data });
+      writeCourtsCache({ updatedAt: stampToStore, data, checkedAt: now });
       return data;
     },
     staleTime: 0,
