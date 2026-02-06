@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useCallback, useMemo } from "react";
-import { FaArrowLeft, FaMagnifyingGlass, FaXmark } from "@/lib/icons";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { FaArrowLeft } from "@/lib/icons";
 import { StickyHeader } from "../layouts/StickyHeader";
 import { CourtHeader, type CourtViewMode } from "./CourtHeader";
 import {
@@ -9,156 +9,64 @@ import {
   CourtModeContent,
   type CourtAccordionSection,
 } from "./CourtModeContent";
-import {
-  BailModeNav,
-  BailModeContent,
-  type BailAccordionSection,
-} from "./BailModeContent";
+// import {
+//   BailModeNav,
+//   BailModeContent,
+//   type BailAccordionSection,
+// } from "./BailModeContent";
 import { useCopyToClipboard } from "@/lib/hooks/useCopyToClipboard";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { CONTACT_ROLES } from "@/lib/config/constants";
-import type { CourtDetails, CourtWithRegion, ContactWithRole } from "@/types";
-
-// ============================================================================
-// Helper to build contacts from court fields based on viewMode
-// ============================================================================
-function buildCourtFieldContacts(
-  court: CourtWithRegion,
-  viewMode: "provincial" | "supreme"
-): ContactWithRole[] {
-  const contacts: ContactWithRole[] = [];
-
-  let idCounter = 10000; // Start high to avoid collision with real contact IDs
-
-  // Common contacts (both Provincial & Supreme)
-  // Registry (email, phone)
-  if (court.registry_email || court.registry_phone) {
-    contacts.push({
-      id: idCounter++,
-      name: "Registry",
-      title: null,
-      email: court.registry_email,
-      phone: court.registry_phone,
-      role_id: CONTACT_ROLES.COURT_REGISTRY_DIRECT,
-      role_name: "Registry",
-    });
-  }
-
-  // Criminal Fax
-  if (court.criminal_fax) {
-    contacts.push({
-      id: idCounter++,
-      name: "Criminal Registry Fax",
-      title: null,
-      email: null,
-      phone: court.criminal_fax,
-      role_id: CONTACT_ROLES.CRIMINAL_REGISTRY,
-      role_name: "Criminal Fax",
-    });
-  }
-
-  // Crown Office
-  if (court.crown_office_email || court.crown_office_phone) {
-    contacts.push({
-      id: idCounter++,
-      name: "Crown Office",
-      title: null,
-      email: court.crown_office_email,
-      phone: court.crown_office_phone,
-      role_id: CONTACT_ROLES.COURT_CROWN_OFFICE,
-      role_name: "Crown Office",
-    });
-  }
-
-  // Provincial-specific: JCM
-  if (viewMode === "provincial") {
-    if (court.jcm_email || court.jcm_phone) {
-      contacts.push({
-        id: idCounter++,
-        name: "JCM",
-        title: null,
-        email: court.jcm_email,
-        phone: court.jcm_phone,
-        role_id: CONTACT_ROLES.COURT_JCM,
-        role_name: "JCM",
-      });
-    }
-  }
-
-  // Supreme-specific: Scheduling
-  if (viewMode === "supreme") {
-    if (court.supreme_scheduling_phone || court.supreme_scheduling_fax || court.supreme_toll_free) {
-      contacts.push({
-        id: idCounter++,
-        name: "Supreme Scheduling",
-        title: null,
-        email: null,
-        phone: court.supreme_scheduling_phone || court.supreme_toll_free,
-        role_id: CONTACT_ROLES.COURT_SUPREME_SCHEDULING,
-        role_name: "Supreme Scheduling",
-      });
-    }
-  }
-
-  return contacts;
-}
+import type { CourtDetails } from "@/types";
 
 interface CourtDetailPageProps {
   courtDetails: CourtDetails;
   onBack?: () => void;
-  onSearch?: (query: string) => void;
   onNavigateToCourt?: (courtId: number) => void;
-  onNavigateToBailHub?: (bailHubId: number, fromName: string) => void;
+  // onNavigateToBailHub?: (bailHubId: number, fromName: string) => void;
 }
 
 export function CourtDetailPage({
   courtDetails,
   onBack,
-  onSearch,
   onNavigateToCourt,
-  onNavigateToBailHub,
+  // onNavigateToBailHub,
 }: CourtDetailPageProps) {
   const {
     court,
-    contacts,
-    cells,
     teamsLinks,
-    bailHub,
-    bailTeams,
-    bailContacts,
+    // bailHub,
+    // bailTeams,
+    // bailContacts,
   } = courtDetails;
 
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<CourtViewMode>("provincial");
+  const [viewMode, setViewMode] = useState<CourtViewMode>(() => {
+    if (court.has_provincial) return "provincial";
+    if (court.has_supreme) return "supreme";
+    return "provincial";
+  });
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   // Separate expanded section state for each mode
   const [courtExpandedSection, setCourtExpandedSection] =
     useState<CourtAccordionSection>("contacts");
-  const [bailExpandedSection, setBailExpandedSection] =
-    useState<BailAccordionSection>("contacts");
+  // const [bailExpandedSection, setBailExpandedSection] =
+  //   useState<BailAccordionSection>("contacts");
+  // const isBailMode = viewMode === "bail";
+  // const isBailHubLocation = bailHub?.court_id === court.id;
+  const allowedModes = useMemo(() => {
+    const modes: CourtViewMode[] = [];
+    if (court.has_provincial) modes.push("provincial");
+    if (court.has_supreme) modes.push("supreme");
+    return modes;
+  }, [court.has_provincial, court.has_supreme]);
 
-  // Determine if we're in bail mode
-  const isBailMode = viewMode === "bail";
-
-  // Check if this court IS a bail hub location (not just uses one)
-  // A court is a bail hub if bailHub.court_id matches the current court's id
-  const isBailHubLocation = bailHub?.court_id === court.id;
-
-  // Build contacts from court fields based on viewMode (provincial/supreme)
-  const courtFieldContacts = useMemo(() => {
-    if (isBailMode) return [];
-    return buildCourtFieldContacts(court, viewMode as "provincial" | "supreme");
-  }, [court, viewMode, isBailMode]);
-
-  // Combine court field contacts with any entity_contacts
-  // For now, entity_contacts (from contacts prop) are kept separate
-  // Court field contacts are the primary contacts for Provincial/Supreme modes
-  const filteredContacts = courtFieldContacts;
-  const filteredCells = cells;
-  const filteredTeamsLinks = teamsLinks;
+  useEffect(() => {
+    if (allowedModes.length === 0) return;
+    if (!allowedModes.includes(viewMode)) {
+      setViewMode(allowedModes[0]);
+    }
+  }, [allowedModes, viewMode]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -176,16 +84,10 @@ export function CourtDetailPage({
     [isHeaderCollapsed],
   );
 
-  const handleSearchSubmit = () => {
-    if (searchQuery.trim() && onSearch) {
-      onSearch(searchQuery.trim());
-    }
-  };
-
   return (
     <div className="h-full flex flex-col">
       <StickyHeader>
-        {/* Back button + Search bar row */}
+        {/* Back button row */}
         <div className="flex items-center gap-2 px-3 py-2">
           <Button
             variant="ghost"
@@ -195,30 +97,6 @@ export function CourtDetailPage({
           >
             <FaArrowLeft className="w-5 h-5" />
           </Button>
-
-          <div className="relative flex-1">
-            <FaMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
-            <Input
-              type="text"
-              variant="search"
-              size="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
-              placeholder="Search courts, contacts, cells..."
-              className="pl-10 pr-9"
-            />
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSearchQuery("")}
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
-              >
-                <FaXmark className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
         </div>
 
         {/* Court info section with tabs */}
@@ -227,27 +105,17 @@ export function CourtDetailPage({
           collapsed={isHeaderCollapsed}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
-          hasBailHub={isBailHubLocation}
+          // hasBailHub={isBailHubLocation}
         />
 
         {/* Mode-specific nav pills */}
-        {isBailMode && bailHub ? (
-          <BailModeNav
-            bailHub={bailHub}
-            bailContacts={bailContacts}
-            bailTeams={bailTeams}
-            cells={filteredCells}
-            expandedSection={bailExpandedSection}
-            onNavigateToSection={setBailExpandedSection}
-          />
-        ) : (
-          <CourtModeNav
-            contacts={filteredContacts}
-            teamsLinks={filteredTeamsLinks}
-            expandedSection={courtExpandedSection}
-            onNavigateToSection={setCourtExpandedSection}
-          />
-        )}
+        <CourtModeNav
+          court={court}
+          viewMode={viewMode as "provincial" | "supreme"}
+          teamsLinks={teamsLinks}
+          expandedSection={courtExpandedSection}
+          onNavigateToSection={setCourtExpandedSection}
+        />
       </StickyHeader>
 
       {/* Scrollable content - mode-specific */}
@@ -256,31 +124,16 @@ export function CourtDetailPage({
         className="flex-1 min-h-0 overflow-y-auto scroll-smooth"
         onScroll={handleScroll}
       >
-        {isBailMode && bailHub ? (
-          <BailModeContent
-            bailHub={bailHub}
-            bailContacts={bailContacts}
-            bailTeams={bailTeams}
-            cells={filteredCells}
-            expandedSection={bailExpandedSection}
-            onExpandedSectionChange={setBailExpandedSection}
-            onCopy={copyToClipboard}
-            isCopied={isCopied}
-          />
-        ) : (
-          <CourtModeContent
-            court={court}
-            contacts={filteredContacts}
-            teamsLinks={filteredTeamsLinks}
-            bailHub={bailHub}
-            expandedSection={courtExpandedSection}
-            onExpandedSectionChange={setCourtExpandedSection}
-            onCopy={copyToClipboard}
-            isCopied={isCopied}
-            onNavigateToCourt={onNavigateToCourt}
-            onNavigateToBailHub={onNavigateToBailHub}
-          />
-        )}
+        <CourtModeContent
+          court={court}
+          viewMode={viewMode as "provincial" | "supreme"}
+          teamsLinks={teamsLinks}
+          expandedSection={courtExpandedSection}
+          onExpandedSectionChange={setCourtExpandedSection}
+          onCopy={copyToClipboard}
+          isCopied={isCopied}
+          onNavigateToCourt={onNavigateToCourt}
+        />
       </div>
     </div>
   );

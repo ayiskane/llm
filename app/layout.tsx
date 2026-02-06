@@ -3,21 +3,20 @@ import { Inter } from 'next/font/google';
 import { QueryProvider } from './providers/QueryProvider';
 import { BottomNavWrapper } from './components/ui/BottomNavWrapper';
 import { Toaster } from '@/components/ui/sonner';
-import { APP_NAME, APP_DESCRIPTION } from '@/lib/config/constants';
+import { APP_NAME } from '@/lib/config/constants';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: APP_NAME,
-  description: APP_DESCRIPTION,
+  description: "",
   manifest: '/manifest.json',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/favicon.ico', sizes: '48x48' },
     ],
-    apple: '/apple-touch-icon.png',
   },
   appleWebApp: {
     capable: true,

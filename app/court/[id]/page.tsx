@@ -3,6 +3,9 @@
 import { useParams, useRouter } from 'next/navigation';
 import { CourtDetailPage } from '@/app/components/court';
 import { useCourtDetails } from '@/lib/hooks';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CourtPage() {
   const params = useParams();
@@ -14,11 +17,18 @@ export default function CourtPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[hsl(222.2,84%,4.9%)] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-          <p className="text-slate-400 text-sm">Loading court details...</p>
-        </div>
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader>
+            <CardTitle>Loading court details</CardTitle>
+            <CardDescription>Fetching the latest information...</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-9 w-full" />
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -26,17 +36,18 @@ export default function CourtPage() {
   // Error state
   if (error || !courtDetails) {
     return (
-      <div className="min-h-screen bg-[hsl(222.2,84%,4.9%)] flex items-center justify-center p-4">
-        <div className="text-center">
-          <p className="text-red-400 mb-2">Failed to load court</p>
-          <p className="text-slate-500 text-sm mb-4">{error || 'Court not found'}</p>
-          <button
-            onClick={() => router.back()}
-            className="text-blue-400 hover:text-blue-300 transition-colors"
-          >
-            ← Go back
-          </button>
-        </div>
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader>
+            <CardTitle>Failed to load court</CardTitle>
+            <CardDescription>{error || 'Court not found'}</CardDescription>
+          </CardHeader>
+          <CardFooter>
+            <Button variant="ghost" onClick={() => router.back()}>
+              Go back
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
     );
   }
@@ -46,7 +57,7 @@ export default function CourtPage() {
       courtDetails={courtDetails}
       onBack={() => router.back()}
       onNavigateToCourt={(courtId) => router.push(`/court/${courtId}`)}
-      onNavigateToBailHub={(bailCourtId, fromName) => router.push(`/bail/${bailCourtId}?from=${encodeURIComponent(fromName)}`)}
+      // onNavigateToBailHub={(bailCourtId, fromName) => router.push(`/bail/${bailCourtId}?from=${encodeURIComponent(fromName)}`)}
     />
   );
 }

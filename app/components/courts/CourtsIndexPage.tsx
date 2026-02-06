@@ -2,12 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  FaMagnifyingGlass,
-  FaXmark,
-  FaLocationDot,
-  FaSliders,
-} from "@/lib/icons";
+import { FaMagnifyingGlass, FaLocationDot, FaSliders } from "@/lib/icons";
 import { AlphabetNav } from "@/app/components/ui";
 import { Card, CardListItem, CardListItemTitle, CardListItemDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,17 +28,6 @@ const REGION_CODE_MAP = Object.fromEntries(
 function getRegionCode(regionId: number | null | undefined): string {
   if (!regionId) return "R?";
   return REGION_CODE_MAP[regionId] || "R?";
-}
-
-function useDebouncedValue<T>(value: T, delayMs: number): T {
-  const [debounced, setDebounced] = useState(value);
-
-  useEffect(() => {
-    const handle = setTimeout(() => setDebounced(value), delayMs);
-    return () => clearTimeout(handle);
-  }, [value, delayMs]);
-
-  return debounced;
 }
 
 function groupCourtsByLetter(courts: CourtIndexItem[]): GroupedCourts[] {
@@ -83,15 +67,9 @@ interface Filters {
 // =============================================================================
 
 function SearchBar({
-  value,
-  onChange,
-  onClear,
   onFilterClick,
   hasActiveFilters,
 }: {
-  value: string;
-  onChange: (value: string) => void;
-  onClear: () => void;
   onFilterClick: () => void;
   hasActiveFilters: boolean;
 }) {
@@ -103,21 +81,9 @@ function SearchBar({
           type="text"
           variant="search"
           size="search"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
           placeholder="Search courts..."
           className="pl-11 pr-10"
         />
-        {value && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClear}
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground"
-          >
-            <FaXmark className="w-4 h-4" />
-          </Button>
-        )}
       </div>
       <Button
         variant="ghost"
@@ -240,7 +206,6 @@ export function CourtsIndexPage() {
   const searchParams = useSearchParams();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeLetter, setActiveLetter] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>({
@@ -248,7 +213,6 @@ export function CourtsIndexPage() {
     courtType: (searchParams.get("type") as CourtTypeFilter) || "all",
     courtLevel: (searchParams.get("level") as CourtLevelFilter) || "all",
   });
-  const debouncedSearchQuery = useDebouncedValue(searchQuery, 250);
   const { courts, isLoading, error } = useCourts();
 
   useEffect(() => {
@@ -256,11 +220,10 @@ export function CourtsIndexPage() {
     if (filters.region !== 0) params.set("region", String(filters.region));
     if (filters.courtType !== "all") params.set("type", filters.courtType);
     if (filters.courtLevel !== "all") params.set("level", filters.courtLevel);
-    if (debouncedSearchQuery) params.set("q", debouncedSearchQuery);
     router.replace(params.toString() ? `?${params.toString()}` : "/", {
       scroll: false,
     });
-  }, [filters, debouncedSearchQuery, router]);
+  }, [filters, router]);
 
   const hasActiveFilters =
     filters.region !== 0 ||
@@ -268,7 +231,6 @@ export function CourtsIndexPage() {
     filters.courtLevel !== "all";
   const clearAllFilters = useCallback(() => {
     setFilters({ region: 0, courtType: "all", courtLevel: "all" });
-    setSearchQuery("");
   }, []);
 
   const filteredCourts = useMemo(() => {
@@ -283,17 +245,8 @@ export function CourtsIndexPage() {
       result = result.filter((c) => c.has_provincial);
     else if (filters.courtLevel === "sc")
       result = result.filter((c) => c.has_supreme);
-    if (debouncedSearchQuery.trim()) {
-      const q = debouncedSearchQuery.toLowerCase();
-      result = result.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          getCourtDisplayName(c).toLowerCase().includes(q) ||
-          c.region_name.toLowerCase().includes(q),
-      );
-    }
     return result;
-  }, [courts, filters, debouncedSearchQuery]);
+  }, [courts, filters]);
 
   const groupedCourts = useMemo(
     () => groupCourtsByLetter(filteredCourts),
@@ -389,9 +342,6 @@ export function CourtsIndexPage() {
         </div>
         <div className="px-4 pb-3">
           <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            onClear={() => setSearchQuery("")}
             onFilterClick={() => setIsFilterOpen(true)}
             hasActiveFilters={hasActiveFilters}
           />
@@ -431,20 +381,15 @@ export function CourtsIndexPage() {
             <div className="flex flex-col items-center justify-center py-20 px-4">
               <FaLocationDot className="w-12 h-12 text-muted-foreground/30 mb-4" />
               <p className="text-muted-foreground text-center">
-                {searchQuery
-                  ? `No courts found for "${searchQuery}"`
-                  : "No courts match your search criteria."}
+                No courts match your filters.
               </p>
-              {(searchQuery || hasActiveFilters) && (
+              {hasActiveFilters && (
                 <Button
                   variant="link"
-                  onClick={() => {
-                    setSearchQuery("");
-                    clearAllFilters();
-                  }}
+                  onClick={clearAllFilters}
                   className="mt-4 text-sm"
                 >
-                  Clear Search
+                  Clear Filters
                 </Button>
               )}
             </div>
@@ -469,7 +414,7 @@ export function CourtsIndexPage() {
         </div>
 
         {/* AlphabetNav - positioned absolute within relative container */}
-        {!searchQuery && availableLetters.length > 1 && (
+        {availableLetters.length > 1 && (
           <AlphabetNav
             availableLetters={availableLetters}
             activeLetter={activeLetter}

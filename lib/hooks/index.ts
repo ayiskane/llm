@@ -1,9 +1,5 @@
 'use client';
 
-// Search hook
-export { useSearch } from './useSearch';
-export type { SearchResults } from './useSearch';
-
 // Court details hook (React Query with caching)
 export { useCourtDetails } from './useCourtDetails';
 

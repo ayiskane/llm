@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractMessageData, handleMessage } from '@/lib/whatsapp';
 
-const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'llm_verify_token_2024';
+const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
 
 // GET - Webhook verification
 export async function GET(request: NextRequest) {

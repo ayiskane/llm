@@ -20,10 +20,7 @@
 .mcp.json
 
 # Non-app assets
-/designs/
-/llm-legacy-ui-snapshot/
-/scripts/
-/supabase/
+/GITIGNOREME/
 
 # Debug
 npm-debug.log*

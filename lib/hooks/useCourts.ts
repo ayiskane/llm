@@ -5,10 +5,10 @@ import {
   fetchCourtsIndex,
   fetchCourtsIndexStamp,
   type CourtIndexItem,
-} from '@/lib/api/courtsIndex';
+} from '@/lib/api/courts';
 
 // Re-export the type for convenience
-export type { CourtIndexItem } from '@/lib/api/courtsIndex';
+export type { CourtIndexItem } from '@/lib/api/courts';
 
 const COURTS_CACHE_KEY = 'courts-index-cache-v1';
 const COURTS_STAMP_TTL_MS = 5 * 60 * 1000; // 5 minutes

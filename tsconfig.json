@@ -38,6 +38,6 @@
   "exclude": [
     "node_modules",
     "designs",
-    "llm-legacy-ui-snapshot"
+    "GITIGNOREME/llm-legacy-ui-snapshot"
   ]
 }

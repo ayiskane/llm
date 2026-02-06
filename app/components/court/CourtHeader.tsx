@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Court, CourtWithRegion } from "@/types";
 
-export type CourtViewMode = "provincial" | "supreme" | "bail";
+export type CourtViewMode = "provincial" | "supreme"; // | "bail";
 
 interface CourtHeaderProps {
   court: Court | CourtWithRegion;
@@ -14,7 +14,7 @@ interface CourtHeaderProps {
   className?: string;
   viewMode?: CourtViewMode;
   onViewModeChange?: (mode: CourtViewMode) => void;
-  hasBailHub?: boolean;
+  // hasBailHub?: boolean;
 }
 
 export function CourtHeader({
@@ -23,7 +23,7 @@ export function CourtHeader({
   className,
   viewMode,
   onViewModeChange,
-  hasBailHub = false,
+  // hasBailHub = false,
 }: CourtHeaderProps) {
   const displayName = getCourtDisplayName(court);
 
@@ -36,9 +36,8 @@ export function CourtHeader({
 
   const hasProvincial = court.has_provincial;
   const hasSupreme = court.has_supreme;
-  const hasBail = hasBailHub;
 
-  const showTabs = (hasProvincial && hasSupreme) || hasBail;
+  const showTabs = hasProvincial && hasSupreme;
 
   return (
     <div className={cn("px-4 py-2", className)}>
@@ -119,7 +118,7 @@ export function CourtHeader({
                   SUPREME
                 </TabsTrigger>
               )}
-              {hasBail && (
+              {/* {hasBail && (
                 <TabsTrigger
                   value="bail"
                   className={cn(
@@ -130,7 +129,7 @@ export function CourtHeader({
                 >
                   BAIL
                 </TabsTrigger>
-              )}
+              )} */}
             </TabsList>
           </Tabs>
         </div>
