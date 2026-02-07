@@ -16,7 +16,7 @@ import type {
 } from "@/types";
 
 export type CourtAccordionSection = "contacts" | "schedule" | "teams" | null;
-export type CourtViewMode = "provincial" | "supreme";
+export type CourtViewMode = "provincial" | "supreme" | "fnc";
 
 interface CourtModeNavProps {
   teamsLinks: TeamsLink[];
@@ -78,11 +78,13 @@ export function CourtModeNav({
 
 interface CourtModeContentProps {
   court: CourtWithRegion;
+  viewMode: CourtViewMode;
   teamsLinks: TeamsLink[];
   contactEmailGroups: ContactEmailGroup[];
   contactPhones: ContactPhoneItem[];
   contactCount: number;
   scheduleDates: CourtScheduleDate[];
+  scheduleLoading?: boolean;
   expandedSection: CourtAccordionSection;
   onExpandedSectionChange: (section: CourtAccordionSection) => void;
   onCopy: (text: string, id: string) => void;
@@ -92,11 +94,13 @@ interface CourtModeContentProps {
 
 export function CourtModeContent({
   court,
+  viewMode,
   teamsLinks,
   contactEmailGroups,
   contactPhones,
   contactCount,
   scheduleDates,
+  scheduleLoading,
   expandedSection,
   onExpandedSectionChange,
   onCopy,
@@ -105,6 +109,14 @@ export function CourtModeContent({
 }: CourtModeContentProps) {
   const showContacts = expandedSection === "contacts";
   const showSchedule = expandedSection === "schedule";
+  const scheduleDatesForMode = useMemo(() => {
+    if (court.is_circuit) return scheduleDates;
+    if (viewMode !== "fnc") return [];
+    const tagged = scheduleDates.filter((date) =>
+      (date.schedule_type ?? "").toLowerCase().includes("fnc"),
+    );
+    return tagged.length > 0 ? tagged : scheduleDates;
+  }, [court.is_circuit, scheduleDates, viewMode]);
   return (
     <div className="p-3 space-y-2.5 pb-20">
       {/* Circuit court alert */}
@@ -129,9 +141,9 @@ export function CourtModeContent({
       )}
 
       {/* Schedule section */}
-      {showSchedule && court.is_circuit && (
+      {showSchedule && (court.is_circuit || viewMode === "fnc") && (
         <div className="p-3">
-          <ScheduleCard dates={scheduleDates} />
+          <ScheduleCard dates={scheduleDatesForMode} isLoading={scheduleLoading} />
         </div>
       )}
 

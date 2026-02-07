@@ -13,6 +13,8 @@ export function useCourtDetails(courtId: number | null) {
     queryKey: ['courtDetails', courtId],
     queryFn: () => courtId ? fetchCourtDetails(courtId) : Promise.resolve(null),
     enabled: !!courtId,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
 
   return {

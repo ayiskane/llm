@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { CourtContact, CourtWithRegion } from '@/types';
 import type { ContactCategory } from '@/lib/config/theme';
 
-export type CourtViewMode = 'provincial' | 'supreme';
+export type CourtViewMode = 'provincial' | 'supreme' | 'fnc';
 
 export type ContactEmailItem = {
   id: string;
@@ -81,11 +81,12 @@ function contactVisibleForViewMode(
   contact: { is_provincial?: boolean; is_supreme?: boolean; is_appeals?: boolean },
   viewMode: CourtViewMode
 ) {
+  const effectiveMode = viewMode === 'fnc' ? 'provincial' : viewMode;
   const isProvincial = contact.is_provincial ?? false;
   const isSupreme = contact.is_supreme ?? false;
-  if (contact.is_appeals) return viewMode === 'supreme';
-  if (isProvincial && !isSupreme) return viewMode === 'provincial';
-  if (isSupreme && !isProvincial) return viewMode === 'supreme';
+  if (contact.is_appeals) return effectiveMode === 'supreme';
+  if (isProvincial && !isSupreme) return effectiveMode === 'provincial';
+  if (isSupreme && !isProvincial) return effectiveMode === 'supreme';
   return true;
 }
 
@@ -275,11 +276,19 @@ export function useCourtSections(
       });
     }
 
-    const extraContacts = (court.contacts ?? []).filter(
-      (contact) =>
-        !CONTACT_TYPES_HANDLED_BY_FIELDS.has(contact.contact_type) &&
-        contactVisibleForViewMode(contact, viewMode)
-    );
+    const extraContacts = (court.contacts ?? []).filter((contact) => {
+      if (CONTACT_TYPES_HANDLED_BY_FIELDS.has(contact.contact_type)) return false;
+      if (!contactVisibleForViewMode(contact, viewMode)) return false;
+      if (
+        viewMode === 'provincial' &&
+        court.is_fnc &&
+        !court.is_circuit &&
+        contact.contact_type === 'crown_fnc'
+      ) {
+        return false;
+      }
+      return true;
+    });
 
     for (const contact of extraContacts) {
       const label = formatContactLabel(contact.contact_type);

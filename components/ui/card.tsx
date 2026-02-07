@@ -90,6 +90,52 @@ const CardListRow = React.forwardRef<
 ))
 CardListRow.displayName = "CardListRow"
 
+// =============================================================================
+// CARD LIST ALERT - Reusable alert row with icon + optional trailing
+// =============================================================================
+
+const CardListItemAlert = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    icon: React.ReactNode
+    iconWrapClassName?: string
+    iconClassName?: string
+    contentClassName?: string
+    trailing?: React.ReactNode
+  }
+>(
+  (
+    {
+      className,
+      icon,
+      iconWrapClassName,
+      iconClassName,
+      contentClassName,
+      trailing,
+      children,
+      ...props
+    },
+    ref
+  ) => (
+  <CardListItem
+    ref={ref}
+    className={cn("flex items-center gap-2.5 rounded-xl", className)}
+    {...props}
+  >
+    <div
+      className={cn(
+        "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
+        iconWrapClassName
+      )}
+    >
+      <span className={cn("w-4 h-4", iconClassName)}>{icon}</span>
+    </div>
+    <div className={cn("flex-1 min-w-0", contentClassName)}>{children}</div>
+    {trailing}
+  </CardListItem>
+))
+CardListItemAlert.displayName = "CardListItemAlert"
+
 const CardListItemTitle = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -184,6 +230,7 @@ export {
   CardContent,
   CardListItem,
   CardListRow,
+  CardListItemAlert,
   CardListItemTitle,
   CardListItemDescription,
 }

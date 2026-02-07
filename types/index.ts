@@ -28,6 +28,7 @@ export interface CourtBase {
   is_circuit: boolean;
   address?: string | null;
   mailing_address?: string | null;
+  fnc_address?: string | null;
   region_id?: number | null;
   region_name?: string | null;
   region_code?: string | null;

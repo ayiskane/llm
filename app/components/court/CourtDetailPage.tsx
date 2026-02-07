@@ -14,7 +14,7 @@ import {
 //   BailModeContent,
 //   type BailAccordionSection,
 // } from "./BailModeContent";
-import { useCourtSections } from "@/lib/hooks";
+import { useCourtScheduleDates, useCourtSections } from "@/lib/hooks";
 import { useCopyToClipboard } from "@/lib/hooks/useCopyToClipboard";
 import { Button } from "@/components/ui/button";
 import type { CourtDetails } from "@/types";
@@ -35,7 +35,6 @@ export function CourtDetailPage({
   const {
     court,
     teamsLinks,
-    scheduleDates,
     // bailHub,
     // bailTeams,
     // bailContacts,
@@ -44,6 +43,7 @@ export function CourtDetailPage({
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
   const [viewMode, setViewMode] = useState<CourtViewMode>(() => {
     if (court.has_provincial) return "provincial";
+    if (court.is_fnc && !court.is_circuit) return "fnc";
     if (court.has_supreme) return "supreme";
     return "provincial";
   });
@@ -53,6 +53,10 @@ export function CourtDetailPage({
   // Separate expanded section state for each mode
   const [courtExpandedSection, setCourtExpandedSection] =
     useState<CourtAccordionSection>("contacts");
+  const showSchedule = court.is_circuit || viewMode === "fnc";
+  const scheduleEnabled = courtExpandedSection === "schedule" && showSchedule;
+  const { data: scheduleDates, isLoading: scheduleLoading } =
+    useCourtScheduleDates(court.id, scheduleEnabled);
   // const [bailExpandedSection, setBailExpandedSection] =
   //   useState<BailAccordionSection>("contacts");
   // const isBailMode = viewMode === "bail";
@@ -60,9 +64,10 @@ export function CourtDetailPage({
   const allowedModes = useMemo(() => {
     const modes: CourtViewMode[] = [];
     if (court.has_provincial) modes.push("provincial");
+    if (court.is_fnc && !court.is_circuit) modes.push("fnc");
     if (court.has_supreme) modes.push("supreme");
     return modes;
-  }, [court.has_provincial, court.has_supreme]);
+  }, [court.has_provincial, court.has_supreme, court.is_fnc, court.is_circuit]);
 
   useEffect(() => {
     if (allowedModes.length === 0) return;
@@ -115,7 +120,7 @@ export function CourtDetailPage({
         <CourtModeNav
           contactCount={contacts.count}
           teamsLinks={teamsLinks}
-          showSchedule={court.is_circuit}
+          showSchedule={showSchedule}
           expandedSection={courtExpandedSection}
           onNavigateToSection={setCourtExpandedSection}
         />
@@ -129,11 +134,13 @@ export function CourtDetailPage({
       >
         <CourtModeContent
           court={court}
+          viewMode={viewMode}
           teamsLinks={teamsLinks}
           contactEmailGroups={contacts.emailGroups}
           contactPhones={contacts.phones}
           contactCount={contacts.count}
           scheduleDates={scheduleDates}
+          scheduleLoading={scheduleLoading}
           expandedSection={courtExpandedSection}
           onExpandedSectionChange={setCourtExpandedSection}
           onCopy={copyToClipboard}

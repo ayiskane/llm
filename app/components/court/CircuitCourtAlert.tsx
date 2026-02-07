@@ -1,6 +1,7 @@
 'use client';
 
 import { FaCircleExclamation, FaChevronRight } from '@/lib/icons';
+import { CardListItemAlert } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 interface CircuitCourtAlertProps {
@@ -27,39 +28,28 @@ export function CircuitCourtAlert({
   };
 
   return (
-    <div 
+    <CardListItemAlert
       onClick={canNavigate ? handleClick : undefined}
+      disabled={!canNavigate}
+      icon={<FaCircleExclamation className="w-4 h-4 text-amber-500" />}
+      trailing={
+        canNavigate ? (
+          <FaChevronRight className="w-4 h-4 text-slate-600 shrink-0" />
+        ) : null
+      }
+      iconWrapClassName="bg-amber-500/15"
       className={cn(
-        'flex items-center gap-2.5 px-3 py-2.5 rounded-xl',
         'bg-slate-800/50 border border-dashed border-amber-500/40',
-        canNavigate && 'cursor-pointer active:bg-slate-800/70 transition-colors'
+        'disabled:cursor-default disabled:hover:bg-slate-800/50 disabled:active:bg-slate-800/50'
       )}
     >
-      {/* Icon container */}
-      <div className="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center flex-shrink-0">
-        <FaCircleExclamation className="w-4 h-4 text-amber-500" />
-      </div>
-      
-      {/* Text */}
-      <div className="flex-1 min-w-0">
-        <p className="text-xs text-slate-400 leading-relaxed">
-          Circuit court — contact{' '}
-          <span className="text-amber-400 font-semibold">
-            {hubCourtName}
-          </span>
-          {' '}for inquiries.
-        </p>
-        {canNavigate && (
-          <p className="text-xs text-slate-500 mt-0.5">
-            Tap to view court details
-          </p>
-        )}
-      </div>
-      
-      {/* Chevron if navigable */}
-      {canNavigate && (
-        <FaChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
-      )}
-    </div>
+      <p className="text-xs text-slate-400 leading-relaxed">
+        Circuit court — contact{' '}
+        <span className="text-amber-400 font-semibold">
+          {hubCourtName}
+        </span>
+        {' '}for inquiries.
+      </p>
+    </CardListItemAlert>
   );
 }

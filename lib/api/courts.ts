@@ -24,7 +24,7 @@ export interface CourtIndexItem {
 
 const supabase = createClient();
 
-async function fetchCircuitScheduleDates(courtId: number): Promise<CourtScheduleDate[]> {
+export async function fetchCourtScheduleDates(courtId: number): Promise<CourtScheduleDate[]> {
   const { data, error } = await supabase
     .from('court_schedules')
     .select(`
@@ -161,6 +161,7 @@ export async function fetchCourtDetails(courtId: number) {
       is_circuit,
       address,
       mailing_address,
+      fnc_address,
       is_mst,
       is_fnc,
       circuit_contact_court_id,
@@ -174,24 +175,12 @@ export async function fetchCourtDetails(courtId: number) {
   if (!publicCourt) return null;
 
   const parentCourtId = publicCourt.circuit_contact_court_id as number | null;
-  let parentCourt: { id: number; name: string } | null = null;
-  if (parentCourtId) {
-    const { data: parentData } = await supabase
-      .from('courts')
-      .select('id, court_name')
-      .eq('id', parentCourtId)
-      .limit(1);
-    const parent = parentData?.[0];
-    if (parent) {
-      parentCourt = { id: parent.id, name: parent.court_name };
-    }
-  }
 
   const contactCourtIds = parentCourtId
     ? [publicCourt.id, parentCourtId]
     : [publicCourt.id];
 
-  const { data: contactRows, error: contactError } = await supabase
+  const contactsPromise = supabase
     .from('courts_contacts')
     .select(`
       id,
@@ -206,7 +195,27 @@ export async function fetchCourtDetails(courtId: number) {
     `)
     .in('court_id', contactCourtIds);
 
+  const parentPromise = parentCourtId
+    ? supabase
+        .from('courts')
+        .select('id, court_name')
+        .eq('id', parentCourtId)
+        .limit(1)
+    : Promise.resolve({ data: null, error: null });
+
+  const [
+    { data: contactRows, error: contactError },
+    { data: parentData, error: parentError },
+  ] = await Promise.all([contactsPromise, parentPromise]);
+
   if (contactError) throw new Error(contactError.message);
+  if (parentError) throw new Error(parentError.message);
+
+  let parentCourt: { id: number; name: string } | null = null;
+  const parent = parentData?.[0];
+  if (parent) {
+    parentCourt = { id: parent.id, name: parent.court_name };
+  }
 
   const mergedContacts = new Map<string, any>();
   for (const row of contactRows || []) {
@@ -254,8 +263,9 @@ export async function fetchCourtDetails(courtId: number) {
     is_circuit: publicCourt.is_circuit,
     is_mst: publicCourt.is_mst,
     is_fnc: publicCourt.is_fnc,
-    address: publicCourt.address ?? null,
-    mailing_address: publicCourt.mailing_address ?? null,
+    address: publicCourt.address,
+    mailing_address: publicCourt.mailing_address,
+    fnc_address: publicCourt.fnc_address,
     parent_court: parentCourt,
     registry_email: getPrimaryEmail('court_registry'),
     registry_phone: registryContact?.phone ?? null,
@@ -272,15 +282,11 @@ export async function fetchCourtDetails(courtId: number) {
     contacts: contactList,
   };
 
-  const scheduleDates = publicCourt.is_circuit
-    ? await fetchCircuitScheduleDates(publicCourt.id)
-    : [];
-
   return {
     court,
     cells: [],
     teamsLinks: [],
-    scheduleDates,
+    scheduleDates: [],
     bailHub: null,
     bailTeams: [],
     bailContacts: [],

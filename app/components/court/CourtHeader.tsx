@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Court, CourtWithRegion } from "@/types";
 
-export type CourtViewMode = "provincial" | "supreme"; // | "bail";
+export type CourtViewMode = "provincial" | "fnc" | "supreme"; // | "bail";
 
 interface CourtHeaderProps {
   court: Court | CourtWithRegion;
@@ -26,6 +26,15 @@ export function CourtHeader({
   // hasBailHub = false,
 }: CourtHeaderProps) {
   const displayName = getCourtDisplayName(court);
+  const fncAddress =
+    'fnc_address' in court ? court.fnc_address ?? null : null;
+  const formattedAddress = court.address ?? null;
+  const addressForView =
+    viewMode === 'fnc' &&
+    fncAddress &&
+    fncAddress.trim().toLowerCase() !== (formattedAddress ?? '').trim().toLowerCase()
+      ? fncAddress
+      : formattedAddress;
 
   const region =
     "region" in court && court.region
@@ -36,8 +45,9 @@ export function CourtHeader({
 
   const hasProvincial = court.has_provincial;
   const hasSupreme = court.has_supreme;
-
-  const showTabs = hasProvincial && hasSupreme;
+  const hasFnc = court.is_fnc;
+  const availableModes = [hasProvincial, hasFnc, hasSupreme].filter(Boolean);
+  const showTabs = availableModes.length > 1;
 
   return (
     <div className={cn("px-4 py-2", className)}>
@@ -52,11 +62,11 @@ export function CourtHeader({
           {displayName}
         </h1>
 
-        {court.address && collapsed && (
+        {addressForView && collapsed && (
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => openInMaps(court.address)}
+            onClick={() => openInMaps(addressForView)}
             className="h-8 w-8 bg-secondary/50 hover:bg-secondary/70 shrink-0"
           >
             <FaLocationDot className="w-4 h-4 text-primary" />
@@ -73,14 +83,14 @@ export function CourtHeader({
         )}
       >
         <div className="overflow-hidden text-left">
-          {court.address && (
+          {addressForView && (
             <Button
               variant="link"
-              onClick={() => openInMaps(court.address)}
+              onClick={() => openInMaps(addressForView)}
               className="h-auto p-0 justify-start gap-1 text-xs mt-1 text-muted-foreground hover:text-primary"
             >
               <FaLocationDot className="w-3 h-3 shrink-0" />
-              <span className="text-left">{court.address}</span>
+              <span className="text-left">{addressForView}</span>
             </Button>
           )}
         </div>
@@ -104,6 +114,18 @@ export function CourtHeader({
                   )}
                 >
                   PROVINCIAL
+                </TabsTrigger>
+              )}
+              {hasFnc && (
+                <TabsTrigger
+                  value="fnc"
+                  className={cn(
+                    "flex-1 text-[10px] gap-1 tracking-widest",
+                    viewMode === "fnc" &&
+                      "data-[state=active]:bg-semantic-sky/20 data-[state=active]:text-semantic-sky",
+                  )}
+                >
+                  FNC
                 </TabsTrigger>
               )}
               {hasSupreme && (
