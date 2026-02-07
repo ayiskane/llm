@@ -1,6 +1,6 @@
 // Shadcn re-exports
 export { Button, buttonVariants } from './Button';
-export { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from './Card';
+export { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription, CardListItem, CardListRow, CardListItemTitle, CardListItemDescription } from './Card';
 
 // Custom UI components
 export { Section, type SectionColor } from './Section';

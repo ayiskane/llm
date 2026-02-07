@@ -33,12 +33,12 @@ export const sectionColorMap: Record<SectionColor, { badge: string }> = {
 // ============================================================================
 
 export const categoryColorMap: Record<ContactCategory, string> = {
-  court: 'bg-blue-400',
-  provincial: 'bg-emerald-400',
-  federal: 'bg-purple-400',
-  supreme: 'bg-rose-400',
-  bail: 'bg-amber-400',
-  other: 'bg-blue-400',
+  court: 'bg-semantic-blue',
+  provincial: 'bg-semantic-emerald',
+  federal: 'bg-semantic-purple',
+  supreme: 'bg-semantic-rose',
+  bail: 'bg-semantic-amber',
+  other: 'bg-semantic-blue',
 };
 
 // ============================================================================
@@ -63,16 +63,16 @@ export const iconSize = {
 
 export const text = {
   // Headers - use for "COURT CONTACTS", "CROWN CONTACTS", "LAST UPDATED", etc.
-  sectionHeader: 'text-xs text-slate-500 uppercase px-1 tracking-wide',
-  roleLabel: 'text-[9px] text-slate-400 uppercase mb-1 tracking-[2px]',
+  sectionHeader: 'text-[11px] text-foreground uppercase tracking-[0.22em] font-semibold',
+  roleLabel: 'text-[9px] text-muted-foreground uppercase mb-1 tracking-[2px]',
   scheduleLabel: 'text-xs font-mono font-semibold uppercase tracking-wide',
-  monoValue: 'text-slate-400 text-xs font-mono',
+  monoValue: 'text-muted-foreground text-xs font-mono',
   // Body text
-  primary: 'text-white',
-  secondary: 'text-slate-200',
-  muted: 'text-slate-300',
-  subtle: 'text-slate-400',
-  disabled: 'text-slate-500',
+  primary: 'text-foreground',
+  secondary: 'text-foreground',
+  muted: 'text-muted-foreground',
+  subtle: 'text-muted-foreground',
+  disabled: 'text-muted-foreground',
 } as const;
 
 export const card = {
@@ -118,9 +118,9 @@ export function getCategoryAccentClass(category: ContactCategory): string {
 }
 
 export function getScheduleLabelClass(color?: 'amber' | 'sky'): string {
-  const colorClass = color === 'amber' ? 'text-amber-400' 
-    : color === 'sky' ? 'text-sky-400' 
-    : 'text-slate-300';
+  const colorClass = color === 'amber' ? 'text-semantic-amber-text'
+    : color === 'sky' ? 'text-semantic-sky-text'
+    : 'text-muted-foreground';
   return `${text.scheduleLabel} ${colorClass}`;
 }
 

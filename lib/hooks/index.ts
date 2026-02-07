@@ -7,6 +7,10 @@ export { useCourtDetails } from './useCourtDetails';
 export { useCourts } from './useCourts';
 export type { CourtIndexItem } from './useCourts';
 
+// Court sections (contacts/schedules/teams)
+export { useCourtSections } from './useCourtSections';
+export type { ContactEmailGroup, ContactPhoneItem } from './useCourtSections';
+
 // Other hooks
 export { useCopyToClipboard } from './useCopyToClipboard';
 export { useScrollHeader } from './useScrollHeader';

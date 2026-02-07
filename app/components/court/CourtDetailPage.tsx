@@ -14,6 +14,7 @@ import {
 //   BailModeContent,
 //   type BailAccordionSection,
 // } from "./BailModeContent";
+import { useCourtSections } from "@/lib/hooks";
 import { useCopyToClipboard } from "@/lib/hooks/useCopyToClipboard";
 import { Button } from "@/components/ui/button";
 import type { CourtDetails } from "@/types";
@@ -34,6 +35,7 @@ export function CourtDetailPage({
   const {
     court,
     teamsLinks,
+    scheduleDates,
     // bailHub,
     // bailTeams,
     // bailContacts,
@@ -46,6 +48,7 @@ export function CourtDetailPage({
     return "provincial";
   });
   const { copyToClipboard, isCopied } = useCopyToClipboard();
+  const { contacts } = useCourtSections(court, viewMode);
 
   // Separate expanded section state for each mode
   const [courtExpandedSection, setCourtExpandedSection] =
@@ -110,9 +113,9 @@ export function CourtDetailPage({
 
         {/* Mode-specific nav pills */}
         <CourtModeNav
-          court={court}
-          viewMode={viewMode as "provincial" | "supreme"}
+          contactCount={contacts.count}
           teamsLinks={teamsLinks}
+          showSchedule={court.is_circuit}
           expandedSection={courtExpandedSection}
           onNavigateToSection={setCourtExpandedSection}
         />
@@ -126,8 +129,11 @@ export function CourtDetailPage({
       >
         <CourtModeContent
           court={court}
-          viewMode={viewMode as "provincial" | "supreme"}
           teamsLinks={teamsLinks}
+          contactEmailGroups={contacts.emailGroups}
+          contactPhones={contacts.phones}
+          contactCount={contacts.count}
+          scheduleDates={scheduleDates}
           expandedSection={courtExpandedSection}
           onExpandedSectionChange={setCourtExpandedSection}
           onCopy={copyToClipboard}

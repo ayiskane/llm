@@ -1,171 +1,60 @@
 "use client";
 
-import { useRef, useCallback, useMemo } from "react";
-import { FaAt, FaVideo } from "@/lib/icons";
-import { Section, PillButton } from "../ui";
+import { useMemo } from "react";
+import { FaAt, FaCalendar, FaVideo } from "@/lib/icons";
+import { PillButton } from "../ui";
 import { CircuitCourtAlert } from "./CircuitCourtAlert";
 // import { TeamsList } from "../features/TeamsCard";
 import { CourtFieldContacts } from "../features/ContactCard";
+import { ScheduleCard } from "../features/ScheduleCard";
+import type { ContactEmailGroup, ContactPhoneItem } from "@/lib/hooks";
 // import { getBailHubTag } from "@/lib/config/constants";
 import type {
   CourtWithRegion,
+  CourtScheduleDate,
   TeamsLink,
 } from "@/types";
 
-export type CourtAccordionSection = "contacts" | "teams" | null;
+export type CourtAccordionSection = "contacts" | "schedule" | "teams" | null;
 export type CourtViewMode = "provincial" | "supreme";
 
 interface CourtModeNavProps {
-  court: CourtWithRegion;
-  viewMode: CourtViewMode;
   teamsLinks: TeamsLink[];
   expandedSection: CourtAccordionSection;
   onNavigateToSection: (section: CourtAccordionSection) => void;
+  contactCount: number;
+  showSchedule: boolean;
 }
 
 export function CourtModeNav({
-  court,
-  viewMode,
   teamsLinks,
   expandedSection,
   onNavigateToSection,
+  contactCount,
+  showSchedule,
 }: CourtModeNavProps) {
-  // Count contacts based on viewMode
-  const contactCount = useMemo(() => {
-    let count = 0;
-    // Common contacts
-    if (court.registry_email) count++;
-    if (court.criminal_registry_email && court.criminal_registry_email !== court.registry_email) count++;
-    if (court.registry_phone) count++;
-    if (court.criminal_registry_phone && court.criminal_registry_phone !== court.registry_phone) count++;
-    if (viewMode === 'provincial' && court.provincial_fax_filing) count++;
-    if (court.crown_office_email) count++;
-    if (court.crown_office_phone) count++;
-    const interpreterContact = (court.contacts ?? []).find(
-      (contact) => contact.contact_type === 'interpreter_request'
-    );
-    if (interpreterContact) {
-      const isProvincial = interpreterContact.is_provincial ?? false;
-      const isSupreme = interpreterContact.is_supreme ?? false;
-      const visible = interpreterContact.is_appeals
-        ? viewMode === 'supreme'
-        : isProvincial && !isSupreme
-          ? viewMode === 'provincial'
-          : isSupreme && !isProvincial
-            ? viewMode === 'supreme'
-            : true;
-      if (visible) {
-        const emailsAll =
-          interpreterContact.emails_all ??
-          [
-            ...(interpreterContact.email ? [interpreterContact.email] : []),
-            ...((interpreterContact.emails as string[] | null) ?? []),
-          ];
-        const emailCount = new Set((emailsAll || []).filter(Boolean)).size;
-        const phoneCount = [
-          ...(interpreterContact.phone ? [interpreterContact.phone] : []),
-          ...((interpreterContact.phones as string[] | null) ?? []),
-        ].filter(Boolean).length;
-        count += emailCount + phoneCount;
-      }
-    }
-    const transcriptContact = (court.contacts ?? []).find(
-      (contact) => contact.contact_type === 'transcript_request'
-    );
-    if (transcriptContact) {
-      const isProvincial = transcriptContact.is_provincial ?? false;
-      const isSupreme = transcriptContact.is_supreme ?? false;
-      const visible = transcriptContact.is_appeals
-        ? viewMode === 'supreme'
-        : isProvincial && !isSupreme
-          ? viewMode === 'provincial'
-          : isSupreme && !isProvincial
-            ? viewMode === 'supreme'
-            : true;
-      if (visible) {
-        const emailsAll =
-          transcriptContact.emails_all ??
-          [
-            ...(transcriptContact.email ? [transcriptContact.email] : []),
-            ...((transcriptContact.emails as string[] | null) ?? []),
-          ];
-        const emailCount = new Set((emailsAll || []).filter(Boolean)).size;
-        const phoneCount = [
-          ...(transcriptContact.phone ? [transcriptContact.phone] : []),
-          ...((transcriptContact.phones as string[] | null) ?? []),
-        ].filter(Boolean).length;
-        count += emailCount + phoneCount;
-      }
-    }
-    // Provincial-specific
-    if (viewMode === 'provincial') {
-      if (court.jcm_email) count++;
-      if (court.jcm_phone) count++;
-    }
-    // Supreme-specific
-    if (viewMode === 'supreme') {
-      if (court.supreme_scheduling_email) count++;
-      if (court.supreme_scheduling_phone) count++;
-      if (court.supreme_fax_filing) count++;
-    }
-
-    const handledTypes = new Set([
-      'court_registry',
-      'criminal_registry',
-      'crown_general',
-      'interpreter_request',
-      'transcript_request',
-      'jcm',
-      'scheduling',
-    ]);
-
-    const extraContacts = (court.contacts ?? []).filter((contact) => {
-      if (handledTypes.has(contact.contact_type)) return false;
-      const isProvincial = contact.is_provincial ?? false;
-      const isSupreme = contact.is_supreme ?? false;
-      if (contact.is_appeals) return viewMode === 'supreme';
-      if (isProvincial && !isSupreme) return viewMode === 'provincial';
-      if (isSupreme && !isProvincial) return viewMode === 'supreme';
-      return true;
-    });
-
-    for (const contact of extraContacts) {
-      const emailsAll =
-        contact.emails_all ??
-        [
-          ...(contact.email ? [contact.email] : []),
-          ...((contact.emails as string[] | null) ?? []),
-        ];
-      const emailCount = new Set((emailsAll || []).filter(Boolean)).size;
-      const phoneCount = [
-        ...(contact.phone ? [contact.phone] : []),
-        ...((contact.phones as string[] | null) ?? []),
-      ].filter(Boolean).length;
-      count += emailCount + phoneCount;
-      if (viewMode === 'provincial' && contact.provincial_fax_filing) count++;
-      if (viewMode === 'supreme' && contact.supreme_fax_filing) count++;
-    }
-    return count;
-  }, [court, viewMode]);
-
   const navButtons = useMemo(
     () => [
       {
         key: "contacts",
         label: "Contacts",
         icon: <FaAt className="w-4 h-4" />,
-        count: contactCount,
         show: contactCount > 0,
+      },
+      {
+        key: "schedule",
+        label: "Schedule",
+        icon: <FaCalendar className="w-4 h-4" />,
+        show: showSchedule,
       },
       {
         key: "teams",
         label: "Teams",
         icon: <FaVideo className="w-4 h-4" />,
-        count: teamsLinks.length,
         show: teamsLinks.length > 0,
       },
     ],
-    [contactCount, teamsLinks.length],
+    [contactCount, showSchedule, teamsLinks.length],
   );
 
   return (
@@ -181,15 +70,6 @@ export function CourtModeNav({
           >
             {btn.icon}
             <span>{btn.label}</span>
-            <span
-              className={
-                expandedSection === btn.key
-                  ? "text-foreground/70"
-                  : "text-muted-foreground"
-              }
-            >
-              {btn.count}
-            </span>
           </PillButton>
         ))}
     </div>
@@ -198,8 +78,11 @@ export function CourtModeNav({
 
 interface CourtModeContentProps {
   court: CourtWithRegion;
-  viewMode: CourtViewMode;
   teamsLinks: TeamsLink[];
+  contactEmailGroups: ContactEmailGroup[];
+  contactPhones: ContactPhoneItem[];
+  contactCount: number;
+  scheduleDates: CourtScheduleDate[];
   expandedSection: CourtAccordionSection;
   onExpandedSectionChange: (section: CourtAccordionSection) => void;
   onCopy: (text: string, id: string) => void;
@@ -209,139 +92,19 @@ interface CourtModeContentProps {
 
 export function CourtModeContent({
   court,
-  viewMode,
   teamsLinks,
+  contactEmailGroups,
+  contactPhones,
+  contactCount,
+  scheduleDates,
   expandedSection,
   onExpandedSectionChange,
   onCopy,
   isCopied,
   onNavigateToCourt,
 }: CourtModeContentProps) {
-  const contactsRef = useRef<HTMLDivElement>(null);
-  const teamsRef = useRef<HTMLDivElement>(null);
-
-  const toggleSection = useCallback(
-    (section: CourtAccordionSection) => {
-      onExpandedSectionChange(expandedSection === section ? null : section);
-    },
-    [expandedSection, onExpandedSectionChange],
-  );
-
-  // Count contacts for section header
-  const contactCount = useMemo(() => {
-    let count = 0;
-    if (court.registry_email) count++;
-    if (court.criminal_registry_email && court.criminal_registry_email !== court.registry_email) count++;
-    if (court.registry_phone) count++;
-    if (court.criminal_registry_phone && court.criminal_registry_phone !== court.registry_phone) count++;
-    if (viewMode === 'provincial' && court.provincial_fax_filing) count++;
-    if (court.crown_office_email) count++;
-    if (court.crown_office_phone) count++;
-    const interpreterContact = (court.contacts ?? []).find(
-      (contact) => contact.contact_type === 'interpreter_request'
-    );
-    if (interpreterContact) {
-      const isProvincial = interpreterContact.is_provincial ?? false;
-      const isSupreme = interpreterContact.is_supreme ?? false;
-      const visible = interpreterContact.is_appeals
-        ? viewMode === 'supreme'
-        : isProvincial && !isSupreme
-          ? viewMode === 'provincial'
-          : isSupreme && !isProvincial
-            ? viewMode === 'supreme'
-            : true;
-      if (visible) {
-        const emailsAll =
-          interpreterContact.emails_all ??
-          [
-            ...(interpreterContact.email ? [interpreterContact.email] : []),
-            ...((interpreterContact.emails as string[] | null) ?? []),
-          ];
-        const emailCount = new Set((emailsAll || []).filter(Boolean)).size;
-        const phoneCount = [
-          ...(interpreterContact.phone ? [interpreterContact.phone] : []),
-          ...((interpreterContact.phones as string[] | null) ?? []),
-        ].filter(Boolean).length;
-        count += emailCount + phoneCount;
-      }
-    }
-    const transcriptContact = (court.contacts ?? []).find(
-      (contact) => contact.contact_type === 'transcript_request'
-    );
-    if (transcriptContact) {
-      const isProvincial = transcriptContact.is_provincial ?? false;
-      const isSupreme = transcriptContact.is_supreme ?? false;
-      const visible = transcriptContact.is_appeals
-        ? viewMode === 'supreme'
-        : isProvincial && !isSupreme
-          ? viewMode === 'provincial'
-          : isSupreme && !isProvincial
-            ? viewMode === 'supreme'
-            : true;
-      if (visible) {
-        const emailsAll =
-          transcriptContact.emails_all ??
-          [
-            ...(transcriptContact.email ? [transcriptContact.email] : []),
-            ...((transcriptContact.emails as string[] | null) ?? []),
-          ];
-        const emailCount = new Set((emailsAll || []).filter(Boolean)).size;
-        const phoneCount = [
-          ...(transcriptContact.phone ? [transcriptContact.phone] : []),
-          ...((transcriptContact.phones as string[] | null) ?? []),
-        ].filter(Boolean).length;
-        count += emailCount + phoneCount;
-      }
-    }
-    if (viewMode === 'provincial') {
-      if (court.jcm_email) count++;
-      if (court.jcm_phone) count++;
-    }
-    if (viewMode === 'supreme') {
-      if (court.supreme_scheduling_email) count++;
-      if (court.supreme_scheduling_phone) count++;
-      if (court.supreme_fax_filing) count++;
-    }
-
-    const handledTypes = new Set([
-      'court_registry',
-      'criminal_registry',
-      'crown_general',
-      'interpreter_request',
-      'transcript_request',
-      'jcm',
-      'scheduling',
-    ]);
-
-    const extraContacts = (court.contacts ?? []).filter((contact) => {
-      if (handledTypes.has(contact.contact_type)) return false;
-      const isProvincial = contact.is_provincial ?? false;
-      const isSupreme = contact.is_supreme ?? false;
-      if (contact.is_appeals) return viewMode === 'supreme';
-      if (isProvincial && !isSupreme) return viewMode === 'provincial';
-      if (isSupreme && !isProvincial) return viewMode === 'supreme';
-      return true;
-    });
-
-    for (const contact of extraContacts) {
-      const emailsAll =
-        contact.emails_all ??
-        [
-          ...(contact.email ? [contact.email] : []),
-          ...((contact.emails as string[] | null) ?? []),
-        ];
-      const emailCount = new Set((emailsAll || []).filter(Boolean)).size;
-      const phoneCount = [
-        ...(contact.phone ? [contact.phone] : []),
-        ...((contact.phones as string[] | null) ?? []),
-      ].filter(Boolean).length;
-      count += emailCount + phoneCount;
-      if (viewMode === 'provincial' && contact.provincial_fax_filing) count++;
-      if (viewMode === 'supreme' && contact.supreme_fax_filing) count++;
-    }
-    return count;
-  }, [court, viewMode]);
-
+  const showContacts = expandedSection === "contacts";
+  const showSchedule = expandedSection === "schedule";
   return (
     <div className="p-3 space-y-2.5 pb-20">
       {/* Circuit court alert */}
@@ -354,24 +117,22 @@ export function CourtModeContent({
       )}
 
       {/* Contacts section */}
-      {contactCount > 0 && (
-        <Section
-          ref={contactsRef}
-          color="blue"
-          title="Contacts"
-          count={contactCount}
-          isExpanded={expandedSection === "contacts"}
-          onToggle={() => toggleSection("contacts")}
-        >
-          <div className="p-3">
-            <CourtFieldContacts
-              court={court}
-              viewMode={viewMode}
-              onCopy={onCopy}
-              isCopied={isCopied}
-            />
-          </div>
-        </Section>
+      {showContacts && contactCount > 0 && (
+        <div className="p-3">
+          <CourtFieldContacts
+            emailGroups={contactEmailGroups}
+            phones={contactPhones}
+            onCopy={onCopy}
+            isCopied={isCopied}
+          />
+        </div>
+      )}
+
+      {/* Schedule section */}
+      {showSchedule && court.is_circuit && (
+        <div className="p-3">
+          <ScheduleCard dates={scheduleDates} />
+        </div>
       )}
 
       {/* Bail Hub Link - only show if court uses a bail hub but is NOT the bail hub location */}
@@ -411,7 +172,6 @@ export function CourtModeContent({
           ref={teamsRef}
           color="indigo"
           title="MS Teams Links"
-          count={teamsLinks.length}
           isExpanded={expandedSection === "teams"}
           onToggle={() => toggleSection("teams")}
         >

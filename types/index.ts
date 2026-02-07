@@ -71,10 +71,22 @@ export interface TeamsLink {
   display_order?: number | null;
 }
 
+export interface CourtScheduleDate {
+  id: number;
+  schedule_id?: number | null;
+  court_id?: number | null;
+  date_start: string;
+  date_end?: string | null;
+  notes?: string | null;
+  schedule_type?: string | null;
+  schedule_label?: string | null;
+}
+
 export interface CourtDetails {
   court: CourtWithRegion;
   cells: unknown[];
   teamsLinks: TeamsLink[];
+  scheduleDates: CourtScheduleDate[];
   bailHub: unknown | null;
   bailTeams: unknown[];
   bailContacts: unknown[];

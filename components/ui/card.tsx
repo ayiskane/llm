@@ -46,8 +46,10 @@ Card.displayName = "Card"
 
 const CardListItem = React.forwardRef<
   HTMLButtonElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement>
->(({ className, ...props }, ref) => (
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    variant?: "default" | "outlined"
+  }
+>(({ className, variant = "default", ...props }, ref) => (
   <button
     ref={ref}
     type="button"
@@ -55,12 +57,38 @@ const CardListItem = React.forwardRef<
       "w-full text-left px-4 py-3 transition-colors",
       "hover:bg-list-item-hover active:bg-list-item-active",
       "focus-visible:outline-none focus-visible:bg-list-item-hover",
+      variant === "outlined" &&
+        "bg-list-item-bg border border-slate-700/50 -mt-px first:mt-0 first:rounded-t-lg last:rounded-b-lg",
       className
     )}
     {...props}
   />
 ))
 CardListItem.displayName = "CardListItem"
+
+// =============================================================================
+// CARD LIST ROW - Non-button row (for nested actions)
+// =============================================================================
+
+const CardListRow = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & {
+    variant?: "default" | "outlined"
+  }
+>(({ className, variant = "default", ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "w-full text-left px-4 py-3 transition-colors",
+      "hover:bg-list-item-hover active:bg-list-item-active",
+      variant === "outlined" &&
+        "bg-list-item-bg border border-slate-700/50 -mt-px first:mt-0 first:rounded-t-lg last:rounded-b-lg",
+      className
+    )}
+    {...props}
+  />
+))
+CardListRow.displayName = "CardListRow"
 
 const CardListItemTitle = React.forwardRef<
   HTMLDivElement,
@@ -155,6 +183,7 @@ export {
   CardDescription,
   CardContent,
   CardListItem,
+  CardListRow,
   CardListItemTitle,
   CardListItemDescription,
 }

@@ -1,4 +1,5 @@
 import { createClient } from './supabase';
+import type { CourtScheduleDate } from '@/types';
 
 export type CourtTypeFilter = 'all' | 'staffed' | 'circuit';
 export type CourtLevelFilter = 'all' | 'pc' | 'sc';
@@ -22,6 +23,57 @@ export interface CourtIndexItem {
 }
 
 const supabase = createClient();
+
+async function fetchCircuitScheduleDates(courtId: number): Promise<CourtScheduleDate[]> {
+  const { data, error } = await supabase
+    .from('court_schedules')
+    .select(`
+      id,
+      court_id,
+      schedule_type,
+      schedule_dates:court_schedule_dates(id, date_start, date_end, updated_at)
+    `)
+    .eq('court_id', courtId);
+
+  if (error) throw new Error(error.message);
+
+  const rows = (data || []) as Array<{
+    id: number;
+    court_id: number;
+    schedule_type: string | null;
+    schedule_dates?: Array<{
+      id: number;
+      date_start: string | null;
+      date_end: string | null;
+      notes: string | null;
+      updated_at?: string | null;
+    }> | null;
+  }>;
+
+  const flattened: CourtScheduleDate[] = [];
+  for (const schedule of rows) {
+    const dates = schedule.schedule_dates ?? [];
+    for (const dateRow of dates) {
+      if (!dateRow?.date_start) continue;
+      flattened.push({
+        id: dateRow.id,
+        schedule_id: schedule.id,
+        court_id: schedule.court_id,
+        date_start: dateRow.date_start,
+        date_end: dateRow.date_end ?? null,
+        notes: dateRow.notes ?? null,
+        schedule_type: schedule.schedule_type ?? null,
+        schedule_label: schedule.schedule_type ?? null,
+      });
+    }
+  }
+
+  return flattened.sort((a, b) => {
+    const aDate = new Date(a.date_start).getTime();
+    const bDate = new Date(b.date_start).getTime();
+    return aDate - bDate;
+  });
+}
 
 export async function fetchCourtsIndexStamp(): Promise<string | null> {
   const { data, error } = await supabase
@@ -220,10 +272,15 @@ export async function fetchCourtDetails(courtId: number) {
     contacts: contactList,
   };
 
+  const scheduleDates = publicCourt.is_circuit
+    ? await fetchCircuitScheduleDates(publicCourt.id)
+    : [];
+
   return {
     court,
     cells: [],
     teamsLinks: [],
+    scheduleDates,
     bailHub: null,
     bailTeams: [],
     bailContacts: [],
