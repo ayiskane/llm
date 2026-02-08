@@ -105,6 +105,7 @@ export function TeamsCard({
   const [selectedCourtroom, setSelectedCourtroom] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
 
   const filteredLinks = useMemo(() => {
     const result = filterVBTriage
@@ -325,12 +326,30 @@ export function TeamsCard({
             Boolean(link.toll_free_number) ||
             Boolean(link.conference_id);
           const dialInText = hasDialIn ? buildDialInText(link) : "";
+          const isOpen = openRows[rowId] ?? false;
+          const toggleOpen = () => {
+            if (!hasSchedule) return;
+            setOpenRows((prev) => ({ ...prev, [rowId]: !isOpen }));
+          };
 
             return (
               <Fragment key={rowId}>
                 <CardListRow
                   variant="outlined"
-                  className="flex flex-col gap-2 px-4 py-2.5 rounded-none first:rounded-t-none last:rounded-b-none"
+                  role={hasSchedule ? "button" : undefined}
+                  tabIndex={hasSchedule ? 0 : undefined}
+                  onClick={toggleOpen}
+                  onKeyDown={(event) => {
+                    if (!hasSchedule) return;
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      toggleOpen();
+                    }
+                  }}
+                  className={cn(
+                    "flex flex-col gap-2 px-4 py-2.5 rounded-none first:rounded-t-none last:rounded-b-none",
+                    hasSchedule && "cursor-pointer",
+                  )}
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex min-w-35 items-center gap-2">
@@ -346,7 +365,10 @@ export function TeamsCard({
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => hasDialIn && onCopy?.(dialInText, rowId)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (hasDialIn) onCopy?.(dialInText, rowId);
+                        }}
                         disabled={!hasDialIn}
                         className={cn(
                           "h-8 w-8 rounded-lg transition-colors",
@@ -370,7 +392,10 @@ export function TeamsCard({
                         <Button
                           variant="join"
                           size="sm"
-                          onClick={() => joinTeamsMeeting(link.url)}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            joinTeamsMeeting(link.url);
+                          }}
                         >
                           <FaMicrosoftTeams className="w-3.5 h-3.5" />
                           Join
@@ -384,8 +409,22 @@ export function TeamsCard({
                   {hasSchedule && (
                     <>
                       <div className="separator-fade" />
-                      <details className="group w-full">
-                        <summary className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer list-none">
+                      <details
+                        className="group w-full"
+                        open={isOpen}
+                        onToggle={(event) => {
+                          const nextOpen = event.currentTarget.open;
+                          setOpenRows((prev) => ({ ...prev, [rowId]: nextOpen }));
+                        }}
+                      >
+                        <summary
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            toggleOpen();
+                          }}
+                          className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer list-none"
+                        >
                           <span className="font-semibold uppercase tracking-[0.2em] text-[10px]">
                             View Schedule
                           </span>
