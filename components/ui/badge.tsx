@@ -1,57 +1,37 @@
-import * as React from 'react';
-import { Slot } from '@radix-ui/react-slot';
-import { cva, type VariantProps } from 'class-variance-authority';
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  'uppercase rounded items-center justify-center border-transparent tracking-widest transition-colors',
+  "px-1.5 py-0.5 text-[9px] font-medium inline-flex rounded tracking-widest uppercase",
   {
     variants: {
       variant: {
-        default: 'text-[10px] font-medium bg-primary text-primary-foreground',
-        // Court level badges
-        provincial: 'badge-emerald',
-        supreme: 'badge-purple',
-        circuit: 'badge-amber',
-        // Other semantic badges
-        blue: 'badge-blue',
-        rose: 'badge-rose',
-        sky: 'badge-sky',
-        indigo: 'badge-indigo',
-        // Region badge (special styling)
-        region: 'badge-slate text-[9px] font-mono leading-none inline-flex border border-[var(--border-default)]',
-      },
-      size: {
-        sm: 'px-1.5 py-0.5 text-[10px] font-medium',
-        md: 'px-2 py-1 text-[10px] font-medium',
+        default:
+          "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80 px-2.5 py-0.5 text-xs",
+        // Court-specific variants using CSS variables from globals.css
+        provincial: "border-transparent bg-semantic-emerald-bg text-semantic-emerald-text",
+        supreme: "border-transparent bg-semantic-purple-bg text-semantic-purple-text",
+        circuit: "border-transparent bg-semantic-amber-bg text-semantic-amber-text",
+        region: "border bg-foreground/5 border-border/50 text-muted-foreground font-mono",
       },
     },
     defaultVariants: {
-      variant: 'default',
-      size: 'sm',
+      variant: "default",
     },
-  }
+  },
 );
 
-function Badge({
-  className,
-  variant = 'default',
-  size = 'sm',
-  asChild = false,
-  ...props
-}: React.ComponentProps<'span'> &
-  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot : 'span';
+export interface BadgeProps
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
 
+function Badge({ className, variant, ...props }: BadgeProps) {
   return (
-    <Comp
-      data-slot="badge"
-      data-variant={variant}
-      className={cn(badgeVariants({ variant, size }), className)}
-      {...props}
-    />
+    <div className={cn(badgeVariants({ variant }), className)} {...props} />
   );
 }
 
-export { Badge, badgeVariants };
+export { Badge };

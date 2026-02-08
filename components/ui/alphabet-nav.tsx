@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useCallback, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#'.split('');
@@ -11,14 +11,21 @@ interface AlphabetNavProps {
   onLetterChange: (letter: string) => void;
 }
 
+/**
+ * AlphabetNav - iOS Contacts-style alphabet index scrubber
+ * 
+ * Uses native event listeners with { passive: false } to properly
+ * prevent default touch behavior without browser warnings.
+ */
 export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: AlphabetNavProps) {
   const barRef = useRef<HTMLDivElement>(null);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [scrubLetter, setScrubLetter] = useState<string | null>(null);
   const [indicatorY, setIndicatorY] = useState<number | null>(null);
   const lastLetterRef = useRef<string | null>(null);
-  const isScrubbingRef = useRef(false);
+  const isScrubbingRef = useRef(false); // Ref for native event handlers
 
+  // Build display items: available letters with collapsed gaps as dots
   const displayItems = useMemo(() => {
     const items: { type: 'letter' | 'dot'; value: string; letter?: string }[] = [];
     let inGap = false;
@@ -36,6 +43,7 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
     return items;
   }, [availableLetters]);
 
+  // Get letter at Y position
   const getLetterAtY = useCallback((clientY: number): string | null => {
     const bar = barRef.current;
     if (!bar || displayItems.length === 0) return null;
@@ -44,21 +52,22 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
     const relativeY = Math.max(0, Math.min(rect.height, clientY - rect.top));
     const ratio = relativeY / rect.height;
     const index = Math.min(displayItems.length - 1, Math.floor(ratio * displayItems.length));
-
+    
     const item = displayItems[index];
-
+    
     if (item.type === 'letter' && item.letter) {
       return item.letter;
     }
-
+    
+    // Find nearest letter if we hit a dot
     for (let offset = 1; offset < displayItems.length; offset++) {
       const preferUp = ratio < 0.5;
       const firstDir = preferUp ? -offset : offset;
       const secondDir = preferUp ? offset : -offset;
-
+      
       const idx1 = index + firstDir;
       const idx2 = index + secondDir;
-
+      
       if (idx1 >= 0 && idx1 < displayItems.length) {
         const item1 = displayItems[idx1];
         if (item1.type === 'letter' && item1.letter) return item1.letter;
@@ -68,7 +77,7 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
         if (item2.type === 'letter' && item2.letter) return item2.letter;
       }
     }
-
+    
     return availableLetters[0] || null;
   }, [displayItems, availableLetters]);
 
@@ -81,7 +90,7 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
   const handleScrub = useCallback((clientY: number) => {
     const letter = getLetterAtY(clientY);
     setIndicatorY(clientY);
-
+    
     if (letter && letter !== lastLetterRef.current) {
       lastLetterRef.current = letter;
       setScrubLetter(letter);
@@ -105,6 +114,7 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
     lastLetterRef.current = null;
   }, []);
 
+  // Native touch event handlers (added with { passive: false })
   useEffect(() => {
     const bar = barRef.current;
     if (!bar) return;
@@ -127,6 +137,7 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
       endScrub();
     };
 
+    // Add listeners with { passive: false } to allow preventDefault
     bar.addEventListener('touchstart', onTouchStart, { passive: false });
     bar.addEventListener('touchmove', onTouchMove, { passive: false });
     bar.addEventListener('touchend', onTouchEnd, { passive: false });
@@ -140,6 +151,7 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
     };
   }, [startScrub, handleScrub, endScrub]);
 
+  // Mouse handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     startScrub(e.clientY);
@@ -153,7 +165,7 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
-
+    
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
@@ -164,17 +176,19 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
 
   return (
     <>
+      {/* Scrub indicator */}
       {isScrubbing && scrubLetter && indicatorY !== null && (
         <div
           className="fixed right-10 z-[60] pointer-events-none"
           style={{ top: indicatorY, transform: 'translateY(-50%)' }}
         >
-          <div className="w-12 h-12 rounded-xl bg-card border border-border shadow-xl flex items-center justify-center backdrop-blur-sm">
+          <div className="w-12 h-12 rounded-xl bg-secondary/95 border border-border shadow-xl flex items-center justify-center backdrop-blur-sm">
             <span className="text-xl font-bold text-primary">{scrubLetter}</span>
           </div>
         </div>
       )}
 
+      {/* Alphabet bar */}
       <div
         ref={barRef}
         className={cn(
@@ -182,7 +196,7 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
           'flex flex-col items-center justify-center',
           'py-1 px-0.5',
           'select-none',
-          isScrubbing && 'bg-muted/80 rounded-l-lg'
+          isScrubbing && 'bg-background/80 rounded-l-lg'
         )}
         style={{ touchAction: 'none' }}
         onMouseDown={handleMouseDown}
@@ -194,10 +208,10 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
             return (
               <span
                 key={`dot-${idx}`}
-                className="text-[6px] text-muted-foreground/50 h-1.5 flex items-center justify-center"
+                className="text-[3px] text-muted-foreground/50 h-1.5 flex items-center justify-center"
                 aria-hidden="true"
               >
-                •
+                ⏺
               </span>
             );
           }

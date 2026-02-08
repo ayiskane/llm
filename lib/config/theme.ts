@@ -2,89 +2,127 @@
 // LLM: LEGAL LEGENDS MANUAL - THEME CONFIGURATION
 // ============================================================================
 // Tailwind utility class strings for consistent styling across components
-// Uses CSS variables from globals.css for consistency
 // ============================================================================
 
 export { cn } from '@/lib/utils';
 
 // ============================================================================
-// ICON SIZES
+// TYPE DEFINITIONS
+// ============================================================================
+
+export type SectionColor = 'emerald' | 'blue' | 'amber' | 'purple' | 'indigo' | 'rose' | 'sky' | 'slate';
+export type ContactCategory = 'court' | 'provincial' | 'federal' | 'supreme' | 'bail' | 'other';
+
+// ============================================================================
+// SECTION COLOR MAPPINGS
+// ============================================================================
+
+export const sectionColorMap: Record<SectionColor, { badge: string }> = {
+  emerald: { badge: 'bg-emerald-500/15 text-emerald-400' },
+  blue: { badge: 'bg-blue-500/15 text-blue-400' },
+  amber: { badge: 'bg-amber-500/15 text-amber-400' },
+  purple: { badge: 'bg-purple-500/15 text-purple-400' },
+  indigo: { badge: 'bg-indigo-500/15 text-indigo-400' },
+  rose: { badge: 'bg-rose-500/15 text-rose-400' },
+  sky: { badge: 'bg-sky-500/15 text-sky-400' },
+  slate: { badge: 'bg-slate-500/15 text-slate-400' },
+};
+
+// ============================================================================
+// CONTACT CATEGORY COLOR MAPPINGS
+// ============================================================================
+
+export const categoryColorMap: Record<ContactCategory, string> = {
+  court: 'bg-semantic-blue',
+  provincial: 'bg-semantic-emerald',
+  federal: 'bg-semantic-purple',
+  supreme: 'bg-semantic-rose',
+  bail: 'bg-semantic-amber',
+  other: 'bg-semantic-blue',
+};
+
+// ============================================================================
+// CELL ICON STYLING
+// ============================================================================
+
+export const cellIcon = {
+  bg: 'bg-slate-500/20',
+  color: 'text-amber-400',
+} as const;
+
+// ============================================================================
+// UTILITY CLASS STRINGS
 // ============================================================================
 
 export const iconSize = {
-  xs: 'h-3 w-3',
-  sm: 'h-3.5 w-3.5',
-  md: 'h-4 w-4',
-  lg: 'h-5 w-5',
+  xs: 'w-3 h-3',
+  sm: 'w-3.5 h-3.5',
+  md: 'w-4 h-4',
+  lg: 'w-5 h-5',
 } as const;
-
-// ============================================================================
-// TEXT STYLES
-// ============================================================================
 
 export const text = {
-  // Headers
-  sectionHeader: 'text-[10px] uppercase tracking-widest text-muted-foreground',
-  pageTitle: 'text-lg font-bold text-foreground',
-  pageSubtitle: 'text-xs text-muted-foreground',
-  // Body
-  primary: 'text-sm font-medium text-foreground',
-  secondary: 'text-[11px] text-muted-foreground',
-  muted: 'text-xs text-muted-foreground',
+  // Headers - use for "COURT CONTACTS", "CROWN CONTACTS", "LAST UPDATED", etc.
+  sectionHeader: 'text-[11px] text-foreground uppercase tracking-[0.22em] font-semibold',
+  roleLabel: 'text-[9px] text-muted-foreground uppercase mb-1 tracking-[2px]',
+  scheduleLabel: 'text-xs font-mono font-semibold uppercase tracking-wide',
+  monoValue: 'text-muted-foreground text-xs font-mono',
+  // Body text
+  primary: 'text-foreground',
+  secondary: 'text-foreground',
+  muted: 'text-muted-foreground',
+  subtle: 'text-muted-foreground',
+  disabled: 'text-muted-foreground',
 } as const;
-
-// ============================================================================
-// CARD STYLES
-// ============================================================================
 
 export const card = {
-  base: 'rounded-xl overflow-hidden',
-  divided: 'divide-y divide-border/50',
-  row: 'interactive-row px-3 py-2',
+  base: 'rounded-lg overflow-hidden bg-slate-800/30 border border-slate-700/50',
+  padded: 'rounded-lg overflow-hidden bg-slate-800/30 border border-slate-700/50 px-4',
+  divided: 'rounded-lg overflow-hidden bg-slate-800/30 border border-slate-700/50 divide-y divide-slate-700/50',
+  row: 'py-3 border-b border-slate-700/30 last:border-b-0',
+  flexRow: 'flex justify-between px-4 py-2.5',
+  coupon: 'flex items-stretch rounded-lg overflow-hidden cursor-pointer transition-all bg-blue-500/[0.03] border border-dashed border-blue-500/25 hover:border-blue-500/40',
+  couponDivider: 'border-l border-dashed border-blue-500/25',
+} as const;
+
+export const section = {
+  container: 'rounded-lg overflow-hidden bg-slate-800/30 border border-slate-700/50',
+  header: 'w-full flex items-center gap-2.5 p-3 transition-colors border-b border-slate-700/30',
+  headerExpanded: 'bg-slate-800/50',
+  title: 'flex-1 text-left text-[13px] uppercase tracking-wider text-slate-200 font-medium',
+  content: 'bg-slate-900/20',
+} as const;
+
+export const pill = {
+  base: 'inline-flex items-center gap-1 px-2 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors',
+  active: 'bg-blue-500/25 border border-blue-500/40 text-blue-300',
+  inactive: 'bg-blue-500/[0.04] border border-blue-500/15 text-slate-400',
+} as const;
+
+export const toggle = {
+  base: 'flex items-center gap-1.5 px-2 py-1 rounded text-xs tracking-wide transition-all',
+  active: 'bg-blue-500/15 border border-blue-500/40 text-blue-400',
+  inactive: 'bg-transparent border border-slate-700/50 text-slate-500',
 } as const;
 
 // ============================================================================
-// LAYOUT STYLES
+// HELPER FUNCTIONS
 // ============================================================================
 
-export const layout = {
-  stickyHeader: 'sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80',
-  stickySection: 'sticky top-0 z-10 px-4 py-1.5 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80',
-  pageContainer: 'h-full flex flex-col bg-background',
-  scrollContainer: 'h-full overflow-y-auto',
-} as const;
+export function getSectionColors(color: SectionColor) {
+  return sectionColorMap[color];
+}
 
-// ============================================================================
-// FILTER BUTTON STYLES
-// ============================================================================
+export function getCategoryAccentClass(category: ContactCategory): string {
+  return categoryColorMap[category];
+}
 
-export const filterButton = {
-  base: 'h-9 w-9 p-0 relative',
-  active: 'border-primary text-primary',
-  badge: 'absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground',
-} as const;
+export function getScheduleLabelClass(color?: 'amber' | 'sky'): string {
+  const colorClass = color === 'amber' ? 'text-semantic-amber-text'
+    : color === 'sky' ? 'text-semantic-sky-text'
+    : 'text-muted-foreground';
+  return `${text.scheduleLabel} ${colorClass}`;
+}
 
-// ============================================================================
-// BUTTON STYLES
-// ============================================================================
 
-export const button = {
-  teams: 'btn-teams',
-  call: 'btn-call',
-  copy: 'btn-copy',
-} as const;
 
-// ============================================================================
-// ICON CONTAINER STYLES
-// ============================================================================
-
-export const iconContainer = {
-  default: 'icon-container',
-  emerald: 'icon-container-emerald',
-  indigo: 'icon-container-indigo',
-  amber: 'icon-container-amber',
-} as const;
-
-// ============================================================================
-// ACCENT BAR STYLES (vertical color strips on contact cards)
-// ============================================================================

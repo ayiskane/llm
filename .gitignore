@@ -23,6 +23,11 @@
 # misc
 .DS_Store
 *.pem
+/.claude
+.mcp.json
+
+# Non-app assets
+/GITIGNOREME/
 
 # debug
 npm-debug.log*

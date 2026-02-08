@@ -1,40 +1,31 @@
-"use client"
+"use client";
 
-import {
-  CircleCheckIcon,
-  InfoIcon,
-  Loader2Icon,
-  OctagonXIcon,
-  TriangleAlertIcon,
-} from "lucide-react"
-import { useTheme } from "next-themes"
-import { Toaster as Sonner, type ToasterProps } from "sonner"
+import { Toaster as Sonner } from "sonner";
 
+type ToasterProps = React.ComponentProps<typeof Sonner>;
+
+/**
+ * Styled Toaster matching the original Toast component appearance.
+ * Compact, centered at bottom (above bottom nav), minimal styling.
+ */
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
-
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
-      className="toaster group"
-      icons={{
-        success: <CircleCheckIcon className="size-4" />,
-        info: <InfoIcon className="size-4" />,
-        warning: <TriangleAlertIcon className="size-4" />,
-        error: <OctagonXIcon className="size-4" />,
-        loading: <Loader2Icon className="size-4 animate-spin" />,
+      theme="dark"
+      className="toaster group bottom-20!"
+      position="bottom-center"
+      toastOptions={{
+        unstyled: true,
+        classNames: {
+          toast:
+            "px-4 py-2 rounded-lg bg-background/95 text-foreground text-sm shadow-lg border border-border/50 flex items-center gap-2",
+          success: "text-foreground",
+          error: "text-destructive",
+        },
       }}
-      style={
-        {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)",
-        } as React.CSSProperties
-      }
       {...props}
     />
-  )
-}
+  );
+};
 
-export { Toaster }
+export { Toaster };

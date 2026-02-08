@@ -1,41 +1,94 @@
-// Court
-export interface Court {
-  id: number;
-  name: string;
-  region_id: number;
-  region_name?: string;
-  region_code?: string;
-  has_provincial: boolean;
-  has_supreme: boolean;
-  is_circuit: boolean;
-  is_staffed: boolean;
-  address: string | null;
-  phone: string | null;
-  fax: string | null;
-  sheriff_phone: string | null;
-  bail_hub_id: number | null;
-}
-
-// Region
 export interface Region {
   id: number;
-  code: string;
   name: string;
+  code: string;
 }
 
-// Court list item (minimal for index page)
-export interface CourtListItem {
+export interface CourtContact {
+  id: number;
+  court_id: number;
+  contact_type: string;
+  email?: string | null;
+  emails?: string[] | null;
+  emails_all?: string[] | null;
+  phone?: string | null;
+  phones?: string[] | null;
+  provincial_fax_filing?: string | null;
+  supreme_fax_filing?: string | null;
+  is_provincial?: boolean;
+  is_supreme?: boolean;
+  is_appeals?: boolean;
+}
+
+export interface CourtBase {
   id: number;
   name: string;
-  region_id: number;
-  region_name: string;
-  is_circuit: boolean;
   has_provincial: boolean;
   has_supreme: boolean;
+  is_circuit: boolean;
+  address?: string | null;
+  mailing_address?: string | null;
+  fnc_address?: string | null;
+  region_id?: number | null;
+  region_name?: string | null;
+  region_code?: string | null;
+  region?: Region | null;
+  parent_court?: { id: number; name: string } | null;
+  is_mst?: boolean | null;
+  is_fnc?: boolean | null;
+  registry_email?: string | null;
+  registry_phone?: string | null;
+  registry_phones?: string[] | null;
+  criminal_registry_email?: string | null;
+  criminal_registry_phone?: string | null;
+  provincial_fax_filing?: string | null;
+  crown_office_email?: string | null;
+  crown_office_phone?: string | null;
+  jcm_email?: string | null;
+  jcm_phone?: string | null;
+  jcm_phones?: string[] | null;
+  supreme_scheduling_email?: string | null;
+  supreme_scheduling_phone?: string | null;
+  supreme_fax_filing?: string | null;
+  contacts?: CourtContact[];
 }
 
-// Grouped courts by letter
-export interface GroupedCourts {
-  letter: string;
-  courts: CourtListItem[];
+export interface Court extends CourtBase {}
+
+export interface CourtWithRegion extends CourtBase {
+  region: Region | null;
+  region_id: number | null;
+  region_name: string | null;
+  region_code: string | null;
+}
+
+export interface TeamsLink {
+  id?: number;
+  court_id?: number;
+  url?: string | null;
+  title?: string | null;
+  type_name?: string | null;
+  courtroom?: string | null;
+  display_order?: number | null;
+}
+
+export interface CourtScheduleDate {
+  id: number;
+  schedule_id?: number | null;
+  court_id?: number | null;
+  date_start: string;
+  date_end?: string | null;
+  notes?: string | null;
+  schedule_type?: string | null;
+  schedule_label?: string | null;
+}
+
+export interface CourtDetails {
+  court: CourtWithRegion;
+  cells: unknown[];
+  teamsLinks: TeamsLink[];
+  scheduleDates: CourtScheduleDate[];
+  bailHub: unknown | null;
+  bailTeams: unknown[];
+  bailContacts: unknown[];
 }
