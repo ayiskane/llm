@@ -1,15 +1,28 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   FaMicrosoftTeams,
   FaCopy,
   FaClipboardCheck,
   FaChevronDown,
+  FaSliders,
 } from "@/lib/icons";
 import { Card, CardListRow } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -106,6 +119,15 @@ export function TeamsCard({
   const [selectedType, setSelectedType] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
+  const [openTypePopover, setOpenTypePopover] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!openTypePopover) return;
+    const timeoutId = window.setTimeout(() => {
+      setOpenTypePopover(null);
+    }, 1500);
+    return () => window.clearTimeout(timeoutId);
+  }, [openTypePopover]);
 
   const filteredLinks = useMemo(() => {
     const result = filterVBTriage
@@ -212,6 +234,7 @@ export function TeamsCard({
                 "h-auto px-2 py-1 text-xs hover:bg-transparent",
               )}
             >
+              <FaSliders className={iconSize.xs} />
               Filter
             </Button>
           </DialogTrigger>
@@ -237,37 +260,21 @@ export function TeamsCard({
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Courtroom
-                </label>
-                <select
-                  value={selectedCourtroom}
-                  onChange={(event) => setSelectedCourtroom(event.target.value)}
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-xs text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                >
-                  <option value="all">All courtrooms</option>
-                  {courtroomOptions.map((courtroom) => (
-                    <option key={courtroom} value={courtroom}>
-                      {courtroom}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase tracking-widest text-muted-foreground">
                   Type
                 </label>
-                <select
-                  value={selectedType}
-                  onChange={(event) => setSelectedType(event.target.value)}
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-xs text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                >
-                  <option value="all">All types</option>
-                  {typeOptions.map((type) => (
-                    <option key={type.id} value={String(type.id)}>
-                      {type.name}
-                    </option>
-                  ))}
-                </select>
+                <Select value={selectedType} onValueChange={setSelectedType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All types</SelectItem>
+                    {typeOptions.map((type) => (
+                      <SelectItem key={type.id} value={String(type.id)}>
+                        {type.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <DialogFooter>
@@ -300,6 +307,7 @@ export function TeamsCard({
             link.courtroom_type_id && link.courtroom_type_name
               ? link.courtroom_type_name.trim()
               : "";
+          const typeDescription = link.courtroom_type_full_name?.trim() || "";
           const courtroomLabel = formatCourtroom(link.courtroom);
           const isJcmFxdLink = isJcmFxdLabel(
             link.courtroom || link.type_name || "",
@@ -312,8 +320,8 @@ export function TeamsCard({
           const scheduleEntries =
             iarSchedules.length > 0
               ? iarSchedules
-              : schedulesByCourtroom.get(normalizeCourtroom(link.courtroom)) ??
-                [];
+              : (schedulesByCourtroom.get(normalizeCourtroom(link.courtroom)) ??
+                []);
           const regularSchedules = scheduleEntries.filter(
             (schedule) => !schedule.is_youth,
           );
@@ -331,176 +339,225 @@ export function TeamsCard({
             if (!hasSchedule) return;
             setOpenRows((prev) => ({ ...prev, [rowId]: !isOpen }));
           };
+          const showTypePopover = Boolean(typeDescription);
+          const popoverId = `${rowId}-type`;
+          const isTypePopoverOpen = openTypePopover === popoverId;
 
-            return (
-              <Fragment key={rowId}>
-                <CardListRow
-                  variant="outlined"
-                  role={hasSchedule ? "button" : undefined}
-                  tabIndex={hasSchedule ? 0 : undefined}
-                  onClick={toggleOpen}
-                  onKeyDown={(event) => {
-                    if (!hasSchedule) return;
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      toggleOpen();
-                    }
-                  }}
-                  className={cn(
-                    "flex flex-col gap-2 px-4 py-2.5 rounded-none first:rounded-t-none last:rounded-b-none",
-                    hasSchedule && "cursor-pointer",
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex min-w-35 items-center gap-2">
-                      <span className="text-sm font-medium text-foreground">
-                        {courtroomLabel}
-                      </span>
-                      {typeLabel && (
-                        <Badge variant="courtroomType">{typeLabel}</Badge>
-                      )}
-                    </div>
-
-                    <div className="ml-auto flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          if (hasDialIn) onCopy?.(dialInText, rowId);
-                        }}
-                        disabled={!hasDialIn}
-                        className={cn(
-                          "h-8 w-8 rounded-lg transition-colors",
-                          hasDialIn
-                            ? "bg-secondary/60 hover:bg-secondary/70 active:bg-secondary/80"
-                            : "bg-secondary/30 text-muted-foreground/60",
-                        )}
-                        title="Copy to clipboard"
+          return (
+            <Fragment key={rowId}>
+              <CardListRow
+                variant="outlined"
+                interactive={hasSchedule}
+                role={hasSchedule ? "button" : undefined}
+                tabIndex={hasSchedule ? 0 : undefined}
+                onClick={toggleOpen}
+                onKeyDown={(event) => {
+                  if (!hasSchedule) return;
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    toggleOpen();
+                  }
+                }}
+                className={cn(
+                  "flex flex-col gap-2 px-4 py-2.5 rounded-none first:rounded-t-none last:rounded-b-none",
+                  hasSchedule ? "cursor-pointer" : "cursor-default",
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex min-w-35 items-center gap-2">
+                    <span className="text-sm font-medium text-foreground">
+                      {courtroomLabel}
+                    </span>
+                    {typeLabel && showTypePopover ? (
+                      <Popover
+                        open={isTypePopoverOpen}
+                        onOpenChange={(open) =>
+                          setOpenTypePopover(open ? popoverId : null)
+                        }
                       >
-                        {isCopied?.(rowId) ? (
-                          <FaClipboardCheck
-                            className={cn(iconSize.md, "text-semantic-green-text")}
-                          />
-                        ) : (
-                          <FaCopy
-                            className={cn(iconSize.md, "text-muted-foreground")}
-                          />
-                        )}
-                      </Button>
-                      {link.url ? (
-                        <Button
-                          variant="join"
-                          size="sm"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            joinTeamsMeeting(link.url);
-                          }}
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className="inline-flex"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenTypePopover(popoverId);
+                            }}
+                            onKeyDown={(event) => {
+                              event.stopPropagation();
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                setOpenTypePopover(popoverId);
+                              }
+                            }}
+                          >
+                            <Badge
+                              variant="courtroomType"
+                              className="cursor-pointer"
+                            >
+                              {typeLabel}
+                            </Badge>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="start"
+                          side="bottom"
+                          sideOffset={6}
+                          className="w-auto max-w-[220px] px-2 py-1 text-[10px]"
                         >
-                          <FaMicrosoftTeams className="w-3.5 h-3.5" />
-                          Join
-                        </Button>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      )}
-                    </div>
+                          <span className="text-foreground/90">
+                            {typeDescription}
+                          </span>
+                        </PopoverContent>
+                      </Popover>
+                    ) : typeLabel ? (
+                      <Badge variant="courtroomType">{typeLabel}</Badge>
+                    ) : null}
                   </div>
 
-                  {hasSchedule && (
-                    <>
-                      <div className="separator-fade" />
-                      <details
-                        className="group w-full"
-                        open={isOpen}
-                        onToggle={(event) => {
-                          const nextOpen = event.currentTarget.open;
-                          setOpenRows((prev) => ({ ...prev, [rowId]: nextOpen }));
+                  <div className="ml-auto flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        if (hasDialIn) onCopy?.(dialInText, rowId);
+                      }}
+                      disabled={!hasDialIn}
+                      className={cn(
+                        "h-8 w-8 rounded-lg transition-colors",
+                        hasDialIn
+                          ? "bg-secondary/60 hover:bg-secondary/70 active:bg-secondary/80"
+                          : "bg-secondary/30 text-muted-foreground/60",
+                      )}
+                      title="Copy to clipboard"
+                    >
+                      {isCopied?.(rowId) ? (
+                        <FaClipboardCheck
+                          className={cn(
+                            iconSize.md,
+                            "text-semantic-green-text",
+                          )}
+                        />
+                      ) : (
+                        <FaCopy
+                          className={cn(iconSize.md, "text-muted-foreground")}
+                        />
+                      )}
+                    </Button>
+                    {link.url ? (
+                      <Button
+                        variant="join"
+                        size="sm"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          joinTeamsMeeting(link.url);
                         }}
                       >
-                        <summary
-                          onClick={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            toggleOpen();
-                          }}
-                          className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer list-none"
-                        >
-                          <span className="font-semibold uppercase tracking-[0.2em] text-[10px]">
-                            View Schedule
-                          </span>
-                          <FaChevronDown className="ml-auto h-3 w-3 transition-transform group-open:rotate-180" />
-                        </summary>
-                        <div className="mt-2 space-y-2">
-                          {regularSchedules.map((schedule) => (
-                            <div
-                              key={`schedule-${rowId}-${schedule.id}`}
-                              className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
-                            >
-                              <span className="font-semibold uppercase tracking-[0.2em] text-[10px]">
-                                SCHEDULE
+                        <FaMicrosoftTeams className="w-3.5 h-3.5" />
+                        Join
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </div>
+                </div>
+
+                {hasSchedule && (
+                  <>
+                    <div className="separator-fade" />
+                    <details
+                      className="group w-full"
+                      open={isOpen}
+                      onToggle={(event) => {
+                        const nextOpen = event.currentTarget.open;
+                        setOpenRows((prev) => ({ ...prev, [rowId]: nextOpen }));
+                      }}
+                    >
+                      <summary
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          toggleOpen();
+                        }}
+                        className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer list-none"
+                      >
+                        <span className="font-semibold uppercase tracking-[0.2em] text-[10px]">
+                          View Schedule
+                        </span>
+                        <FaChevronDown className="ml-auto h-3 w-3 transition-transform group-open:rotate-180" />
+                      </summary>
+                      <div className="mt-2 space-y-2">
+                        {regularSchedules.map((schedule) => (
+                          <div
+                            key={`schedule-${rowId}-${schedule.id}`}
+                            className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
+                          >
+                            <span className="font-semibold uppercase tracking-[0.2em] text-[10px]">
+                              SCHEDULE
+                            </span>
+                            {(schedule.weekdays ?? []).map((day) => (
+                              <span
+                                key={`${schedule.id}-${day}`}
+                                className="rounded-md border border-border/60 bg-secondary/40 px-2 py-1 text-[10px] font-mono text-foreground"
+                              >
+                                {formatWeekday(day)}
                               </span>
-                              {(schedule.weekdays ?? []).map((day) => (
-                                <span
-                                  key={`${schedule.id}-${day}`}
-                                  className="rounded-md border border-border/60 bg-secondary/40 px-2 py-1 text-[10px] font-mono text-foreground"
-                                >
-                                  {formatWeekday(day)}
-                                </span>
-                              ))}
-                              {(schedule.nth_week ?? []).map((week) => (
-                                <span
-                                  key={`${schedule.id}-nth-${week}`}
-                                  className="rounded-md border border-border/60 bg-secondary/40 px-2 py-1 text-[10px] font-mono text-foreground"
-                                >
-                                  {formatNthWeek(week)}
-                                </span>
-                              ))}
-                              {schedule.times_text && (
-                                <span className="text-xs text-foreground">
-                                  {schedule.times_text}
-                                </span>
-                              )}
-                            </div>
-                          ))}
-                          {youthSchedules.map((schedule) => (
-                            <div
-                              key={`youth-${rowId}-${schedule.id}`}
-                              className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
-                            >
-                              <span className="font-semibold uppercase tracking-[0.2em] text-[10px]">
-                                YOUTH
+                            ))}
+                            {(schedule.nth_week ?? []).map((week) => (
+                              <span
+                                key={`${schedule.id}-nth-${week}`}
+                                className="rounded-md border border-border/60 bg-secondary/40 px-2 py-1 text-[10px] font-mono text-foreground"
+                              >
+                                {formatNthWeek(week)}
                               </span>
-                              {(schedule.weekdays ?? []).map((day) => (
-                                <span
-                                  key={`${schedule.id}-y-${day}`}
-                                  className="rounded-md border border-border/60 bg-secondary/40 px-2 py-1 text-[10px] font-mono text-foreground"
-                                >
-                                  {formatWeekday(day)}
-                                </span>
-                              ))}
-                              {(schedule.nth_week ?? []).map((week) => (
-                                <span
-                                  key={`${schedule.id}-y-nth-${week}`}
-                                  className="rounded-md border border-border/60 bg-secondary/40 px-2 py-1 text-[10px] font-mono text-foreground"
-                                >
-                                  {formatNthWeek(week)}
-                                </span>
-                              ))}
-                              {schedule.times_text && (
-                                <span className="text-xs text-foreground">
-                                  {schedule.times_text}
-                                </span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </details>
-                    </>
-                  )}
-                </CardListRow>
-              </Fragment>
-            );
-          })
+                            ))}
+                            {schedule.times_text && (
+                              <span className="text-xs text-foreground">
+                                {schedule.times_text}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                        {youthSchedules.map((schedule) => (
+                          <div
+                            key={`youth-${rowId}-${schedule.id}`}
+                            className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
+                          >
+                            <span className="font-semibold uppercase tracking-[0.2em] text-[10px]">
+                              YOUTH
+                            </span>
+                            {(schedule.weekdays ?? []).map((day) => (
+                              <span
+                                key={`${schedule.id}-y-${day}`}
+                                className="rounded-md border border-border/60 bg-secondary/40 px-2 py-1 text-[10px] font-mono text-foreground"
+                              >
+                                {formatWeekday(day)}
+                              </span>
+                            ))}
+                            {(schedule.nth_week ?? []).map((week) => (
+                              <span
+                                key={`${schedule.id}-y-nth-${week}`}
+                                className="rounded-md border border-border/60 bg-secondary/40 px-2 py-1 text-[10px] font-mono text-foreground"
+                              >
+                                {formatNthWeek(week)}
+                              </span>
+                            ))}
+                            {schedule.times_text && (
+                              <span className="text-xs text-foreground">
+                                {schedule.times_text}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  </>
+                )}
+              </CardListRow>
+            </Fragment>
+          );
+        })
       )}
     </Card>
   );

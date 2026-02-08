@@ -74,13 +74,14 @@ const CardListRow = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
     variant?: "default" | "outlined"
+    interactive?: boolean
   }
->(({ className, variant = "default", ...props }, ref) => (
+>(({ className, variant = "default", interactive = true, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
       "w-full text-left px-4 py-3 transition-colors",
-      "hover:bg-list-item-hover active:bg-list-item-active",
+      interactive && "hover:bg-list-item-hover active:bg-list-item-active",
       variant === "outlined" &&
         "bg-list-item-bg border border-slate-700/50 -mt-px first:mt-0 first:rounded-t-lg last:rounded-b-lg",
       className

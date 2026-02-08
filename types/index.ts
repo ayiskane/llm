@@ -73,6 +73,7 @@ export interface TeamsLink {
   type_id?: number | null;
   courtroom_type_id?: number | null;
   courtroom_type_name?: string | null;
+  courtroom_type_full_name?: string | null;
   courtroom?: string | null;
   display_order?: number | null;
   phone_number?: string | null;
