@@ -67,9 +67,18 @@ export interface TeamsLink {
   court_id?: number;
   url?: string | null;
   title?: string | null;
+  schedule?: string | null;
+  notes?: string | null;
   type_name?: string | null;
+  type_id?: number | null;
+  courtroom_type_id?: number | null;
+  courtroom_type_name?: string | null;
   courtroom?: string | null;
   display_order?: number | null;
+  phone_number?: string | null;
+  toll_free_number?: string | null;
+  conference_id?: string | null;
+  bail_hub_id?: number | null;
 }
 
 export interface CourtScheduleDate {
@@ -83,10 +92,24 @@ export interface CourtScheduleDate {
   schedule_label?: string | null;
 }
 
+export interface CourtroomSchedule {
+  id: number;
+  court_id?: number | null;
+  courtroom?: string | null;
+  weekdays?: string[] | null;
+  nth_week?: number[] | null;
+  times_text?: string | null;
+  is_youth?: boolean | null;
+  courtroom_type?: number[] | null;
+  days_text?: string | null;
+  notes?: string | null;
+}
+
 export interface CourtDetails {
   court: CourtWithRegion;
   cells: unknown[];
   teamsLinks: TeamsLink[];
+  courtroomSchedules: CourtroomSchedule[];
   scheduleDates: CourtScheduleDate[];
   bailHub: unknown | null;
   bailTeams: unknown[];

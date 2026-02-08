@@ -35,6 +35,7 @@ export function CourtDetailPage({
   const {
     court,
     teamsLinks,
+    courtroomSchedules,
     // bailHub,
     // bailTeams,
     // bailContacts,
@@ -136,6 +137,7 @@ export function CourtDetailPage({
           court={court}
           viewMode={viewMode}
           teamsLinks={teamsLinks}
+          courtroomSchedules={courtroomSchedules}
           contactEmailGroups={contacts.emailGroups}
           contactPhones={contacts.phones}
           contactCount={contacts.count}

@@ -19,6 +19,7 @@ import {
   getCategoryAccentClass,
   type ContactCategory,
 } from "@/lib/config/theme";
+import { Button } from "@/components/ui/button";
 import { UI_CONFIG } from "@/lib/config/constants";
 import { useTruncationDetection } from "@/lib/hooks";
 import type { ContactEmailGroup, ContactPhoneItem } from "@/lib/hooks";
@@ -261,14 +262,18 @@ function SectionHeader({
     >
       <h4 className={text.sectionHeader}>{title}</h4>
       {showToggle && (
-        <button
+        <Button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             onToggle();
           }}
+          variant="ghost"
+          size="sm"
           className={cn(
             toggle.base,
             showFull ? toggle.active : toggle.inactive,
+            "h-auto px-2 py-1 text-xs hover:bg-transparent",
           )}
         >
           {showFull ? (
@@ -277,7 +282,7 @@ function SectionHeader({
             <FaEye className={iconSize.xs} />
           )}
           <span>{showFull ? "Truncate" : "Show full"}</span>
-        </button>
+        </Button>
       )}
     </div>
   );

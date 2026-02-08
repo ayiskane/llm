@@ -195,6 +195,18 @@ export async function fetchCourtDetails(courtId: number) {
     `)
     .in('court_id', contactCourtIds);
 
+  const teamsPromise = supabase
+    .from('teams_links')
+    .select(`*, type:teams_link_types(name), courtroom_type:courtroom_types(name)`)
+    .eq('court_id', publicCourt.id);
+
+  const courtroomSchedulePromise = supabase
+    .from('courtroom_schedules')
+    .select(
+      `id, court_id, courtroom, weekdays, nth_week, times_text, is_youth, courtroom_type, days_text, notes`
+    )
+    .eq('court_id', publicCourt.id);
+
   const parentPromise = parentCourtId
     ? supabase
         .from('courts')
@@ -205,10 +217,19 @@ export async function fetchCourtDetails(courtId: number) {
 
   const [
     { data: contactRows, error: contactError },
+    { data: teamsRows, error: teamsError },
+    { data: courtroomScheduleRows, error: courtroomScheduleError },
     { data: parentData, error: parentError },
-  ] = await Promise.all([contactsPromise, parentPromise]);
+  ] = await Promise.all([
+    contactsPromise,
+    teamsPromise,
+    courtroomSchedulePromise,
+    parentPromise,
+  ]);
 
   if (contactError) throw new Error(contactError.message);
+  if (teamsError) throw new Error(teamsError.message);
+  if (courtroomScheduleError) throw new Error(courtroomScheduleError.message);
   if (parentError) throw new Error(parentError.message);
 
   let parentCourt: { id: number; name: string } | null = null;
@@ -282,10 +303,45 @@ export async function fetchCourtDetails(courtId: number) {
     contacts: contactList,
   };
 
+  const teamsLinks =
+    (teamsRows || []).map((row: any) => ({
+      id: row.id,
+      court_id: row.court_id ?? null,
+      url: row.url ?? null,
+      title: row.title ?? null,
+      schedule: row.schedule ?? null,
+      notes: row.notes ?? null,
+      type_id: row.type_id ?? null,
+      type_name: row.type?.name ?? row.type_name ?? null,
+      courtroom_type_id: row.courtroom_type_id ?? null,
+      courtroom_type_name: row.courtroom_type?.name ?? null,
+      courtroom: row.courtroom ?? null,
+      display_order: row.display_order ?? null,
+      phone_number: row.phone_number ?? null,
+      toll_free_number: row.toll_free_number ?? null,
+      conference_id: row.conference_id ?? null,
+      bail_hub_id: row.bail_hub_id ?? null,
+    })) ?? [];
+
+  const courtroomSchedules =
+    (courtroomScheduleRows || []).map((row: any) => ({
+      id: row.id,
+      court_id: row.court_id ?? null,
+      courtroom: row.courtroom ?? null,
+      weekdays: row.weekdays ?? null,
+      nth_week: row.nth_week ?? null,
+      times_text: row.times_text ?? null,
+      is_youth: row.is_youth ?? null,
+      courtroom_type: row.courtroom_type ?? null,
+      days_text: row.days_text ?? null,
+      notes: row.notes ?? null,
+    })) ?? [];
+
   return {
     court,
     cells: [],
-    teamsLinks: [],
+    teamsLinks,
+    courtroomSchedules,
     scheduleDates: [],
     bailHub: null,
     bailTeams: [],

@@ -1,7 +1,13 @@
-import { Suspense } from 'react';
-import { CourtsIndexPage } from '@/app/components/courts';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Suspense } from "react";
+import { CourtsIndexPage } from "@/app/components/courts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function LoadingFallback() {
   return (

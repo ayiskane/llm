@@ -15,6 +15,7 @@ const badgeVariants = cva(
         supreme: "border-transparent bg-semantic-purple-bg text-semantic-purple-text",
         circuit: "border-transparent bg-semantic-amber-bg text-semantic-amber-text",
         region: "border bg-foreground/5 border-border/50 text-muted-foreground font-mono",
+        courtroomType: "border border-border/60 bg-secondary/40 text-foreground/80 font-mono",
       },
     },
     defaultVariants: {

@@ -1,5 +1,9 @@
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
+@source "../app/**/*.{ts,tsx,mdx}";
+@source "../components/**/*.{ts,tsx,mdx}";
+@source "../lib/**/*.{ts,tsx}";
+@source "../types/**/*.{ts,tsx}";
 
 /* ============================================================================
    TAILWIND V4 THEME - CYBER OCEAN
@@ -106,6 +110,16 @@
   --color-list-item-bg: rgba(30, 41, 59, 0.2);
   --color-list-item-hover: rgba(30, 41, 59, 0.3);
   --color-list-item-active: rgba(30, 41, 59, 0.5);
+
+  /* Separator gradients */
+  --separator-fade: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 20%,
+    color-mix(in srgb, var(--color-semantic-blue-text) 70%, transparent),
+    transparent 80%,
+    transparent 100%
+  );
 
   /* Animations */
   --animate-fade-in: fade-in 0.2s ease-out;
@@ -241,6 +255,12 @@
 .no-select {
   -webkit-user-select: none;
   user-select: none;
+}
+
+.separator-fade {
+  width: 100%;
+  height: 1px;
+  background: var(--separator-fade);
 }
 
 /* =============================================================================

@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { FaAt, FaCalendar, FaVideo } from "@/lib/icons";
 import { PillButton } from "../ui";
 import { CircuitCourtAlert } from "./CircuitCourtAlert";
-// import { TeamsList } from "../features/TeamsCard";
+import { TeamsCard } from "../features/TeamsCard";
 import { CourtFieldContacts } from "../features/ContactCard";
 import { ScheduleCard } from "../features/ScheduleCard";
 import type { ContactEmailGroup, ContactPhoneItem } from "@/lib/hooks";
@@ -12,6 +12,7 @@ import type { ContactEmailGroup, ContactPhoneItem } from "@/lib/hooks";
 import type {
   CourtWithRegion,
   CourtScheduleDate,
+  CourtroomSchedule,
   TeamsLink,
 } from "@/types";
 
@@ -80,6 +81,7 @@ interface CourtModeContentProps {
   court: CourtWithRegion;
   viewMode: CourtViewMode;
   teamsLinks: TeamsLink[];
+  courtroomSchedules: CourtroomSchedule[];
   contactEmailGroups: ContactEmailGroup[];
   contactPhones: ContactPhoneItem[];
   contactCount: number;
@@ -96,6 +98,7 @@ export function CourtModeContent({
   court,
   viewMode,
   teamsLinks,
+  courtroomSchedules,
   contactEmailGroups,
   contactPhones,
   contactCount,
@@ -109,6 +112,7 @@ export function CourtModeContent({
 }: CourtModeContentProps) {
   const showContacts = expandedSection === "contacts";
   const showSchedule = expandedSection === "schedule";
+  const showTeams = expandedSection === "teams";
   const scheduleDatesForMode = useMemo(() => {
     if (court.is_circuit) return scheduleDates;
     if (viewMode !== "fnc") return [];
@@ -147,6 +151,18 @@ export function CourtModeContent({
         </div>
       )}
 
+      {/* Teams section */}
+      {showTeams && teamsLinks.length > 0 && (
+        <div className="p-3">
+          <TeamsCard
+            links={teamsLinks}
+            schedules={courtroomSchedules}
+            onCopy={onCopy}
+            isCopied={isCopied}
+          />
+        </div>
+      )}
+
       {/* Bail Hub Link - only show if court uses a bail hub but is NOT the bail hub location */}
       {/* {bailHub && onNavigateToBailHub && bailHub.court_id !== court.id && (
         <button
@@ -176,21 +192,6 @@ export function CourtModeContent({
             <FaChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
           </div>
         </button>
-      )} */}
-
-      {/* Teams section
-      {teamsLinks.length > 0 && (
-        <Section
-          ref={teamsRef}
-          color="indigo"
-          title="MS Teams Links"
-          isExpanded={expandedSection === "teams"}
-          onToggle={() => toggleSection("teams")}
-        >
-          <div className="p-3">
-            <TeamsList links={teamsLinks} onCopy={onCopy} isCopied={isCopied} />
-          </div>
-        </Section>
       )} */}
 
       {/* Access code */}
