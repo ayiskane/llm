@@ -57,19 +57,6 @@ function buildDialInText(link: TeamsLink): string {
   return lines.join("\n");
 }
 
-const WEEKDAY_LABELS: Record<string, string> = {
-  mon: "Mon",
-  tue: "Tue",
-  wed: "Wed",
-  thu: "Thu",
-  fri: "Fri",
-};
-
-function formatWeekday(value: string): string {
-  const key = value.toLowerCase();
-  return WEEKDAY_LABELS[key] ?? value;
-}
-
 function formatNthWeek(value: number): string {
   if (value % 100 >= 11 && value % 100 <= 13) return `${value}th`;
   switch (value % 10) {
@@ -84,9 +71,35 @@ function formatNthWeek(value: number): string {
   }
 }
 
+function formatNthWeekText(values?: number[] | null): string | null {
+  if (!values || values.length === 0) return null;
+  const sorted = Array.from(new Set(values)).sort((a, b) => a - b);
+  const parts = sorted.map((value) => formatNthWeek(value));
+  if (parts.length === 1) return `${parts[0]} week of month`;
+  if (parts.length === 2) return `${parts[0]} & ${parts[1]} week of month`;
+  return `${parts.slice(0, -1).join(", ")} & ${parts[parts.length - 1]} week of month`;
+}
+
+function splitTimesText(value?: string | null): string[] {
+  if (!value) return [];
+  return value
+    .replace(/\s+/g, " ")
+    .split(/\s+and\s+|;\s*|,\s*/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
 function normalizeCourtroom(value: string | null | undefined): string {
   return (value ?? "").trim().toLowerCase();
 }
+
+const DAY_ORDER = [
+  { key: "mon", label: "MON" },
+  { key: "tue", label: "TUE" },
+  { key: "wed", label: "WED" },
+  { key: "thu", label: "THU" },
+  { key: "fri", label: "FRI" },
+];
 
 function isJcmFxdLabel(value: string): boolean {
   const upper = value.toUpperCase();
@@ -208,15 +221,41 @@ export function TeamsCard({
     });
   }, [filteredLinks, searchValue, selectedCourtroom, selectedType]);
 
-  const schedulesByCourtroom = useMemo(() => {
-    const map = new Map<string, CourtroomSchedule[]>();
+  const scheduleBucketsByCourtroom = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        all: CourtroomSchedule[];
+        regular: CourtroomSchedule[];
+        youth: CourtroomSchedule[];
+      }
+    >();
     schedules.forEach((schedule) => {
       const key = normalizeCourtroom(schedule.courtroom);
       if (!key) return;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(schedule);
+      if (!map.has(key)) {
+        map.set(key, { all: [], regular: [], youth: [] });
+      }
+      const bucket = map.get(key)!;
+      bucket.all.push(schedule);
+      if (schedule.is_youth) {
+        bucket.youth.push(schedule);
+      } else {
+        bucket.regular.push(schedule);
+      }
     });
     return map;
+  }, [schedules]);
+
+  const iarBuckets = useMemo(() => {
+    const all = schedules.filter((schedule) =>
+      (schedule.courtroom_type ?? []).includes(IAR_TYPE_ID),
+    );
+    return {
+      all,
+      regular: all.filter((schedule) => !schedule.is_youth),
+      youth: all.filter((schedule) => schedule.is_youth),
+    };
   }, [schedules]);
 
   if (filteredLinks.length === 0) return null;
@@ -266,26 +305,6 @@ export function TeamsCard({
                   variant="search"
                   size="search"
                 />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Courtroom
-                </label>
-                <Select
-                  value={selectedCourtroom || undefined}
-                  onValueChange={setSelectedCourtroom}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select courtroom" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {courtroomOptions.map((courtroom) => (
-                      <SelectItem key={courtroom} value={courtroom}>
-                        {courtroom}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -341,23 +360,17 @@ export function TeamsCard({
           const isJcmFxdLink = isJcmFxdLabel(
             link.courtroom || link.type_name || "",
           );
-          const iarSchedules = isJcmFxdLink
-            ? schedules.filter((schedule) =>
-                (schedule.courtroom_type ?? []).includes(IAR_TYPE_ID),
-              )
-            : [];
-          const scheduleEntries =
-            iarSchedules.length > 0
-              ? iarSchedules
-              : (schedulesByCourtroom.get(normalizeCourtroom(link.courtroom)) ??
-                []);
-          const regularSchedules = scheduleEntries.filter(
-            (schedule) => !schedule.is_youth,
-          );
-          const youthSchedules = scheduleEntries.filter(
-            (schedule) => schedule.is_youth,
-          );
+          const scheduleBucket =
+            isJcmFxdLink && iarBuckets.all.length > 0
+              ? iarBuckets
+              : (scheduleBucketsByCourtroom.get(
+                  normalizeCourtroom(link.courtroom),
+                ) ?? { all: [], regular: [], youth: [] });
+          const scheduleEntries = scheduleBucket.all;
+          const regularSchedules = scheduleBucket.regular;
+          const youthSchedules = scheduleBucket.youth;
           const hasSchedule = scheduleEntries.length > 0;
+          const scheduleCount = scheduleEntries.length;
           const hasDialIn =
             Boolean(link.phone_number) ||
             Boolean(link.toll_free_number) ||
@@ -388,12 +401,12 @@ export function TeamsCard({
                   }
                 }}
                 className={cn(
-                  "flex flex-col gap-2 px-4 py-2.5 rounded-none first:rounded-t-none last:rounded-b-none",
+                  "flex flex-col p-0 rounded-none first:rounded-t-none last:rounded-b-none",
                   hasSchedule ? "cursor-pointer" : "cursor-default",
                 )}
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex min-w-35 items-center gap-2">
+                <div className="flex items-center px-4 py-2.5 gap-3">
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
                     <span className="text-sm font-medium text-foreground">
                       {courtroomLabel}
                     </span>
@@ -432,7 +445,7 @@ export function TeamsCard({
                           align="start"
                           side="bottom"
                           sideOffset={6}
-                          className="w-auto max-w-[220px] px-2 py-1 text-[10px]"
+                          className="w-auto max-w-55 px-2 py-1 text-[10px]"
                         >
                           <span className="text-foreground/90">
                             {typeDescription}
@@ -442,9 +455,23 @@ export function TeamsCard({
                     ) : typeLabel ? (
                       <Badge variant="courtroomType">{typeLabel}</Badge>
                     ) : null}
+                    {hasSchedule && (
+                      <span className="text-[10px] text-muted-foreground/60 whitespace-nowrap truncate max-w-27.5">
+                        {scheduleCount} Schedule
+                        {scheduleCount === 1 ? "" : "s"}
+                      </span>
+                    )}
                   </div>
 
                   <div className="ml-auto flex items-center gap-2">
+                    {hasSchedule && (
+                      <FaChevronDown
+                        className={cn(
+                          "h-3 w-3 text-muted-foreground/60 transition-transform",
+                          isOpen && "rotate-180",
+                        )}
+                      />
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -494,93 +521,93 @@ export function TeamsCard({
 
                 {hasSchedule && (
                   <>
-                    <div className="separator-fade" />
-                    <details
-                      className="group w-full"
-                      open={isOpen}
-                      onToggle={(event) => {
-                        const nextOpen = event.currentTarget.open;
-                        setOpenRows((prev) => ({ ...prev, [rowId]: nextOpen }));
-                      }}
+                    <div
+                      className={cn(
+                        "overflow-hidden transition-[max-height] duration-300",
+                        isOpen ? "max-h-96" : "max-h-0",
+                      )}
                     >
-                      <summary
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          toggleOpen();
-                        }}
-                        className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer list-none"
-                      >
-                        <span className="font-semibold uppercase tracking-[0.2em] text-[10px]">
-                          View Schedule
-                        </span>
-                        <FaChevronDown className="ml-auto h-3 w-3 transition-transform group-open:rotate-180" />
-                      </summary>
-                      <div className="mt-2 space-y-2">
-                        {regularSchedules.map((schedule) => (
-                          <div
-                            key={`schedule-${rowId}-${schedule.id}`}
-                            className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
-                          >
-                            <span className="font-semibold uppercase tracking-[0.2em] text-[10px]">
-                              SCHEDULE
-                            </span>
-                            {(schedule.weekdays ?? []).map((day) => (
-                              <span
-                                key={`${schedule.id}-${day}`}
-                                className="rounded-md border border-border/60 bg-secondary/40 px-2 py-1 text-[10px] font-mono text-foreground"
-                              >
-                                {formatWeekday(day)}
-                              </span>
-                            ))}
-                            {(schedule.nth_week ?? []).map((week) => (
-                              <span
-                                key={`${schedule.id}-nth-${week}`}
-                                className="rounded-md border border-border/60 bg-secondary/40 px-2 py-1 text-[10px] font-mono text-foreground"
-                              >
-                                {formatNthWeek(week)}
-                              </span>
-                            ))}
-                            {schedule.times_text && (
-                              <span className="text-xs text-foreground">
-                                {schedule.times_text}
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                        {youthSchedules.map((schedule) => (
-                          <div
-                            key={`youth-${rowId}-${schedule.id}`}
-                            className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
-                          >
-                            <span className="font-semibold uppercase tracking-[0.2em] text-[10px]">
-                              YOUTH
-                            </span>
-                            {(schedule.weekdays ?? []).map((day) => (
-                              <span
-                                key={`${schedule.id}-y-${day}`}
-                                className="rounded-md border border-border/60 bg-secondary/40 px-2 py-1 text-[10px] font-mono text-foreground"
-                              >
-                                {formatWeekday(day)}
-                              </span>
-                            ))}
-                            {(schedule.nth_week ?? []).map((week) => (
-                              <span
-                                key={`${schedule.id}-y-nth-${week}`}
-                                className="rounded-md border border-border/60 bg-secondary/40 px-2 py-1 text-[10px] font-mono text-foreground"
-                              >
-                                {formatNthWeek(week)}
-                              </span>
-                            ))}
-                            {schedule.times_text && (
-                              <span className="text-xs text-foreground">
-                                {schedule.times_text}
-                              </span>
-                            )}
-                          </div>
-                        ))}
+                      <div className="bg-slate-950/70 border-t border-border/30">
+                        <div className="py-2 px-4 space-y-0">
+                          {[...regularSchedules, ...youthSchedules].map(
+                            (schedule, scheduleIndex) => {
+                              const isYouth = schedule.is_youth;
+                              const timeLines = splitTimesText(
+                                schedule.times_text,
+                              );
+                              const nthWeekText = formatNthWeekText(
+                                schedule.nth_week,
+                              );
+                              const weekdaySet = new Set(
+                                (schedule.weekdays ?? []).map((day) =>
+                                  day.toLowerCase(),
+                                ),
+                              );
+                              return (
+                                <div
+                                  key={`schedule-${rowId}-${schedule.id}`}
+                                  className={cn(
+                                    "flex items-start justify-between gap-3 py-1.5 text-xs text-muted-foreground min-w-0",
+                                    scheduleIndex > 0 &&
+                                      "border-t border-border/30",
+                                  )}
+                                >
+                                  <div className="min-w-0 flex-1">
+                                    <div className="grid grid-cols-[70px_1fr] gap-x-2 gap-y-1 items-center">
+                                      <span
+                                        className={cn(
+                                          "text-[12px] font-mono font-semibold uppercase tracking-widest",
+                                          isYouth
+                                            ? "text-semantic-sky-text"
+                                            : "text-muted-foreground",
+                                        )}
+                                      >
+                                        {isYouth ? "Youth" : "Schedule"}
+                                      </span>
+                                      <div className="flex flex-wrap items-center gap-1">
+                                        {DAY_ORDER.map((day) => {
+                                          const isActive = weekdaySet.has(
+                                            day.key,
+                                          );
+                                          return (
+                                            <Badge
+                                              key={`${schedule.id}-${day.key}`}
+                                              variant={
+                                                isActive
+                                                  ? "weekday_active"
+                                                  : "weekday"
+                                              }
+                                            >
+                                              {day.label}
+                                            </Badge>
+                                          );
+                                        })}
+                                      </div>
+                                      {nthWeekText && (
+                                        <span className="col-start-2 text-[10px] text-foreground/70">
+                                          {nthWeekText}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {timeLines.length > 0 && (
+                                    <div className="text-[12px] text-foreground/80 text-right font-mono whitespace-nowrap leading-tight shrink-0">
+                                      {timeLines.map((line, lineIndex) => (
+                                        <div
+                                          key={`${schedule.id}-time-${lineIndex}`}
+                                        >
+                                          {line}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            },
+                          )}
+                        </div>
                       </div>
-                    </details>
+                    </div>
                   </>
                 )}
               </CardListRow>
