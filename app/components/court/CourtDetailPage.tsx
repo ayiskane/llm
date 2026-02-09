@@ -174,6 +174,7 @@ export function CourtDetailPage({
             <div className="p-3 text-sm text-destructive">{bailError}</div>
           ) : bailHub ? (
             <BailModeContent
+              courtId={court.id}
               bailHub={bailHub}
               bailContacts={bailContacts}
               bailTeams={bailTeams}
@@ -183,6 +184,7 @@ export function CourtDetailPage({
               expandedSection={bailExpandedSection}
               onCopy={copyToClipboard}
               isCopied={isCopied}
+              onNavigateToCourt={onNavigateToCourt}
             />
           ) : null
         ) : (

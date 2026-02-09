@@ -83,7 +83,7 @@ function isJcmFxdLabel(value: string): boolean {
   return upper.includes("JCM") && upper.includes("FXD");
 }
 
-const IAR_TYPE_ID = 2;
+const JCM_TYPE_ID = 10;
 
 // ============================================================================
 // TEAMS CARD COMPONENT
@@ -211,9 +211,9 @@ export function TeamsCard({
     return map;
   }, [schedules]);
 
-  const iarBuckets = useMemo(() => {
+  const jcmBuckets = useMemo(() => {
     const all = schedules.filter((schedule) =>
-      (schedule.courtroom_type ?? []).includes(IAR_TYPE_ID),
+      (schedule.courtroom_type ?? []).includes(JCM_TYPE_ID),
     );
     return {
       all,
@@ -322,8 +322,8 @@ export function TeamsCard({
             link.courtroom || link.type_name || "",
           );
           const scheduleBucket =
-            isJcmFxdLink && iarBuckets.all.length > 0
-              ? iarBuckets
+            isJcmFxdLink && jcmBuckets.all.length > 0
+              ? jcmBuckets
               : (scheduleBucketsByCourtroom.get(
                   normalizeCourtroom(link.courtroom),
                 ) ?? { all: [], regular: [], youth: [] });

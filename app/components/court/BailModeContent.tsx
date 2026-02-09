@@ -18,6 +18,7 @@ import { PillButton } from "../ui";
 import { TeamsCard } from "../features/TeamsCard";
 import { CellList } from "../features/CellCard";
 import { iconSize, text, toggle } from "@/lib/config/theme";
+import { BailHubAlert } from "./BailHubAlert";
 import type {
   BailContact,
   BailHub,
@@ -358,6 +359,7 @@ export function BailModeNav({
 // =============================================================================
 
 interface BailModeContentProps {
+  courtId: number;
   bailHub: BailHub;
   bailContacts: BailContact[];
   bailTeams: TeamsLink[];
@@ -367,9 +369,11 @@ interface BailModeContentProps {
   expandedSection: BailAccordionSection;
   onCopy: (text: string, id: string) => void;
   isCopied: (id: string) => boolean;
+  onNavigateToCourt?: (courtId: number) => void;
 }
 
 export function BailModeContent({
+  courtId,
   bailHub,
   bailContacts,
   bailTeams,
@@ -379,9 +383,12 @@ export function BailModeContent({
   expandedSection,
   onCopy,
   isCopied,
+  onNavigateToCourt,
 }: BailModeContentProps) {
   const showContacts = expandedSection === "contacts";
   const showTeams = expandedSection === "teams";
+  const showBailHubAlert =
+    Boolean(bailHub?.court_id) && bailHub.court_id !== courtId;
   const bailTeamsWithTriage = useMemo(() => {
     const vbTriageLinks = courtTeams.filter((link) =>
       isVBTriageLink(link.courtroom || link.type_name || ""),
@@ -399,27 +406,33 @@ export function BailModeContent({
   return (
     <div className="p-3 space-y-2.5 pb-20">
       {showContacts && (
-        <div className="p-3 space-y-3">
-          <BailContactsStack
-            bailHub={bailHub}
-            bailContacts={bailContacts}
-            onCopy={onCopy}
-            isCopied={isCopied}
-          />
-          <SheriffCoordinatorChatButton
-            teamsChat={bailHub.sheriff_coordinator_teams_chat}
-          />
-          {cells.length > 0 && (
-            <Card
-              variant="list"
-              className="mt-4 rounded-lg border border-border/60 overflow-hidden"
-            >
-              <div className="flex min-h-12 items-center bg-linear-to-r from-semantic-amber-bg via-card to-card px-3 py-2.5 border-b border-border/50">
-                <div className={text.sectionHeader}>SHERIFF CELLS</div>
-              </div>
-              <CellList cells={cells} variant="list" />
-            </Card>
+        <div className="space-y-3">
+          {showBailHubAlert && (
+            <BailHubAlert
+              hubCourtName={bailHub.name}
+              hubCourtId={bailHub.court_id}
+              onNavigateToHub={onNavigateToCourt}
+            />
           )}
+          <div className="p-3 space-y-3">
+            <BailContactsStack
+              bailHub={bailHub}
+              bailContacts={bailContacts}
+              onCopy={onCopy}
+              isCopied={isCopied}
+            />
+            {cells.length > 0 && (
+              <Card
+                variant="list"
+                className="mt-4 rounded-lg border border-border/60 overflow-hidden"
+              >
+                <div className="flex min-h-12 items-center bg-linear-to-r from-semantic-amber-bg via-card to-card px-3 py-2.5 border-b border-border/50">
+                  <div className={text.sectionHeader}>SHERIFF CELLS</div>
+                </div>
+                <CellList cells={cells} variant="list" />
+              </Card>
+            )}
+          </div>
         </div>
       )}
 
