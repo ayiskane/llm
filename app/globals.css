@@ -165,54 +165,6 @@
 }
 
 /* ============================================================================
-   CYBER OCEAN BACKGROUND EFFECTS
-   ============================================================================ */
-
-.cyber-grid {
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(59, 130, 246, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.06) 1px, transparent 1px);
-  background-size: 40px 40px;
-  opacity: 0.2;
-  pointer-events: none;
-}
-
-.cyber-orb-1 {
-  position: fixed;
-  top: -150px;
-  right: -100px;
-  width: 500px;
-  height: 500px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(59, 130, 246, 0.25) 0%,
-    rgba(6, 182, 212, 0.12) 40%,
-    transparent 70%
-  );
-  filter: blur(100px);
-  pointer-events: none;
-}
-
-.cyber-orb-2 {
-  position: fixed;
-  bottom: -150px;
-  left: -100px;
-  width: 400px;
-  height: 400px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(99, 102, 241, 0.18) 0%,
-    transparent 60%
-  );
-  filter: blur(100px);
-  pointer-events: none;
-}
-
-/* ============================================================================
    SCROLLBAR
    ============================================================================ */
 

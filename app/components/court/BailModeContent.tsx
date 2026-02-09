@@ -399,12 +399,15 @@ export function BailModeContent({
   return (
     <div className="p-3 space-y-2.5 pb-20">
       {showContacts && (
-        <div className="p-3">
+        <div className="p-3 space-y-3">
           <BailContactsStack
             bailHub={bailHub}
             bailContacts={bailContacts}
             onCopy={onCopy}
             isCopied={isCopied}
+          />
+          <SheriffCoordinatorChatButton
+            teamsChat={bailHub.sheriff_coordinator_teams_chat}
           />
           {cells.length > 0 && (
             <Card
