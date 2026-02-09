@@ -155,6 +155,38 @@ export interface BugReport {
   resolved_by?: string | null;
 }
 
+export interface CorrectionalCentre {
+  id: number;
+  name: string;
+  short_name?: string | null;
+  type_id: number;
+  type_name?: string | null;
+  region_id?: number | null;
+  region_name?: string | null;
+  region_code?: string | null;
+  address?: string | null;
+  general_phone?: string | null;
+  general_phone_option?: string | null;
+  general_fax?: string | null;
+  cdn_fax?: string | null;
+  accepts_cdn_by_fax?: boolean | null;
+  visit_request_phone?: string | null;
+  visit_request_email?: string | null;
+  virtual_visit_email?: string | null;
+  lawyer_callback_email?: string | null;
+  callback_1_start?: string | null;
+  callback_1_end?: string | null;
+  callback_2_start?: string | null;
+  callback_2_end?: string | null;
+  visit_hours_inperson?: string | null;
+  visit_hours_virtual?: string | null;
+  accepts_usb?: boolean | null;
+  accepts_hard_drive?: boolean | null;
+  accepts_cd_dvd?: boolean | null;
+  disclosure_notes?: string | null;
+  require_padlock?: boolean | null;
+}
+
 export interface CourtDetails {
   court: CourtWithRegion;
   teamsLinks: TeamsLink[];

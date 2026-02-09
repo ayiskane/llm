@@ -5,6 +5,8 @@ export { useCourtDetails } from './useCourtDetails';
 export { useCourtScheduleDates } from './useCourtScheduleDates';
 export { useBailDetails } from './useBailDetails';
 export { useBugReports } from './useBugReports';
+export { useCorrectionals } from './useCorrectionals';
+export { useCorrectional } from './useCorrectional';
 
 // Courts list hook (React Query with caching)
 export { useCourts } from './useCourts';
