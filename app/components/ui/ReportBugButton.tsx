@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { FaCircleExclamation, FaCircleInfo } from "@/lib/icons";
+import { FaCircleExclamation, FaFlag } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Input, inputVariants } from "@/components/ui/input";
 import {
@@ -102,7 +102,7 @@ export function ReportBugButton() {
             size="sm"
             className="shadow-lg rounded-full px-4"
           >
-            <FaCircleExclamation className="w-4 h-4" />
+            <FaFlag className="w-4 h-4" />
             Report a bug
           </Button>
         </DialogTrigger>
