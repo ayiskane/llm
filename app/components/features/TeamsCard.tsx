@@ -57,29 +57,6 @@ function buildDialInText(link: TeamsLink): string {
   return lines.join("\n");
 }
 
-function formatNthWeek(value: number): string {
-  if (value % 100 >= 11 && value % 100 <= 13) return `${value}th`;
-  switch (value % 10) {
-    case 1:
-      return `${value}st`;
-    case 2:
-      return `${value}nd`;
-    case 3:
-      return `${value}rd`;
-    default:
-      return `${value}th`;
-  }
-}
-
-function formatNthWeekText(values?: number[] | null): string | null {
-  if (!values || values.length === 0) return null;
-  const sorted = Array.from(new Set(values)).sort((a, b) => a - b);
-  const parts = sorted.map((value) => formatNthWeek(value));
-  if (parts.length === 1) return `${parts[0]} week of month`;
-  if (parts.length === 2) return `${parts[0]} & ${parts[1]} week of month`;
-  return `${parts.slice(0, -1).join(", ")} & ${parts[parts.length - 1]} week of month`;
-}
-
 function splitTimesText(value?: string | null): string[] {
   if (!value) return [];
   return value
@@ -130,7 +107,6 @@ export function TeamsCard({
   isCopied,
 }: TeamsCardProps) {
   const [searchValue, setSearchValue] = useState("");
-  const [selectedCourtroom, setSelectedCourtroom] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
@@ -176,15 +152,6 @@ export function TeamsCard({
     });
   }, [links, filterVBTriage, pinVBTriage]);
 
-  const courtroomOptions = useMemo(() => {
-    const set = new Set<string>();
-    filteredLinks.forEach((link) => {
-      const label = formatCourtroom(link.courtroom);
-      if (label && label !== "—") set.add(label);
-    });
-    return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [filteredLinks]);
-
   const typeOptions = useMemo(() => {
     const map = new Map<number, string>();
     filteredLinks.forEach((link) => {
@@ -204,9 +171,6 @@ export function TeamsCard({
       const courtroomLabel = formatCourtroom(link.courtroom);
       const typeLabel = link.courtroom_type_name?.trim() || "";
 
-      if (selectedCourtroom && courtroomLabel !== selectedCourtroom) {
-        return false;
-      }
       if (
         selectedType !== "all" &&
         String(link.courtroom_type_id ?? "") !== selectedType
@@ -219,7 +183,7 @@ export function TeamsCard({
         typeLabel.toLowerCase().includes(query)
       );
     });
-  }, [filteredLinks, searchValue, selectedCourtroom, selectedType]);
+  }, [filteredLinks, searchValue, selectedType]);
 
   const scheduleBucketsByCourtroom = useMemo(() => {
     const map = new Map<
@@ -260,9 +224,7 @@ export function TeamsCard({
 
   if (filteredLinks.length === 0) return null;
   const hasFilters =
-    searchValue.trim().length > 0 ||
-    selectedCourtroom !== "" ||
-    selectedType !== "all";
+    searchValue.trim().length > 0 || selectedType !== "all";
 
   return (
     <Card
@@ -331,7 +293,6 @@ export function TeamsCard({
                   variant="ghost"
                   onClick={() => {
                     setSearchValue("");
-                    setSelectedCourtroom("");
                     setSelectedType("all");
                   }}
                 >
@@ -535,9 +496,7 @@ export function TeamsCard({
                               const timeLines = splitTimesText(
                                 schedule.times_text,
                               );
-                              const nthWeekText = formatNthWeekText(
-                                schedule.nth_week,
-                              );
+                              const daysText = schedule.days_text?.trim();
                               const weekdaySet = new Set(
                                 (schedule.weekdays ?? []).map((day) =>
                                   day.toLowerCase(),
@@ -583,9 +542,9 @@ export function TeamsCard({
                                           );
                                         })}
                                       </div>
-                                      {nthWeekText && (
+                                      {daysText && (
                                         <span className="col-start-2 text-[10px] text-foreground/70">
-                                          {nthWeekText}
+                                          {daysText}
                                         </span>
                                       )}
                                     </div>
