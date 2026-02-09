@@ -103,6 +103,7 @@ interface TeamsCardProps {
   links: TeamsLink[];
   schedules: CourtroomSchedule[];
   filterVBTriage?: boolean;
+  pinVBTriage?: boolean;
   onCopy?: (text: string, id: string) => void;
   isCopied?: (id: string) => boolean;
 }
@@ -111,11 +112,12 @@ export function TeamsCard({
   links,
   schedules,
   filterVBTriage = true,
+  pinVBTriage = false,
   onCopy,
   isCopied,
 }: TeamsCardProps) {
   const [searchValue, setSearchValue] = useState("");
-  const [selectedCourtroom, setSelectedCourtroom] = useState("all");
+  const [selectedCourtroom, setSelectedCourtroom] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
@@ -145,6 +147,13 @@ export function TeamsCard({
       const aName = a.courtroom || a.type_name || "";
       const bName = b.courtroom || b.type_name || "";
 
+      if (pinVBTriage) {
+        const aIsTriage = isVBTriageLink(aName);
+        const bIsTriage = isVBTriageLink(bName);
+        if (aIsTriage && !bIsTriage) return -1;
+        if (!aIsTriage && bIsTriage) return 1;
+      }
+
       const aIsJcmFxd = isJcmFxdLabel(aName);
       const bIsJcmFxd = isJcmFxdLabel(bName);
       if (aIsJcmFxd && !bIsJcmFxd) return -1;
@@ -152,7 +161,7 @@ export function TeamsCard({
 
       return extractNumber(aName) - extractNumber(bName);
     });
-  }, [links, filterVBTriage]);
+  }, [links, filterVBTriage, pinVBTriage]);
 
   const courtroomOptions = useMemo(() => {
     const set = new Set<string>();
@@ -182,7 +191,7 @@ export function TeamsCard({
       const courtroomLabel = formatCourtroom(link.courtroom);
       const typeLabel = link.courtroom_type_name?.trim() || "";
 
-      if (selectedCourtroom !== "all" && courtroomLabel !== selectedCourtroom) {
+      if (selectedCourtroom && courtroomLabel !== selectedCourtroom) {
         return false;
       }
       if (
@@ -213,7 +222,7 @@ export function TeamsCard({
   if (filteredLinks.length === 0) return null;
   const hasFilters =
     searchValue.trim().length > 0 ||
-    selectedCourtroom !== "all" ||
+    selectedCourtroom !== "" ||
     selectedType !== "all";
 
   return (
@@ -260,6 +269,26 @@ export function TeamsCard({
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Courtroom
+                </label>
+                <Select
+                  value={selectedCourtroom || undefined}
+                  onValueChange={setSelectedCourtroom}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select courtroom" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {courtroomOptions.map((courtroom) => (
+                      <SelectItem key={courtroom} value={courtroom}>
+                        {courtroom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] uppercase tracking-widest text-muted-foreground">
                   Type
                 </label>
                 <Select value={selectedType} onValueChange={setSelectedType}>
@@ -283,7 +312,7 @@ export function TeamsCard({
                   variant="ghost"
                   onClick={() => {
                     setSearchValue("");
-                    setSelectedCourtroom("all");
+                    setSelectedCourtroom("");
                     setSelectedType("all");
                   }}
                 >

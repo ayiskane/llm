@@ -8,28 +8,22 @@ import { TeamsCard } from "../features/TeamsCard";
 import { CourtFieldContacts } from "../features/ContactCard";
 import { ScheduleCard } from "../features/ScheduleCard";
 import type { ContactEmailGroup, ContactPhoneItem } from "@/lib/hooks";
-// import { getBailHubTag } from "@/lib/config/constants";
-import type {
-  CourtWithRegion,
-  CourtScheduleDate,
-  CourtroomSchedule,
-  TeamsLink,
-} from "@/types";
+import type { CourtWithRegion, CourtScheduleDate, CourtroomSchedule, TeamsLink } from "@/types";
 
-export type CourtAccordionSection = "contacts" | "schedule" | "teams" | null;
+export type CourtSection = "contacts" | "schedule" | "teams" | null;
 export type CourtViewMode = "provincial" | "supreme" | "fnc";
 
 interface CourtModeNavProps {
   teamsLinks: TeamsLink[];
-  expandedSection: CourtAccordionSection;
-  onNavigateToSection: (section: CourtAccordionSection) => void;
+  activeSection: CourtSection;
+  onNavigateToSection: (section: CourtSection) => void;
   contactCount: number;
   showSchedule: boolean;
 }
 
 export function CourtModeNav({
   teamsLinks,
-  expandedSection,
+  activeSection,
   onNavigateToSection,
   contactCount,
   showSchedule,
@@ -66,8 +60,8 @@ export function CourtModeNav({
           <PillButton
             className="flex-1 justify-center"
             key={btn.key}
-            isActive={expandedSection === btn.key}
-            onClick={() => onNavigateToSection(btn.key as CourtAccordionSection)}
+            isActive={activeSection === btn.key}
+            onClick={() => onNavigateToSection(btn.key as CourtSection)}
           >
             {btn.icon}
             <span>{btn.label}</span>
@@ -87,8 +81,7 @@ interface CourtModeContentProps {
   contactCount: number;
   scheduleDates: CourtScheduleDate[];
   scheduleLoading?: boolean;
-  expandedSection: CourtAccordionSection;
-  onExpandedSectionChange: (section: CourtAccordionSection) => void;
+  activeSection: CourtSection;
   onCopy: (text: string, id: string) => void;
   isCopied: (id: string) => boolean;
   onNavigateToCourt?: (courtId: number) => void;
@@ -104,15 +97,14 @@ export function CourtModeContent({
   contactCount,
   scheduleDates,
   scheduleLoading,
-  expandedSection,
-  onExpandedSectionChange,
+  activeSection,
   onCopy,
   isCopied,
   onNavigateToCourt,
 }: CourtModeContentProps) {
-  const showContacts = expandedSection === "contacts";
-  const showSchedule = expandedSection === "schedule";
-  const showTeams = expandedSection === "teams";
+  const showContacts = activeSection === "contacts";
+  const showSchedule = activeSection === "schedule";
+  const showTeams = activeSection === "teams";
   const scheduleDatesForMode = useMemo(() => {
     if (court.is_circuit) return scheduleDates;
     if (viewMode !== "fnc") return [];
@@ -147,7 +139,10 @@ export function CourtModeContent({
       {/* Schedule section */}
       {showSchedule && (court.is_circuit || viewMode === "fnc") && (
         <div className="p-3">
-          <ScheduleCard dates={scheduleDatesForMode} isLoading={scheduleLoading} />
+          <ScheduleCard
+            dates={scheduleDatesForMode}
+            isLoading={scheduleLoading}
+          />
         </div>
       )}
 
@@ -162,37 +157,6 @@ export function CourtModeContent({
           />
         </div>
       )}
-
-      {/* Bail Hub Link - only show if court uses a bail hub but is NOT the bail hub location */}
-      {/* {bailHub && onNavigateToBailHub && bailHub.court_id !== court.id && (
-        <button
-          onClick={() =>
-            onNavigateToBailHub(bailHub.id, `${court.name} Law Courts`)
-          }
-          className={cn(
-            "w-full rounded-xl overflow-hidden",
-            "bg-secondary/40 border border-semantic-amber/30",
-            "hover:bg-secondary/60 hover:border-semantic-amber/50",
-            "active:bg-secondary/50",
-            "transition-all duration-200",
-          )}
-        >
-          <div className="flex items-center gap-3 px-4 py-3">
-            <div className="w-10 h-10 rounded-lg bg-semantic-amber/15 flex items-center justify-center shrink-0">
-              <FaBuildingColumns className="w-5 h-5 text-semantic-amber" />
-            </div>
-            <div className="flex-1 min-w-0 text-left">
-              <div className="text-sm font-medium text-foreground">
-                Virtual Bail
-              </div>
-              <div className="text-xs text-muted-foreground mt-0.5">
-                {getBailHubTag(bailHub.name)} • Tap for contacts
-              </div>
-            </div>
-            <FaChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
-          </div>
-        </button>
-      )} */}
 
       {/* Access code */}
       {/* {court.access_code && (

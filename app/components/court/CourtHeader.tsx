@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Court, CourtWithRegion } from "@/types";
 
-export type CourtViewMode = "provincial" | "fnc" | "supreme"; // | "bail";
+export type CourtViewMode = "provincial" | "fnc" | "supreme" | "bail";
 
 interface CourtHeaderProps {
   court: Court | CourtWithRegion;
@@ -14,7 +14,7 @@ interface CourtHeaderProps {
   className?: string;
   viewMode?: CourtViewMode;
   onViewModeChange?: (mode: CourtViewMode) => void;
-  // hasBailHub?: boolean;
+  hasBailHub?: boolean;
 }
 
 export function CourtHeader({
@@ -23,16 +23,17 @@ export function CourtHeader({
   className,
   viewMode,
   onViewModeChange,
-  // hasBailHub = false,
+  hasBailHub = false,
 }: CourtHeaderProps) {
   const displayName = getCourtDisplayName(court);
   const fncAddress =
-    'fnc_address' in court ? court.fnc_address ?? null : null;
+    "fnc_address" in court ? (court.fnc_address ?? null) : null;
   const formattedAddress = court.address ?? null;
   const addressForView =
-    viewMode === 'fnc' &&
+    viewMode === "fnc" &&
     fncAddress &&
-    fncAddress.trim().toLowerCase() !== (formattedAddress ?? '').trim().toLowerCase()
+    fncAddress.trim().toLowerCase() !==
+      (formattedAddress ?? "").trim().toLowerCase()
       ? fncAddress
       : formattedAddress;
 
@@ -46,7 +47,10 @@ export function CourtHeader({
   const hasProvincial = court.has_provincial;
   const hasSupreme = court.has_supreme;
   const hasFnc = court.is_fnc;
-  const availableModes = [hasProvincial, hasFnc, hasSupreme].filter(Boolean);
+  const hasBail = hasBailHub;
+  const availableModes = [hasProvincial, hasFnc, hasSupreme, hasBail].filter(
+    Boolean,
+  );
   const showTabs = availableModes.length > 1;
 
   return (
@@ -140,7 +144,7 @@ export function CourtHeader({
                   SUPREME
                 </TabsTrigger>
               )}
-              {/* {hasBail && (
+              {hasBail && (
                 <TabsTrigger
                   value="bail"
                   className={cn(
@@ -151,7 +155,7 @@ export function CourtHeader({
                 >
                   BAIL
                 </TabsTrigger>
-              )} */}
+              )}
             </TabsList>
           </Tabs>
         </div>

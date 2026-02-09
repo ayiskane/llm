@@ -82,6 +82,41 @@ export interface TeamsLink {
   bail_hub_id?: number | null;
 }
 
+export interface BailHub {
+  id: number;
+  name: string;
+  region_id?: number | null;
+  court_id?: number | null;
+  sheriff_coordinator_email?: string | null;
+  sheriff_coordinator_phone?: string | null;
+  sheriff_coordinator_teams_chat?: string | null;
+}
+
+export interface BailContact {
+  id: number;
+  bail_hub_id?: number | null;
+  contact_type?: string | null;
+  label?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  is_daytime?: boolean | null;
+}
+
+export interface SheriffCell {
+  id: number;
+  name: string;
+  type_id?: number | null;
+  type_name?: string | null;
+  region_id?: number | null;
+  phones?: string[] | null;
+  catchment?: string | null;
+}
+
+export interface WeekendBailHubWithTeams {
+  bailHub: BailHub;
+  teams: TeamsLink[];
+}
+
 export interface CourtScheduleDate {
   id: number;
   schedule_id?: number | null;
@@ -108,11 +143,15 @@ export interface CourtroomSchedule {
 
 export interface CourtDetails {
   court: CourtWithRegion;
-  cells: unknown[];
   teamsLinks: TeamsLink[];
   courtroomSchedules: CourtroomSchedule[];
   scheduleDates: CourtScheduleDate[];
-  bailHub: unknown | null;
-  bailTeams: unknown[];
-  bailContacts: unknown[];
+  bailHub: BailHub | null;
+}
+
+export interface BailDetails {
+  bailHub: BailHub | null;
+  bailTeams: TeamsLink[];
+  bailContacts: BailContact[];
+  cells: SheriffCell[];
 }

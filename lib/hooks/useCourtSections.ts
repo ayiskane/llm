@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { CourtContact, CourtWithRegion } from '@/types';
 import type { ContactCategory } from '@/lib/config/theme';
 
-export type CourtViewMode = 'provincial' | 'supreme' | 'fnc';
+export type CourtViewMode = 'provincial' | 'supreme' | 'fnc' | 'bail';
 
 export type ContactEmailItem = {
   id: string;
@@ -81,7 +81,8 @@ function contactVisibleForViewMode(
   contact: { is_provincial?: boolean; is_supreme?: boolean; is_appeals?: boolean },
   viewMode: CourtViewMode
 ) {
-  const effectiveMode = viewMode === 'fnc' ? 'provincial' : viewMode;
+  const effectiveMode =
+    viewMode === 'fnc' || viewMode === 'bail' ? 'provincial' : viewMode;
   const isProvincial = contact.is_provincial ?? false;
   const isSupreme = contact.is_supreme ?? false;
   if (contact.is_appeals) return effectiveMode === 'supreme';

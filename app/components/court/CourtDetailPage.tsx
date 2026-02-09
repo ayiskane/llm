@@ -7,38 +7,35 @@ import { CourtHeader, type CourtViewMode } from "./CourtHeader";
 import {
   CourtModeNav,
   CourtModeContent,
-  type CourtAccordionSection,
+  type CourtSection,
 } from "./CourtModeContent";
-// import {
-//   BailModeNav,
-//   BailModeContent,
-//   type BailAccordionSection,
-// } from "./BailModeContent";
-import { useCourtScheduleDates, useCourtSections } from "@/lib/hooks";
+import {
+  BailModeNav,
+  BailModeContent,
+  type BailAccordionSection,
+} from "./BailModeContent";
+import { useBailDetails, useCourtScheduleDates, useCourtSections } from "@/lib/hooks";
 import { useCopyToClipboard } from "@/lib/hooks/useCopyToClipboard";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { CourtDetails } from "@/types";
 
 interface CourtDetailPageProps {
   courtDetails: CourtDetails;
   onBack?: () => void;
   onNavigateToCourt?: (courtId: number) => void;
-  // onNavigateToBailHub?: (bailHubId: number, fromName: string) => void;
 }
 
 export function CourtDetailPage({
   courtDetails,
   onBack,
   onNavigateToCourt,
-  // onNavigateToBailHub,
 }: CourtDetailPageProps) {
   const {
     court,
     teamsLinks,
     courtroomSchedules,
-    // bailHub,
-    // bailTeams,
-    // bailContacts,
+    bailHub: bailHubSummary,
   } = courtDetails;
 
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
@@ -50,25 +47,42 @@ export function CourtDetailPage({
   });
   const { copyToClipboard, isCopied } = useCopyToClipboard();
   const { contacts } = useCourtSections(court, viewMode);
+  const isBailMode = viewMode === "bail";
+  const {
+    data: bailDetails,
+    isLoading: bailLoading,
+    error: bailError,
+  } = useBailDetails(court, isBailMode);
 
   // Separate expanded section state for each mode
-  const [courtExpandedSection, setCourtExpandedSection] =
-    useState<CourtAccordionSection>("contacts");
+  const [courtActiveSection, setCourtActiveSection] =
+    useState<CourtSection>("contacts");
   const showSchedule = court.is_circuit || viewMode === "fnc";
-  const scheduleEnabled = courtExpandedSection === "schedule" && showSchedule;
+  const scheduleEnabled = courtActiveSection === "schedule" && showSchedule;
   const { data: scheduleDates, isLoading: scheduleLoading } =
     useCourtScheduleDates(court.id, scheduleEnabled);
-  // const [bailExpandedSection, setBailExpandedSection] =
-  //   useState<BailAccordionSection>("contacts");
-  // const isBailMode = viewMode === "bail";
-  // const isBailHubLocation = bailHub?.court_id === court.id;
+  const [bailExpandedSection, setBailExpandedSection] =
+    useState<BailAccordionSection>("contacts");
+  const isBailHubLocation = bailHubSummary?.court_id === court.id;
+  const hasBailData = Boolean(bailHubSummary);
+  const bailHub = bailDetails?.bailHub ?? null;
+  const bailTeams = bailDetails?.bailTeams ?? [];
+  const bailContacts = bailDetails?.bailContacts ?? [];
+  const cells = bailDetails?.cells ?? [];
   const allowedModes = useMemo(() => {
     const modes: CourtViewMode[] = [];
     if (court.has_provincial) modes.push("provincial");
     if (court.is_fnc && !court.is_circuit) modes.push("fnc");
     if (court.has_supreme) modes.push("supreme");
+    if (hasBailData) modes.push("bail");
     return modes;
-  }, [court.has_provincial, court.has_supreme, court.is_fnc, court.is_circuit]);
+  }, [
+    court.has_provincial,
+    court.has_supreme,
+    court.is_fnc,
+    court.is_circuit,
+    hasBailData,
+  ]);
 
   useEffect(() => {
     if (allowedModes.length === 0) return;
@@ -114,17 +128,33 @@ export function CourtDetailPage({
           collapsed={isHeaderCollapsed}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
-          // hasBailHub={isBailHubLocation}
+          hasBailHub={hasBailData || Boolean(isBailHubLocation)}
         />
 
         {/* Mode-specific nav pills */}
-        <CourtModeNav
-          contactCount={contacts.count}
-          teamsLinks={teamsLinks}
-          showSchedule={showSchedule}
-          expandedSection={courtExpandedSection}
-          onNavigateToSection={setCourtExpandedSection}
-        />
+        {isBailMode ? (
+          bailLoading ? (
+            <div className="flex gap-2 px-3 py-2 border-t border-semantic-amber/30">
+              <Skeleton className="h-8 flex-1 rounded-full" />
+              <Skeleton className="h-8 flex-1 rounded-full" />
+            </div>
+          ) : bailHub ? (
+            <BailModeNav
+              bailTeams={bailTeams}
+              courtTeams={teamsLinks}
+              expandedSection={bailExpandedSection}
+              onNavigateToSection={setBailExpandedSection}
+            />
+          ) : null
+        ) : (
+          <CourtModeNav
+            contactCount={contacts.count}
+            teamsLinks={teamsLinks}
+            showSchedule={showSchedule}
+            activeSection={courtActiveSection}
+            onNavigateToSection={setCourtActiveSection}
+          />
+        )}
       </StickyHeader>
 
       {/* Scrollable content - mode-specific */}
@@ -133,22 +163,45 @@ export function CourtDetailPage({
         className="flex-1 min-h-0 overflow-y-auto scroll-smooth"
         onScroll={handleScroll}
       >
-        <CourtModeContent
-          court={court}
-          viewMode={viewMode}
-          teamsLinks={teamsLinks}
-          courtroomSchedules={courtroomSchedules}
-          contactEmailGroups={contacts.emailGroups}
-          contactPhones={contacts.phones}
-          contactCount={contacts.count}
-          scheduleDates={scheduleDates}
-          scheduleLoading={scheduleLoading}
-          expandedSection={courtExpandedSection}
-          onExpandedSectionChange={setCourtExpandedSection}
-          onCopy={copyToClipboard}
-          isCopied={isCopied}
-          onNavigateToCourt={onNavigateToCourt}
-        />
+        {isBailMode ? (
+          bailLoading ? (
+            <div className="p-3 space-y-3">
+              <Skeleton className="h-16 w-full rounded-lg" />
+              <Skeleton className="h-16 w-full rounded-lg" />
+              <Skeleton className="h-16 w-full rounded-lg" />
+            </div>
+          ) : bailError ? (
+            <div className="p-3 text-sm text-destructive">{bailError}</div>
+          ) : bailHub ? (
+            <BailModeContent
+              bailHub={bailHub}
+              bailContacts={bailContacts}
+              bailTeams={bailTeams}
+              courtTeams={teamsLinks}
+              courtroomSchedules={courtroomSchedules}
+              cells={cells}
+              expandedSection={bailExpandedSection}
+              onCopy={copyToClipboard}
+              isCopied={isCopied}
+            />
+          ) : null
+        ) : (
+          <CourtModeContent
+            court={court}
+            viewMode={viewMode}
+            teamsLinks={teamsLinks}
+            courtroomSchedules={courtroomSchedules}
+            contactEmailGroups={contacts.emailGroups}
+            contactPhones={contacts.phones}
+            contactCount={contacts.count}
+            scheduleDates={scheduleDates}
+            scheduleLoading={scheduleLoading}
+            activeSection={courtActiveSection}
+            onCopy={copyToClipboard}
+            isCopied={isCopied}
+            onNavigateToCourt={onNavigateToCourt}
+          />
+        )}
       </div>
     </div>
   );
