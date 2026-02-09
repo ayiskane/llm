@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { QueryProvider } from './providers/QueryProvider';
 import { BottomNavWrapper } from './components/ui/BottomNavWrapper';
+import { ReportBugButton } from './components/ui/ReportBugButton';
 import { Toaster } from '@/components/ui/sonner';
 import { APP_NAME } from '@/lib/config/constants';
 import './globals.css';
@@ -53,6 +54,7 @@ export default function RootLayout({
             {children}
           </main>
           <BottomNavWrapper />
+          <ReportBugButton />
           <Toaster />
         </QueryProvider>
       </body>

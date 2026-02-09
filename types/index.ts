@@ -141,6 +141,20 @@ export interface CourtroomSchedule {
   notes?: string | null;
 }
 
+export interface BugReport {
+  id: string;
+  created_at: string;
+  kind: 'bug' | 'inaccurate_info' | 'general_feedback' | 'other';
+  title?: string | null;
+  details: string;
+  url?: string | null;
+  path?: string | null;
+  page_title?: string | null;
+  status: 'open' | 'in_progress' | 'fixed' | 'wontfix';
+  resolved_at?: string | null;
+  resolved_by?: string | null;
+}
+
 export interface CourtDetails {
   court: CourtWithRegion;
   teamsLinks: TeamsLink[];
