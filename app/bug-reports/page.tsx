@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useBugReports } from "@/lib/hooks";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,12 +15,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { updateBugReportStatus } from "@/lib/api/bugReports";
 import type { BugReport } from "@/types";
 
 const KIND_LABELS: Record<string, string> = {
   bug: "Bug",
   inaccurate_info: "Incorrect Info",
-  general_feedback: "General Feedback",
+  general_feedback: "Feedback",
   other: "Other",
 };
 
@@ -38,8 +40,11 @@ function formatPage(path?: string | null, url?: string | null) {
 
 export default function BugReportsPage() {
   const { data, isLoading, error } = useBugReports();
+  const queryClient = useQueryClient();
   const [selectedReport, setSelectedReport] = useState<BugReport | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [canManage, setCanManage] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const selectedKindLabel = useMemo(() => {
     if (!selectedReport) return "";
@@ -49,6 +54,39 @@ export default function BugReportsPage() {
   const openReport = (report: BugReport) => {
     setSelectedReport(report);
     setDialogOpen(true);
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    fetch("/api/bug-reports/access")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((payload) => {
+        if (!isMounted) return;
+        setCanManage(Boolean(payload?.canManage));
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setCanManage(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleMarkFixed = async (reportId: string) => {
+    if (isUpdating) return;
+    setIsUpdating(true);
+    try {
+      const updated = await updateBugReportStatus(reportId, "fixed");
+      queryClient.setQueryData<BugReport[]>(["bugReports"], (prev) =>
+        (prev ?? []).map((item) => (item.id === updated.id ? updated : item)),
+      );
+      setSelectedReport(updated);
+    } catch {
+      // ignore for now
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -74,12 +112,12 @@ export default function BugReportsPage() {
         </div>
       ) : (
         <div className="rounded-lg border border-border/60 overflow-hidden">
-          <Table>
+          <Table className="w-full table-fixed">
             <TableHeader>
               <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead>Issue</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="w-[90px]">Type</TableHead>
+                <TableHead className="w-full">Issue</TableHead>
+                <TableHead className="w-[90px] text-right">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -91,7 +129,7 @@ export default function BugReportsPage() {
                     className="text-xs cursor-pointer"
                     onClick={() => openReport(report)}
                   >
-                    <TableCell className="whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap align-top">
                       <Badge
                         variant="region"
                         className="text-[9px] tracking-wider uppercase"
@@ -99,10 +137,10 @@ export default function BugReportsPage() {
                         {KIND_LABELS[report.kind] ?? report.kind}
                       </Badge>
                     </TableCell>
-                    <TableCell className="max-w-[320px] truncate">
+                    <TableCell className="min-w-0 truncate align-top">
                       {issueText}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-right align-top">
                       <Badge
                         variant="region"
                         className={cn(
@@ -143,15 +181,30 @@ export default function BugReportsPage() {
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">
                   Status
                 </span>
-                <Badge
-                  variant="region"
-                  className={cn(
-                    "w-fit text-[9px] tracking-wider uppercase",
-                    STATUS_STYLES[selectedReport.status] || "border-border/50",
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant="region"
+                    className={cn(
+                      "w-fit text-[9px] tracking-wider uppercase",
+                      STATUS_STYLES[selectedReport.status] || "border-border/50",
+                    )}
+                  >
+                    {selectedReport.status.replace("_", " ")}
+                  </Badge>
+                  {canManage && selectedReport.status === "open" && (
+                    <button
+                      type="button"
+                      onClick={() => handleMarkFixed(selectedReport.id)}
+                      disabled={isUpdating}
+                      className={cn(
+                        "text-[10px] uppercase tracking-wider text-emerald-300",
+                        "hover:underline disabled:opacity-50",
+                      )}
+                    >
+                      Mark fixed
+                    </button>
                   )}
-                >
-                  {selectedReport.status.replace("_", " ")}
-                </Badge>
+                </div>
 
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">
                   Submitted

@@ -41,3 +41,22 @@ export async function fetchBugReports(): Promise<BugReport[]> {
   if (error) throw new Error(error.message);
   return (data || []) as BugReport[];
 }
+
+export async function updateBugReportStatus(
+  id: string,
+  status: "fixed",
+): Promise<BugReport> {
+  const response = await fetch(`/api/bug-reports/${id}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+
+  if (!response.ok) {
+    const errorPayload = await response.json().catch(() => null);
+    throw new Error(errorPayload?.error || "Failed to update report.");
+  }
+
+  const data = await response.json();
+  return data as BugReport;
+}
