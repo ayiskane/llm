@@ -32,6 +32,10 @@ const STATUS_STYLES: Record<string, string> = {
   wontfix: "bg-slate-500/20 text-slate-300 border border-slate-500/30",
 };
 
+function formatStatus(status: string) {
+  return status.replace("_", " ").toUpperCase();
+}
+
 function formatPage(path?: string | null, url?: string | null) {
   if (path) return path;
   if (url) return url;
@@ -148,7 +152,7 @@ export default function BugReportsPage() {
                           STATUS_STYLES[report.status] || "border-border/50",
                         )}
                       >
-                        {report.status.replace("_", " ")}
+                        {formatStatus(report.status)}
                       </Badge>
                     </TableCell>
                   </TableRow>
@@ -189,7 +193,7 @@ export default function BugReportsPage() {
                       STATUS_STYLES[selectedReport.status] || "border-border/50",
                     )}
                   >
-                    {selectedReport.status.replace("_", " ")}
+                    {formatStatus(selectedReport.status)}
                   </Badge>
                   {canManage && selectedReport.status === "open" && (
                     <button
