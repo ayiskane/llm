@@ -79,6 +79,7 @@ const DAY_ORDER = [
 ];
 
 const JCM_TYPE_ID = 10;
+const SURREY_COURT_ID = 76;
 
 // ============================================================================
 // TEAMS CARD COMPONENT
@@ -322,6 +323,13 @@ export function TeamsCard({
           const typeDescription = link.courtroom_type_full_name?.trim() || "";
           // Tag source: courtroom_type_name (e.g., ASC/FXD) comes from teams_links.courtroom_type_id -> courtroom_types.name.
           const courtroomLabel = formatCourtroom(link.courtroom);
+          const surreyJcmMatch =
+            link.court_id === SURREY_COURT_ID
+              ? courtroomLabel.match(/^JCM FXD\s*\(([^)]+)\)\s*$/i)
+              : null;
+          const surreyJcmSuffix = surreyJcmMatch
+            ? `(${surreyJcmMatch[1]})`
+            : null;
           // JCM links are identified by courtroom_type_id = 10.
           const isJcmLink = link.courtroom_type_id === JCM_TYPE_ID;
           const scheduleBucket =
@@ -379,9 +387,18 @@ export function TeamsCard({
               >
                 <div className="flex items-center px-4 py-2.5 gap-3">
                   <div className="flex min-w-0 flex-1 items-center gap-2">
-                    <span className="text-sm font-medium text-foreground">
-                      {courtroomLabel}
-                    </span>
+                    {surreyJcmMatch ? (
+                      <div className="text-sm font-medium text-foreground leading-tight">
+                        <div>JCM FXD</div>
+                        <div className="text-[10px] text-muted-foreground/70">
+                          {surreyJcmSuffix}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-sm font-medium text-foreground">
+                        {courtroomLabel}
+                      </span>
+                    )}
                     {typeLabel && showTypePopover ? (
                       <Popover
                         open={isTypePopoverOpen}

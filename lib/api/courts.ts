@@ -274,7 +274,7 @@ export async function fetchCourtDetails(courtId: number) {
   const courtroomSchedulePromise = supabase
     .from('courtroom_schedules')
     .select(
-      `id, court_id, courtroom, weekdays, nth_week, times_text, is_youth, courtroom_type, days_text`
+      `id, court_id, courtroom, weekdays, times_text, is_youth, courtroom_type, days_text`
     )
     .eq('court_id', publicCourt.id);
 
@@ -407,7 +407,6 @@ export async function fetchCourtDetails(courtId: number) {
       court_id: row.court_id ?? null,
       courtroom: row.courtroom ?? null,
       weekdays: row.weekdays ?? null,
-      nth_week: row.nth_week ?? null,
       times_text: row.times_text ?? null,
       is_youth: row.is_youth ?? null,
       courtroom_type: row.courtroom_type ?? null,

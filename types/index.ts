@@ -133,7 +133,6 @@ export interface CourtroomSchedule {
   court_id?: number | null;
   courtroom?: string | null;
   weekdays?: string[] | null;
-  nth_week?: number[] | null;
   times_text?: string | null;
   is_youth?: boolean | null;
   courtroom_type?: number[] | null;
