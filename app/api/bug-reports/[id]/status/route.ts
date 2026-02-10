@@ -50,9 +50,10 @@ async function canManageReports() {
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     if (!(await canManageReports())) {
       return NextResponse.json({ error: "Not authorized." }, { status: 403 });
     }
@@ -72,7 +73,7 @@ export async function PATCH(
         status: "fixed",
         resolved_at: new Date().toISOString(),
       })
-      .eq("id", params.id)
+      .eq("id", id)
       .select(
         "id, created_at, kind, title, details, url, path, page_title, submitter_name, status, resolved_at, resolved_by",
       )

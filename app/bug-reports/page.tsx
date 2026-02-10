@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { updateBugReportStatus } from "@/lib/api/bugReports";
 import type { BugReport } from "@/types";
+import { toast } from "sonner";
 
 const KIND_LABELS: Record<string, string> = {
   bug: "Bug",
@@ -85,9 +86,11 @@ export default function BugReportsPage() {
       queryClient.setQueryData<BugReport[]>(["bugReports"], (prev) =>
         (prev ?? []).map((item) => (item.id === updated.id ? updated : item)),
       );
+      queryClient.invalidateQueries({ queryKey: ["bugReports"] });
       setSelectedReport(updated);
+      toast.success("Marked as fixed.");
     } catch {
-      // ignore for now
+      toast.error("Could not update status.");
     } finally {
       setIsUpdating(false);
     }
