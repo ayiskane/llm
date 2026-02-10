@@ -113,6 +113,12 @@ export function ReportBugButton() {
             <DialogDescription className="text-[11px] text-muted-foreground">
               Quick report · Court details page
             </DialogDescription>
+            <Link
+              href="/bug-reports"
+              className="text-[11px] text-indigo-300 hover:underline"
+            >
+              View submitted reports
+            </Link>
           </DialogHeader>
 
           <fieldset className="space-y-3 pt-2" disabled={submitting}>

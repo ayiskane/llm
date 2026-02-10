@@ -15,15 +15,18 @@ export type BugReportInsert = {
 export async function createBugReport(
   payload: BugReportInsert,
 ): Promise<BugReport> {
-  const { data, error } = await supabase
-    .from("bug_reports")
-    .insert(payload)
-    .select(
-      "id, created_at, kind, title, details, url, path, page_title, status, resolved_at, resolved_by",
-    )
-    .single();
+  const response = await fetch("/api/bug-reports", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 
-  if (error) throw new Error(error.message);
+  if (!response.ok) {
+    const errorPayload = await response.json().catch(() => null);
+    throw new Error(errorPayload?.error || "Failed to submit report.");
+  }
+
+  const data = await response.json();
   return data as BugReport;
 }
 
@@ -31,7 +34,7 @@ export async function fetchBugReports(): Promise<BugReport[]> {
   const { data, error } = await supabase
     .from("bug_reports")
     .select(
-      "id, created_at, kind, title, details, url, path, page_title, status, resolved_at, resolved_by",
+      "id, created_at, kind, title, details, url, path, page_title, submitter_name, status, resolved_at, resolved_by",
     )
     .order("created_at", { ascending: false });
 

@@ -150,6 +150,7 @@ export interface BugReport {
   url?: string | null;
   path?: string | null;
   page_title?: string | null;
+  submitter_name?: string | null;
   status: 'open' | 'in_progress' | 'fixed' | 'wontfix';
   resolved_at?: string | null;
   resolved_by?: string | null;

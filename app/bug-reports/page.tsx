@@ -79,7 +79,6 @@ export default function BugReportsPage() {
               <TableRow>
                 <TableHead>Type</TableHead>
                 <TableHead>Issue</TableHead>
-                <TableHead>Page</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -93,23 +92,15 @@ export default function BugReportsPage() {
                     onClick={() => openReport(report)}
                   >
                     <TableCell className="whitespace-nowrap">
-                      {KIND_LABELS[report.kind] ?? report.kind}
+                      <Badge
+                        variant="region"
+                        className="text-[9px] tracking-wider uppercase"
+                      >
+                        {KIND_LABELS[report.kind] ?? report.kind}
+                      </Badge>
                     </TableCell>
-                    <TableCell className="max-w-[220px] truncate">
+                    <TableCell className="max-w-[320px] truncate">
                       {issueText}
-                    </TableCell>
-                    <TableCell className="max-w-[220px] truncate">
-                      {report.path ? (
-                        <Link
-                          href={report.path}
-                          className="text-indigo-300 hover:underline"
-                          onClick={(event) => event.stopPropagation()}
-                        >
-                          {formatPage(report.path, report.url)}
-                        </Link>
-                      ) : (
-                        formatPage(report.path, report.url)
-                      )}
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -168,6 +159,11 @@ export default function BugReportsPage() {
                 <span>
                   {new Date(selectedReport.created_at).toLocaleString()}
                 </span>
+
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">
+                  Submitted by
+                </span>
+                <span>{selectedReport.submitter_name?.trim() || "—"}</span>
 
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">
                   Location
