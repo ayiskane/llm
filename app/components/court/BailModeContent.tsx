@@ -26,7 +26,6 @@ import type {
   SheriffCell,
   TeamsLink,
 } from "@/types";
-import { isVBTriageLink } from "@/lib/config/constants";
 
 export type BailAccordionSection = "contacts" | "teams" | null;
 
@@ -300,22 +299,16 @@ function SheriffCoordinatorChatButton({
 
 interface BailModeNavProps {
   bailTeams: TeamsLink[];
-  courtTeams: TeamsLink[];
   expandedSection: BailAccordionSection;
   onNavigateToSection: (section: BailAccordionSection) => void;
 }
 
 export function BailModeNav({
   bailTeams,
-  courtTeams,
   expandedSection,
   onNavigateToSection,
 }: BailModeNavProps) {
-  const hasTeams =
-    bailTeams.length > 0 ||
-    courtTeams.some((link) =>
-      isVBTriageLink(link.courtroom || link.type_name || ""),
-    );
+  const hasTeams = bailTeams.length > 0;
 
   const navButtons = useMemo(
     () => [
@@ -363,7 +356,6 @@ interface BailModeContentProps {
   bailHub: BailHub;
   bailContacts: BailContact[];
   bailTeams: TeamsLink[];
-  courtTeams: TeamsLink[];
   courtroomSchedules: CourtroomSchedule[];
   cells: SheriffCell[];
   expandedSection: BailAccordionSection;
@@ -377,7 +369,6 @@ export function BailModeContent({
   bailHub,
   bailContacts,
   bailTeams,
-  courtTeams,
   courtroomSchedules,
   cells,
   expandedSection,
@@ -385,35 +376,25 @@ export function BailModeContent({
   isCopied,
   onNavigateToCourt,
 }: BailModeContentProps) {
-  const showContacts = expandedSection === "contacts";
-  const showTeams = expandedSection === "teams";
   const showBailHubAlert =
-    Boolean(bailHub?.court_id) && bailHub.court_id !== courtId;
-  const bailTeamsWithTriage = useMemo(() => {
-    const vbTriageLinks = courtTeams.filter((link) =>
-      isVBTriageLink(link.courtroom || link.type_name || ""),
-    );
-    const combined = [...vbTriageLinks, ...bailTeams];
-    const seen = new Set<number | string>();
-    return combined.filter((link, idx) => {
-      const key = link.id ?? `idx-${idx}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }, [bailTeams, courtTeams]);
+    bailHub?.court_id != null && bailHub.court_id !== courtId;
+  const isHubCourt = bailHub?.court_id === courtId;
+  const showCombined = !isHubCourt;
+  const showContacts = showCombined || expandedSection === "contacts";
+  const showTeams = showCombined || expandedSection === "teams";
 
   return (
     <div className="p-3 space-y-2.5 pb-20">
+      {showBailHubAlert && (
+        <BailHubAlert
+          hubCourtName={bailHub.name}
+          hubCourtId={bailHub.court_id}
+          onNavigateToHub={onNavigateToCourt}
+        />
+      )}
+
       {showContacts && (
         <div className="space-y-3">
-          {showBailHubAlert && (
-            <BailHubAlert
-              hubCourtName={bailHub.name}
-              hubCourtId={bailHub.court_id}
-              onNavigateToHub={onNavigateToCourt}
-            />
-          )}
           <div className="p-3 space-y-3">
             <BailContactsStack
               bailHub={bailHub}
@@ -436,13 +417,13 @@ export function BailModeContent({
         </div>
       )}
 
-      {showTeams && bailTeamsWithTriage.length > 0 && (
+      {showTeams && bailTeams.length > 0 && (
         <div className="p-3 space-y-3">
           <SheriffCoordinatorChatButton
             teamsChat={bailHub.sheriff_coordinator_teams_chat}
           />
           <TeamsCard
-            links={bailTeamsWithTriage}
+            links={bailTeams}
             schedules={courtroomSchedules}
             filterVBTriage={false}
             pinVBTriage

@@ -14,7 +14,11 @@ import {
   BailModeContent,
   type BailAccordionSection,
 } from "./BailModeContent";
-import { useBailDetails, useCourtScheduleDates, useCourtSections } from "@/lib/hooks";
+import {
+  useBailDetails,
+  useCourtScheduleDates,
+  useCourtSections,
+} from "@/lib/hooks";
 import { useCopyToClipboard } from "@/lib/hooks/useCopyToClipboard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -134,17 +138,18 @@ export function CourtDetailPage({
         {/* Mode-specific nav pills */}
         {isBailMode ? (
           bailLoading ? (
-            <div className="flex gap-2 px-3 py-2 border-t border-semantic-amber/30">
+            <div className="flex gap-2 px-3 py-2">
               <Skeleton className="h-8 flex-1 rounded-full" />
               <Skeleton className="h-8 flex-1 rounded-full" />
             </div>
           ) : bailHub ? (
-            <BailModeNav
-              bailTeams={bailTeams}
-              courtTeams={teamsLinks}
-              expandedSection={bailExpandedSection}
-              onNavigateToSection={setBailExpandedSection}
-            />
+            isBailHubLocation ? (
+              <BailModeNav
+                bailTeams={bailTeams}
+                expandedSection={bailExpandedSection}
+                onNavigateToSection={setBailExpandedSection}
+              />
+            ) : null
           ) : null
         ) : (
           <CourtModeNav
@@ -178,7 +183,6 @@ export function CourtDetailPage({
               bailHub={bailHub}
               bailContacts={bailContacts}
               bailTeams={bailTeams}
-              courtTeams={teamsLinks}
               courtroomSchedules={courtroomSchedules}
               cells={cells}
               expandedSection={bailExpandedSection}

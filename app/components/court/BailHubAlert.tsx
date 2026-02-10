@@ -40,9 +40,8 @@ export function BailHubAlert({
       )}
     >
       <p className="text-xs text-slate-400 leading-relaxed">
-        Bail hub court — contact{" "}
+        Bail Hub: {" "}
         <span className="text-amber-400 font-semibold">{hubCourtName}</span>.
-        {" "}Contacts below belong to the hub.
       </p>
     </CardListItemAlert>
   );
