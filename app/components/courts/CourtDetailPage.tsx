@@ -89,8 +89,9 @@ export function CourtDetailPage({
   const bailTeams = effectiveBailDetails?.bailTeams ?? [];
   const bailContacts = effectiveBailDetails?.bailContacts ?? [];
   const cells = effectiveBailDetails?.cells ?? [];
-  const courtroomSchedulesForBail =
-    effectiveBailDetails?.courtroomSchedules ?? [];
+  const courtroomSchedulesForBail = isVr9Hub
+    ? (vr9Details?.courtroomSchedules ?? [])
+    : courtroomSchedules;
   const allowedModes = useMemo(() => {
     const modes: CourtViewMode[] = [];
     if (court.has_provincial) modes.push("provincial");
