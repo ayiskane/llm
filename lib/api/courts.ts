@@ -3,6 +3,7 @@ import type {
   BailHub,
   BailDetails,
   CourtScheduleDate,
+  CourtroomSchedule,
   SheriffCell,
   TeamsLink,
 } from '@/types';
@@ -508,5 +509,180 @@ export async function fetchBailDetails(
     bailTeams,
     bailContacts,
     cells,
+  };
+}
+
+export async function fetchBailHubDetails(
+  bailHubId: number
+): Promise<{
+  bailHub: BailHub | null;
+  bailTeams: TeamsLink[];
+  bailContacts: BailDetails['bailContacts'];
+  cells: SheriffCell[];
+  courtroomSchedules: CourtroomSchedule[];
+}> {
+  const { data: hubRows, error: hubError } = await supabase
+    .from('bail_hubs')
+    .select(
+      'id, name, region_id, court_id, sheriff_coordinator_email, sheriff_coordinator_phone, sheriff_coordinator_teams_chat'
+    )
+    .eq('id', bailHubId)
+    .limit(1);
+
+  if (hubError) throw new Error(hubError.message);
+  const bailHub = (hubRows?.[0] as BailHub) ?? null;
+  if (!bailHub) {
+    return {
+      bailHub: null,
+      bailTeams: [],
+      bailContacts: [],
+      cells: [],
+      courtroomSchedules: [],
+    };
+  }
+
+  const { data: bailTeamRows, error: bailTeamError } = await supabase
+    .from('teams_links')
+    .select(`*, type:teams_link_types(name), courtroom_type:courtroom_types(name, full_name)`)
+    .eq('bail_hub_id', bailHub.id);
+
+  if (bailTeamError) throw new Error(bailTeamError.message);
+  const bailTeams =
+    (bailTeamRows || []).map((row: any) => ({
+      id: row.id,
+      court_id: row.court_id ?? null,
+      url: row.url ?? null,
+      title: row.title ?? null,
+      schedule: row.schedule ?? null,
+      notes: row.notes ?? null,
+      type_id: row.type_id ?? null,
+      type_name: row.type?.name ?? row.type_name ?? null,
+      courtroom_type_id: row.courtroom_type_id ?? null,
+      courtroom_type_name: row.courtroom_type?.name ?? null,
+      courtroom_type_full_name: row.courtroom_type?.full_name ?? null,
+      courtroom: row.courtroom ?? null,
+      display_order: row.display_order ?? null,
+      phone_number: row.phone_number ?? null,
+      toll_free_number: row.toll_free_number ?? null,
+      conference_id: row.conference_id ?? null,
+      bail_hub_id: row.bail_hub_id ?? null,
+    })) ?? [];
+
+  const { data: bailContactRows, error: bailContactError } = await supabase
+    .from('bail_hub_contacts')
+    .select(
+      'id, bail_hub_id, contact_type, is_daytime, contact:bail_contacts(id, email, phone)'
+    )
+    .eq('bail_hub_id', bailHub.id);
+
+  if (bailContactError) throw new Error(bailContactError.message);
+  const bailContacts =
+    (bailContactRows || []).map((row: any) => ({
+      id: row.id,
+      bail_hub_id: row.bail_hub_id ?? null,
+      contact_type: row.contact_type ?? null,
+      email: row.contact?.email ?? null,
+      phone: row.contact?.phone ?? null,
+      is_daytime: row.is_daytime ?? null,
+      label: formatBailContactLabel(row.contact_type ?? null),
+    })) ?? [];
+
+  let cells: SheriffCell[] = [];
+  const isVr9Hub =
+    bailHub.id === 3 || bailHub.name?.trim().toUpperCase() === 'VR9';
+  if (isVr9Hub) {
+    const { data: hubCourts, error: hubCourtsError } = await supabase
+      .from('bail_hub_courts')
+      .select('court_id')
+      .eq('bail_hub_id', bailHub.id);
+
+    if (hubCourtsError) throw new Error(hubCourtsError.message);
+    const courtIds =
+      (hubCourts || [])
+        .map((row: any) => row.court_id)
+        .filter((id: number | null) => id != null) ?? [];
+
+    if (courtIds.length > 0) {
+      const { data: sheriffCellRows, error: sheriffCellError } =
+        await supabase
+          .from('sheriff_cells_courts')
+          .select(
+            `sheriff_cell:sheriff_cells(id, name, type_id, region_id, phones, catchment, type:sheriff_cell_types(name))`
+          )
+          .in('court_id', courtIds);
+
+      if (sheriffCellError) throw new Error(sheriffCellError.message);
+      const mapped =
+        (sheriffCellRows || [])
+          .map((row: any) => row.sheriff_cell)
+          .filter(Boolean)
+          .map((row: any) => ({
+            id: row.id,
+            name: row.name,
+            type_id: row.type_id ?? null,
+            type_name: row.type?.name ?? null,
+            region_id: row.region_id ?? null,
+            phones: row.phones ?? null,
+            catchment: row.catchment ?? null,
+          })) ?? [];
+      const unique = new Map<number, SheriffCell>();
+      mapped.forEach((cell: SheriffCell) => {
+        unique.set(cell.id, cell);
+      });
+      cells = Array.from(unique.values());
+    }
+  } else if (bailHub.court_id != null) {
+    const { data: sheriffCellRows, error: sheriffCellError } = await supabase
+      .from('sheriff_cells_courts')
+      .select(
+        `sheriff_cell:sheriff_cells(id, name, type_id, region_id, phones, catchment, type:sheriff_cell_types(name))`
+      )
+      .eq('court_id', bailHub.court_id);
+
+    if (sheriffCellError) throw new Error(sheriffCellError.message);
+    cells =
+      (sheriffCellRows || [])
+        .map((row: any) => row.sheriff_cell)
+        .filter(Boolean)
+        .map((row: any) => ({
+          id: row.id,
+          name: row.name,
+          type_id: row.type_id ?? null,
+          type_name: row.type?.name ?? null,
+          region_id: row.region_id ?? null,
+          phones: row.phones ?? null,
+          catchment: row.catchment ?? null,
+        })) ?? [];
+  }
+
+  let courtroomSchedules: CourtroomSchedule[] = [];
+  if (bailHub.court_id != null) {
+    const { data: scheduleRows, error: scheduleError } = await supabase
+      .from('courtroom_schedules')
+      .select(
+        `id, court_id, courtroom, weekdays, times_text, is_youth, courtroom_type, days_text`
+      )
+      .eq('court_id', bailHub.court_id);
+
+    if (scheduleError) throw new Error(scheduleError.message);
+    courtroomSchedules =
+      (scheduleRows || []).map((row: any) => ({
+        id: row.id,
+        court_id: row.court_id ?? null,
+        courtroom: row.courtroom ?? null,
+        weekdays: row.weekdays ?? null,
+        times_text: row.times_text ?? null,
+        is_youth: row.is_youth ?? null,
+        courtroom_type: row.courtroom_type ?? null,
+        days_text: row.days_text ?? null,
+      })) ?? [];
+  }
+
+  return {
+    bailHub,
+    bailTeams,
+    bailContacts,
+    cells,
+    courtroomSchedules,
   };
 }

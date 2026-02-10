@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { FaCircleExclamation, FaChevronRight } from "@/lib/icons";
 import { CardListItemAlert } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -7,18 +8,25 @@ import { cn } from "@/lib/utils";
 interface BailHubAlertProps {
   hubCourtName: string;
   hubCourtId?: number | null;
+  hubPath?: string | null;
   onNavigateToHub?: (courtId: number) => void;
 }
 
 export function BailHubAlert({
   hubCourtName,
   hubCourtId,
+  hubPath,
   onNavigateToHub,
 }: BailHubAlertProps) {
-  const canNavigate = hubCourtId && onNavigateToHub;
+  const router = useRouter();
+  const canNavigate = Boolean(hubPath) || (hubCourtId && onNavigateToHub);
 
   const handleClick = () => {
-    if (canNavigate) {
+    if (hubPath) {
+      router.push(hubPath);
+      return;
+    }
+    if (hubCourtId && onNavigateToHub) {
       onNavigateToHub(hubCourtId);
     }
   };

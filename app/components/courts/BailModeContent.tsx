@@ -376,9 +376,10 @@ export function BailModeContent({
   isCopied,
   onNavigateToCourt,
 }: BailModeContentProps) {
+  const isVr9Hub = bailHub?.name?.trim().toUpperCase() === "VR9";
   const showBailHubAlert =
-    bailHub?.court_id != null && bailHub.court_id !== courtId;
-  const isHubCourt = bailHub?.court_id === courtId;
+    !isVr9Hub && bailHub?.court_id != null && bailHub.court_id !== courtId;
+  const isHubCourt = bailHub?.court_id === courtId || isVr9Hub;
   const showCombined = !isHubCourt;
   const showContacts = showCombined || expandedSection === "contacts";
   const showTeams = showCombined || expandedSection === "teams";
@@ -388,7 +389,8 @@ export function BailModeContent({
       {showBailHubAlert && (
         <BailHubAlert
           hubCourtName={bailHub.name}
-          hubCourtId={bailHub.court_id}
+          hubCourtId={isVr9Hub ? null : bailHub.court_id}
+          hubPath={isVr9Hub ? "/bail-hub/vr9" : null}
           onNavigateToHub={onNavigateToCourt}
         />
       )}

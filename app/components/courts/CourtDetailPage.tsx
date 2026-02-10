@@ -16,6 +16,7 @@ import {
 } from "./BailModeContent";
 import {
   useBailDetails,
+  useBailHubDetails,
   useCourtScheduleDates,
   useCourtSections,
 } from "@/lib/hooks";
@@ -57,10 +58,22 @@ export function CourtDetailPage({
     isLoading: bailLoading,
     error: bailError,
   } = useBailDetails(court, isBailMode);
+  const isVr9Hub =
+    bailHubSummary?.id === 3 ||
+    bailHubSummary?.name?.trim().toUpperCase() === "VR9";
+  const vr9HubId = isVr9Hub ? 3 : Number.NaN;
+  const {
+    data: vr9Details,
+    isLoading: vr9Loading,
+    error: vr9Error,
+  } = useBailHubDetails(vr9HubId);
 
   // Separate expanded section state for each mode
   const [courtActiveSection, setCourtActiveSection] =
     useState<CourtSection>("contacts");
+  const [courtSectionsByMode, setCourtSectionsByMode] = useState<
+    Partial<Record<CourtViewMode, CourtSection>>
+  >({});
   const showSchedule = court.is_circuit || viewMode === "fnc";
   const scheduleEnabled = courtActiveSection === "schedule" && showSchedule;
   const { data: scheduleDates, isLoading: scheduleLoading } =
@@ -69,10 +82,15 @@ export function CourtDetailPage({
     useState<BailAccordionSection>("contacts");
   const isBailHubLocation = bailHubSummary?.court_id === court.id;
   const hasBailData = Boolean(bailHubSummary);
-  const bailHub = bailDetails?.bailHub ?? null;
-  const bailTeams = bailDetails?.bailTeams ?? [];
-  const bailContacts = bailDetails?.bailContacts ?? [];
-  const cells = bailDetails?.cells ?? [];
+  const effectiveBailDetails = isVr9Hub ? vr9Details : bailDetails;
+  const effectiveBailLoading = isVr9Hub ? vr9Loading : bailLoading;
+  const effectiveBailError = isVr9Hub ? vr9Error : bailError;
+  const bailHub = effectiveBailDetails?.bailHub ?? null;
+  const bailTeams = effectiveBailDetails?.bailTeams ?? [];
+  const bailContacts = effectiveBailDetails?.bailContacts ?? [];
+  const cells = effectiveBailDetails?.cells ?? [];
+  const courtroomSchedulesForBail =
+    effectiveBailDetails?.courtroomSchedules ?? [];
   const allowedModes = useMemo(() => {
     const modes: CourtViewMode[] = [];
     if (court.has_provincial) modes.push("provincial");
@@ -94,6 +112,42 @@ export function CourtDetailPage({
       setViewMode(allowedModes[0]);
     }
   }, [allowedModes, viewMode]);
+
+  const allowedCourtSections = useMemo(() => {
+    const sections: CourtSection[] = [];
+    if (contacts.count > 0) sections.push("contacts");
+    if (showSchedule) sections.push("schedule");
+    if (teamsLinks.length > 0 && viewMode !== "fnc") sections.push("teams");
+    return sections;
+  }, [contacts.count, showSchedule, teamsLinks.length, viewMode]);
+
+  useEffect(() => {
+    if (isBailMode) return;
+    const preferred =
+      courtSectionsByMode[viewMode] ||
+      (allowedCourtSections.includes("contacts") ? "contacts" : null);
+    const next =
+      preferred && allowedCourtSections.includes(preferred)
+        ? preferred
+        : allowedCourtSections[0] ?? null;
+    if (next !== courtActiveSection) {
+      setCourtActiveSection(next);
+    }
+  }, [
+    allowedCourtSections,
+    courtActiveSection,
+    courtSectionsByMode,
+    isBailMode,
+    viewMode,
+  ]);
+
+  const handleCourtSectionChange = useCallback(
+    (section: CourtSection) => {
+      setCourtActiveSection(section);
+      setCourtSectionsByMode((prev) => ({ ...prev, [viewMode]: section }));
+    },
+    [viewMode],
+  );
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -137,13 +191,13 @@ export function CourtDetailPage({
 
         {/* Mode-specific nav pills */}
         {isBailMode ? (
-          bailLoading ? (
+          effectiveBailLoading ? (
             <div className="flex gap-2 px-3 py-2">
               <Skeleton className="h-8 flex-1 rounded-full" />
               <Skeleton className="h-8 flex-1 rounded-full" />
             </div>
           ) : bailHub ? (
-            isBailHubLocation ? (
+            isBailHubLocation || isVr9Hub ? (
               <BailModeNav
                 bailTeams={bailTeams}
                 expandedSection={bailExpandedSection}
@@ -156,8 +210,9 @@ export function CourtDetailPage({
             contactCount={contacts.count}
             teamsLinks={teamsLinks}
             showSchedule={showSchedule}
+            viewMode={viewMode}
             activeSection={courtActiveSection}
-            onNavigateToSection={setCourtActiveSection}
+            onNavigateToSection={handleCourtSectionChange}
           />
         )}
       </StickyHeader>
@@ -169,21 +224,23 @@ export function CourtDetailPage({
         onScroll={handleScroll}
       >
         {isBailMode ? (
-          bailLoading ? (
+          effectiveBailLoading ? (
             <div className="p-3 space-y-3">
               <Skeleton className="h-16 w-full rounded-lg" />
               <Skeleton className="h-16 w-full rounded-lg" />
               <Skeleton className="h-16 w-full rounded-lg" />
             </div>
-          ) : bailError ? (
-            <div className="p-3 text-sm text-destructive">{bailError}</div>
+          ) : effectiveBailError ? (
+            <div className="p-3 text-sm text-destructive">
+              {effectiveBailError}
+            </div>
           ) : bailHub ? (
             <BailModeContent
               courtId={court.id}
               bailHub={bailHub}
               bailContacts={bailContacts}
               bailTeams={bailTeams}
-              courtroomSchedules={courtroomSchedules}
+              courtroomSchedules={courtroomSchedulesForBail}
               cells={cells}
               expandedSection={bailExpandedSection}
               onCopy={copyToClipboard}

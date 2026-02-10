@@ -24,6 +24,7 @@ interface CourtModeNavProps {
   onNavigateToSection: (section: CourtSection) => void;
   contactCount: number;
   showSchedule: boolean;
+  viewMode: CourtViewMode;
 }
 
 export function CourtModeNav({
@@ -32,6 +33,7 @@ export function CourtModeNav({
   onNavigateToSection,
   contactCount,
   showSchedule,
+  viewMode,
 }: CourtModeNavProps) {
   const navButtons = useMemo(
     () => [
@@ -51,10 +53,10 @@ export function CourtModeNav({
         key: "teams",
         label: "Teams",
         icon: <FaVideo className="w-4 h-4" />,
-        show: teamsLinks.length > 0,
+        show: teamsLinks.length > 0 && viewMode !== "fnc",
       },
     ],
-    [contactCount, showSchedule, teamsLinks.length],
+    [contactCount, showSchedule, teamsLinks.length, viewMode],
   );
 
   return (
