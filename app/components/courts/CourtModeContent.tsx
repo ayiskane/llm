@@ -157,6 +157,7 @@ export function CourtModeContent({
           <TeamsCard
             links={teamsLinks}
             schedules={courtroomSchedules}
+            prioritizeJcm
             onCopy={onCopy}
             isCopied={isCopied}
           />

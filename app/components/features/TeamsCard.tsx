@@ -89,6 +89,7 @@ interface TeamsCardProps {
   schedules: CourtroomSchedule[];
   filterVBTriage?: boolean;
   pinVBTriage?: boolean;
+  prioritizeJcm?: boolean;
   onCopy?: (text: string, id: string) => void;
   isCopied?: (id: string) => boolean;
 }
@@ -98,6 +99,7 @@ export function TeamsCard({
   schedules,
   filterVBTriage = true,
   pinVBTriage = false,
+  prioritizeJcm = false,
   onCopy,
   isCopied,
 }: TeamsCardProps) {
@@ -138,14 +140,20 @@ export function TeamsCard({
         if (!aIsTriage && bIsTriage) return 1;
       }
 
-      const aIsJcm = a.courtroom_type_id === JCM_TYPE_ID;
-      const bIsJcm = b.courtroom_type_id === JCM_TYPE_ID;
-      if (aIsJcm && !bIsJcm) return -1;
-      if (!aIsJcm && bIsJcm) return 1;
+      if (prioritizeJcm) {
+        const aIsJcm = a.courtroom_type_id === JCM_TYPE_ID;
+        const bIsJcm = b.courtroom_type_id === JCM_TYPE_ID;
+        const aIsJcmFxd = aIsJcm && /FXD/i.test(aName);
+        const bIsJcmFxd = bIsJcm && /FXD/i.test(bName);
+        if (aIsJcmFxd && !bIsJcmFxd) return -1;
+        if (!aIsJcmFxd && bIsJcmFxd) return 1;
+        if (aIsJcm && !bIsJcm) return -1;
+        if (!aIsJcm && bIsJcm) return 1;
+      }
 
       return extractNumber(aName) - extractNumber(bName);
     });
-  }, [links, filterVBTriage, pinVBTriage]);
+  }, [links, filterVBTriage, pinVBTriage, prioritizeJcm]);
 
   const typeOptions = useMemo(() => {
     const map = new Map<number, string>();
