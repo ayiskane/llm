@@ -7,10 +7,10 @@ import type {
   TeamsLink,
 } from '@/types';
 
-export type CourtTypeFilter = 'all' | 'staffed' | 'circuit';
-export type CourtLevelFilter = 'all' | 'pc' | 'sc';
+type CourtTypeFilter = 'all' | 'staffed' | 'circuit';
+type CourtLevelFilter = 'all' | 'pc' | 'sc';
 
-export interface CourtsIndexParams {
+interface CourtsIndexParams {
   q?: string;
   region?: number;
   courtType?: CourtTypeFilter;
@@ -35,6 +35,7 @@ const BAIL_CONTACT_LABELS: Record<string, string> = {
   crown_525: '525 Crown',
   crown_remand: 'Remand Crown',
   jcm_bail: 'Bail JCM',
+  crown_youth_bail: "Bail Crown (Youth)",
 };
 
 function formatBailContactLabel(contactType: string | null): string | null {
@@ -106,7 +107,7 @@ export async function fetchCourtScheduleDates(courtId: number): Promise<CourtSch
       id,
       court_id,
       schedule_type,
-      schedule_dates:court_schedule_dates(id, date_start, date_end, updated_at)
+      schedule_dates:court_schedule_dates(id, date_start, date_end)
     `)
     .eq('court_id', courtId);
 
@@ -120,8 +121,6 @@ export async function fetchCourtScheduleDates(courtId: number): Promise<CourtSch
       id: number;
       date_start: string | null;
       date_end: string | null;
-      notes: string | null;
-      updated_at?: string | null;
     }> | null;
   }>;
 
@@ -136,9 +135,7 @@ export async function fetchCourtScheduleDates(courtId: number): Promise<CourtSch
         court_id: schedule.court_id,
         date_start: dateRow.date_start,
         date_end: dateRow.date_end ?? null,
-        notes: dateRow.notes ?? null,
         schedule_type: schedule.schedule_type ?? null,
-        schedule_label: schedule.schedule_type ?? null,
       });
     }
   }
@@ -181,7 +178,6 @@ export async function fetchCourtsIndex(
         has_supreme,
         is_circuit,
         region_id,
-        updated_at,
         region:regions(id, name, code)
       `
     )
@@ -464,8 +460,10 @@ export async function fetchBailDetails(
       })) ?? [];
 
     const { data: bailContactRows, error: bailContactError } = await supabase
-      .from('bail_contacts')
-      .select('id, bail_hub_id, contact_type, email, phone, is_daytime')
+      .from('bail_hub_contacts')
+      .select(
+        'id, bail_hub_id, contact_type, is_daytime, contact:bail_contacts(id, email, phone)'
+      )
       .eq('bail_hub_id', bailHub.id);
 
     if (bailContactError) throw new Error(bailContactError.message);
@@ -474,8 +472,8 @@ export async function fetchBailDetails(
         id: row.id,
         bail_hub_id: row.bail_hub_id ?? null,
         contact_type: row.contact_type ?? null,
-        email: row.email ?? null,
-        phone: row.phone ?? null,
+        email: row.contact?.email ?? null,
+        phone: row.contact?.phone ?? null,
         is_daytime: row.is_daytime ?? null,
         label: formatBailContactLabel(row.contact_type ?? null),
       })) ?? [];

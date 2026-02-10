@@ -7,6 +7,7 @@ import {
   FaCheck,
   FaDungeon,
   FaPhoneSolid,
+  FaChevronDown,
 } from "@/lib/icons";
 import { cn, formatPhone, makeCall } from "@/lib/utils";
 import { cellIcon, iconSize, text } from "@/lib/config/theme";
@@ -342,6 +343,92 @@ function CellListRow({ label, phone, isPolice }: CellListRowProps) {
 }
 
 // ============================================================================
+// CELL LIST GROUP ROW (MULTIPLE PHONES)
+// ============================================================================
+
+interface CellListGroupRowProps {
+  cell: SheriffCell;
+  phones: string[];
+  isPolice: boolean;
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+function CellListGroupRow({
+  cell,
+  phones,
+  isPolice,
+  isOpen,
+  onToggle,
+}: CellListGroupRowProps) {
+  const { bg: iconBg, color: iconColor } = cellIcon;
+
+  return (
+    <div className="border-b border-border/50 last:border-b-0">
+      <CardListRow
+        variant="outlined"
+        role="button"
+        tabIndex={0}
+        onClick={onToggle}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onToggle();
+          }
+        }}
+        className="flex items-center gap-3 px-4 py-2.5 first:rounded-t-none last:rounded-b-none cursor-pointer"
+      >
+        <div
+          className={cn(
+            "w-8 h-8 rounded-lg flex items-center justify-center",
+            iconBg,
+          )}
+        >
+          <CellIcon isPolice={isPolice} className={cn(iconSize.md, iconColor)} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className={text.roleLabel}>{cell.name}</div>
+          <div className={cn(text.monoValue, "text-foreground/80")}>
+            {phones.length} {phones.length === 1 ? "Number" : "Numbers"}
+          </div>
+        </div>
+        <FaChevronDown
+          className={cn(
+            iconSize.sm,
+            "text-muted-foreground/60 transition-transform",
+            isOpen && "rotate-180",
+          )}
+        />
+      </CardListRow>
+
+      <div
+        className={cn(
+          "overflow-hidden transition-[max-height] duration-300",
+          isOpen ? "max-h-64" : "max-h-0",
+        )}
+      >
+        <div className="bg-slate-950/70 border-t border-border/30">
+          <div className="py-2 px-4 space-y-1.5">
+            {phones.map((phone, idx) => (
+              <div key={idx} className="flex items-center gap-2.5">
+                <span className="w-5 h-5 rounded bg-blue-500/80 flex items-center justify-center text-[10px] text-white font-semibold">
+                  {idx + 1}
+                </span>
+                <span className="flex-1 text-xs text-blue-400 font-mono">
+                  {formatPhone(phone)}
+                </span>
+                <CopyButton text={phone} className="p-1.5" />
+                <CallButton phone={phone} className="p-1.5" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // CELL LIST COMPONENT
 // ============================================================================
 
@@ -356,6 +443,8 @@ export function CellList({
   maxDisplay = 20,
   variant = "card",
 }: CellListProps) {
+  const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
+
   if (cells.length === 0) return null;
 
   const sortedCells = [...cells].sort((a, b) => {
@@ -371,7 +460,7 @@ export function CellList({
   if (variant === "list") {
     return (
       <div className="space-y-0">
-        {displayCells.flatMap((cell) => {
+        {displayCells.map((cell) => {
           const isPolice = isPoliceCell(cell);
           const phones = cell.phones ?? [];
           if (phones.length === 0) {
@@ -383,18 +472,32 @@ export function CellList({
               />
             );
           }
-          return phones.map((phone, idx) => (
-            <CellListRow
-              key={`${cell.id}-phone-${idx}`}
-              label={
-                phones.length > 1
-                  ? `${cell.name} Line ${idx + 1}`
-                  : cell.name
-              }
-              phone={phone}
+          if (phones.length === 1) {
+            return (
+              <CellListRow
+                key={`${cell.id}-phone`}
+                label={cell.name}
+                phone={phones[0]}
+                isPolice={isPolice}
+              />
+            );
+          }
+
+          const rowKey = String(cell.id);
+          const isOpen = openRows[rowKey] ?? false;
+
+          return (
+            <CellListGroupRow
+              key={cell.id}
+              cell={cell}
+              phones={phones}
               isPolice={isPolice}
+              isOpen={isOpen}
+              onToggle={() =>
+                setOpenRows((prev) => ({ ...prev, [rowKey]: !isOpen }))
+              }
             />
-          ));
+          );
         })}
         {cells.length > maxDisplay && (
           <div className="text-xs text-muted-foreground text-center py-2 border-t border-border/50">

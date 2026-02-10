@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { CourtDetailPage } from "@/app/components/court";
+import { CourtDetailPage } from "@/app/components/courts";
 import { useCourtDetails } from "@/lib/hooks";
 import { Button } from "@/components/ui/button";
 import {

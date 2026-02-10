@@ -78,11 +78,6 @@ const DAY_ORDER = [
   { key: "fri", label: "FRI" },
 ];
 
-function isJcmFxdLabel(value: string): boolean {
-  const upper = value.toUpperCase();
-  return upper.includes("JCM") && upper.includes("FXD");
-}
-
 const JCM_TYPE_ID = 10;
 
 // ============================================================================
@@ -143,10 +138,10 @@ export function TeamsCard({
         if (!aIsTriage && bIsTriage) return 1;
       }
 
-      const aIsJcmFxd = isJcmFxdLabel(aName);
-      const bIsJcmFxd = isJcmFxdLabel(bName);
-      if (aIsJcmFxd && !bIsJcmFxd) return -1;
-      if (!aIsJcmFxd && bIsJcmFxd) return 1;
+      const aIsJcm = a.courtroom_type_id === JCM_TYPE_ID;
+      const bIsJcm = b.courtroom_type_id === JCM_TYPE_ID;
+      if (aIsJcm && !bIsJcm) return -1;
+      if (!aIsJcm && bIsJcm) return 1;
 
       return extractNumber(aName) - extractNumber(bName);
     });
@@ -317,19 +312,27 @@ export function TeamsCard({
               ? link.courtroom_type_name.trim()
               : "";
           const typeDescription = link.courtroom_type_full_name?.trim() || "";
+          // Tag source: courtroom_type_name (e.g., ASC/FXD) comes from teams_links.courtroom_type_id -> courtroom_types.name.
           const courtroomLabel = formatCourtroom(link.courtroom);
-          const isJcmFxdLink = isJcmFxdLabel(
-            link.courtroom || link.type_name || "",
-          );
+          // JCM links are identified by courtroom_type_id = 10.
+          const isJcmLink = link.courtroom_type_id === JCM_TYPE_ID;
           const scheduleBucket =
-            isJcmFxdLink && jcmBuckets.all.length > 0
+            isJcmLink && jcmBuckets.all.length > 0
               ? jcmBuckets
               : (scheduleBucketsByCourtroom.get(
                   normalizeCourtroom(link.courtroom),
                 ) ?? { all: [], regular: [], youth: [] });
-          const scheduleEntries = scheduleBucket.all;
-          const regularSchedules = scheduleBucket.regular;
-          const youthSchedules = scheduleBucket.youth;
+          const linkTypeId = link.courtroom_type_id ?? null;
+          const filterByType = (entries: CourtroomSchedule[]) => {
+            if (!linkTypeId) return entries;
+            const matches = entries.filter((schedule) =>
+              (schedule.courtroom_type ?? []).includes(linkTypeId),
+            );
+            return matches.length > 0 ? matches : entries;
+          };
+          const scheduleEntries = filterByType(scheduleBucket.all);
+          const regularSchedules = filterByType(scheduleBucket.regular);
+          const youthSchedules = filterByType(scheduleBucket.youth);
           const hasSchedule = scheduleEntries.length > 0;
           const scheduleCount = scheduleEntries.length;
           const hasDialIn =
