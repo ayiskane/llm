@@ -223,22 +223,23 @@ export function CourtsIndexPage() {
           </div>
         }
         headerAction={
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={isFilterEnabled ? () => setIsFilterOpen(true) : undefined}
-            disabled={!isFilterEnabled}
-            className={`relative w-10 h-10 rounded-xl border ${
-              hasActiveFilters && isFilterEnabled
-                ? "bg-primary/20 border-primary/50 text-primary"
-                : "bg-secondary/50 border-border text-muted-foreground"
-            }`}
-          >
-            <FaSliders className="w-4 h-4" />
-            {hasActiveFilters && isFilterEnabled && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full" />
-            )}
-          </Button>
+          isFilterEnabled ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsFilterOpen(true)}
+              className={`relative w-10 h-10 rounded-xl border ${
+                hasActiveFilters
+                  ? "bg-primary/20 border-primary/50 text-primary"
+                  : "bg-secondary/50 border-border text-muted-foreground"
+              }`}
+            >
+              <FaSliders className="w-4 h-4" />
+              {hasActiveFilters && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full" />
+              )}
+            </Button>
+          ) : null
         }
       />
 
