@@ -330,6 +330,18 @@ export function TeamsCard({
           const surreyJcmSuffix = surreyJcmMatch
             ? `(${surreyJcmMatch[1]})`
             : null;
+          const surrey312Match =
+            link.court_id === SURREY_COURT_ID
+              ? courtroomLabel.match(/^312\s*\(([^)]+)\)\s*$/i)
+              : null;
+          const surrey312Suffix = surrey312Match
+            ? `(${surrey312Match[1]})`
+            : null;
+          const surreyStackedLabel = surreyJcmMatch
+            ? { main: "JCM FXD", sub: surreyJcmSuffix }
+            : surrey312Match
+              ? { main: "312", sub: surrey312Suffix }
+              : null;
           // JCM links are identified by courtroom_type_id = 10.
           const isJcmLink = link.courtroom_type_id === JCM_TYPE_ID;
           const scheduleBucket =
@@ -387,11 +399,11 @@ export function TeamsCard({
               >
                 <div className="flex items-center px-4 py-2.5 gap-3">
                   <div className="flex min-w-0 flex-1 items-center gap-2">
-                    {surreyJcmMatch ? (
+                    {surreyStackedLabel ? (
                       <div className="text-sm font-medium text-foreground leading-tight">
-                        <div>JCM FXD</div>
+                        <div>{surreyStackedLabel.main}</div>
                         <div className="text-[10px] text-muted-foreground/70">
-                          {surreyJcmSuffix}
+                          {surreyStackedLabel.sub}
                         </div>
                       </div>
                     ) : (
