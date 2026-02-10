@@ -2,14 +2,24 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FaMagnifyingGlass, FaLocationDot, FaSliders } from "@/lib/icons";
+import { FaLocationDot, FaSliders } from "@/lib/icons";
 import { AlphabetNav } from "@/app/components/ui";
-import { Card, CardListItem, CardListItemTitle, CardListItemDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardListItem,
+  CardListItemTitle,
+  CardListItemDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { REGIONS } from "@/lib/config/constants";
 import { useCourts, type CourtIndexItem } from "@/lib/hooks/useCourts";
@@ -21,7 +31,7 @@ import { getCourtDisplayName } from "@/lib/utils";
 
 /** Pre-computed lookup map for region codes */
 const REGION_CODE_MAP = Object.fromEntries(
-  REGIONS.map((r) => [r.id, r.code])
+  REGIONS.map((r) => [r.id, r.code]),
 ) as Record<number, string>;
 
 /** Get region code by ID from pre-computed map */
@@ -62,48 +72,6 @@ interface Filters {
   courtLevel: CourtLevelFilter;
 }
 
-// =============================================================================
-// SUB-COMPONENTS
-// =============================================================================
-
-function SearchBar({
-  onFilterClick,
-  hasActiveFilters,
-}: {
-  onFilterClick: () => void;
-  hasActiveFilters: boolean;
-}) {
-  return (
-    <div className="flex gap-2">
-      <div className="relative flex-1">
-        <FaMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
-        <Input
-          type="text"
-          variant="search"
-          size="search"
-          placeholder="Search courts..."
-          className="pl-11 pr-10"
-        />
-      </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={onFilterClick}
-        className={`relative w-10 h-10 rounded-xl border ${
-          hasActiveFilters
-            ? "bg-primary/20 border-primary/50 text-primary"
-            : "bg-secondary/50 border-border text-muted-foreground"
-        }`}
-      >
-        <FaSliders className="w-4 h-4" />
-        {hasActiveFilters && (
-          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full" />
-        )}
-      </Button>
-    </div>
-  );
-}
-
 function FilterModalContent({
   filters,
   onFilterChange,
@@ -117,31 +85,52 @@ function FilterModalContent({
       <div className="flex gap-2">
         <Tabs
           value={filters.courtType}
-          onValueChange={(value) => onFilterChange({ ...filters, courtType: value as CourtTypeFilter })}
+          onValueChange={(value) =>
+            onFilterChange({ ...filters, courtType: value as CourtTypeFilter })
+          }
           className="flex-1"
         >
           <TabsList className="h-8 w-full">
-            <TabsTrigger value="all" className="flex-1 text-xs px-2.5 py-1">All</TabsTrigger>
-            <TabsTrigger value="staffed" className="flex-1 text-xs px-2.5 py-1">Staffed</TabsTrigger>
-            <TabsTrigger value="circuit" className="flex-1 text-xs px-2.5 py-1">Circuit</TabsTrigger>
+            <TabsTrigger value="all" className="flex-1 text-xs px-2.5 py-1">
+              All
+            </TabsTrigger>
+            <TabsTrigger value="staffed" className="flex-1 text-xs px-2.5 py-1">
+              Staffed
+            </TabsTrigger>
+            <TabsTrigger value="circuit" className="flex-1 text-xs px-2.5 py-1">
+              Circuit
+            </TabsTrigger>
           </TabsList>
         </Tabs>
         <Tabs
           value={filters.courtLevel}
-          onValueChange={(value) => onFilterChange({ ...filters, courtLevel: value as CourtLevelFilter })}
+          onValueChange={(value) =>
+            onFilterChange({
+              ...filters,
+              courtLevel: value as CourtLevelFilter,
+            })
+          }
           className="flex-1"
         >
           <TabsList className="h-8 w-full">
-            <TabsTrigger value="all" className="flex-1 text-xs px-2.5 py-1">All</TabsTrigger>
-            <TabsTrigger value="pc" className="flex-1 text-xs px-2.5 py-1">PC</TabsTrigger>
-            <TabsTrigger value="sc" className="flex-1 text-xs px-2.5 py-1">SC</TabsTrigger>
+            <TabsTrigger value="all" className="flex-1 text-xs px-2.5 py-1">
+              All
+            </TabsTrigger>
+            <TabsTrigger value="pc" className="flex-1 text-xs px-2.5 py-1">
+              PC
+            </TabsTrigger>
+            <TabsTrigger value="sc" className="flex-1 text-xs px-2.5 py-1">
+              SC
+            </TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
       {/* Region */}
       <Tabs
         value={String(filters.region)}
-        onValueChange={(value) => onFilterChange({ ...filters, region: Number(value) })}
+        onValueChange={(value) =>
+          onFilterChange({ ...filters, region: Number(value) })
+        }
       >
         <TabsList className="h-8 w-full">
           {REGIONS.map((region) => (
@@ -177,9 +166,7 @@ function CourtListItems({
       <Card variant="list">
         {courts.map((court) => (
           <CardListItem key={court.id} onClick={() => onCourtClick(court.id)}>
-            <CardListItemTitle>
-              {getCourtDisplayName(court)}
-            </CardListItemTitle>
+            <CardListItemTitle>{getCourtDisplayName(court)}</CardListItemTitle>
             <CardListItemDescription>
               <Badge variant="region" className="gap-1">
                 <span>{getRegionCode(court.region_id)}</span>
@@ -332,19 +319,28 @@ export function CourtsIndexPage() {
       </div>
     );
   }
-  
+
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Header */}
       <div className="shrink-0 bg-background border-b border-border">
-        <div className="px-4 pt-4 pb-2">
+        <div className="px-4 pt-4 pb-3 flex items-center justify-between">
           <h1 className="text-xl font-bold text-foreground">BC Court Index</h1>
-        </div>
-        <div className="px-4 pb-3">
-          <SearchBar
-            onFilterClick={() => setIsFilterOpen(true)}
-            hasActiveFilters={hasActiveFilters}
-          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsFilterOpen(true)}
+            className={`relative w-10 h-10 rounded-xl border ${
+              hasActiveFilters
+                ? "bg-primary/20 border-primary/50 text-primary"
+                : "bg-secondary/50 border-border text-muted-foreground"
+            }`}
+          >
+            <FaSliders className="w-4 h-4" />
+            {hasActiveFilters && (
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full" />
+            )}
+          </Button>
         </div>
       </div>
 
@@ -365,10 +361,7 @@ export function CourtsIndexPage() {
                 Reset
               </Button>
             )}
-            <Button
-              onClick={() => setIsFilterOpen(false)}
-              className="flex-1"
-            >
+            <Button onClick={() => setIsFilterOpen(false)} className="flex-1">
               Apply Filters
             </Button>
           </SheetFooter>

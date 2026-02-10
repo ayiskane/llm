@@ -129,7 +129,7 @@ export default function LoginPage() {
       </div>
 
       <p className="mt-8 text-xs text-slate-600">
-        For BC Legal Professionals Only
+        For Licensed BC Lawyers Only.
       </p>
     </div>
   );

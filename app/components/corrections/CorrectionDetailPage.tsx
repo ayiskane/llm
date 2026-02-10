@@ -15,9 +15,10 @@ import {
   FaPenLine,
 } from "@/lib/icons";
 import { cn, openInMaps } from "@/lib/utils";
+import { sectionColorMap, type SectionColor } from "@/lib/config/theme";
+import { Badge } from "@/components/ui/badge";
 import { StickyHeader } from "../layouts/StickyHeader";
-import { Section, PillButton, SearchBar } from "../ui";
-import { Tag } from "../ui/Tag";
+import { Section, PillButton } from "../ui";
 import type { CorrectionalCentre } from "@/types";
 
 // =============================================================================
@@ -31,6 +32,31 @@ const CENTRE_TYPE = {
 } as const;
 
 type AccordionSection = "contact" | "callback" | "visits" | null;
+
+function TagBadge({
+  children,
+  color,
+  size = "sm",
+}: {
+  children: React.ReactNode;
+  color: SectionColor;
+  size?: "sm" | "md";
+}) {
+  const sizeClasses =
+    size === "sm" ? "px-2 py-1.5 text-[9px]" : "px-2.5 py-1.5 text-[10px]";
+
+  return (
+    <Badge
+      className={cn(
+        sizeClasses,
+        "rounded font-mono inline-flex items-center justify-center leading-none tracking-widest",
+        sectionColorMap[color].badge,
+      )}
+    >
+      {children}
+    </Badge>
+  );
+}
 
 // =============================================================================
 // COPY BUTTON COMPONENT
@@ -125,18 +151,18 @@ function CentreHeader({
           )}
         >
           {centre.short_name && (
-            <Tag color="slate" size="sm">
+            <TagBadge color="slate" size="sm">
               {centre.short_name}
-            </Tag>
+            </TagBadge>
           )}
           {isYouth && (
-            <Tag color="slate" size="sm">
+            <TagBadge color="slate" size="sm">
               YOUTH
-            </Tag>
+            </TagBadge>
           )}
-          <Tag color={isFederal ? "purple" : "emerald"} size="sm">
+          <TagBadge color={isFederal ? "purple" : "emerald"} size="sm">
             {isFederal ? "FED" : "PROV"}
-          </Tag>
+          </TagBadge>
         </div>
 
         {collapsed && centre.address && (
@@ -167,8 +193,10 @@ function CentreHeader({
           )}
 
           <div className="flex flex-wrap items-center justify-start gap-1.5 mt-2 pb-1">
-            {centre.short_name && <Tag color="slate">{centre.short_name}</Tag>}
-            {isYouth && <Tag color="slate">YOUTH</Tag>}
+            {centre.short_name && (
+              <TagBadge color="slate">{centre.short_name}</TagBadge>
+            )}
+            {isYouth && <TagBadge color="slate">YOUTH</TagBadge>}
             <span className="text-slate-600">|</span>
             {(regionCode || centre.region_name) && (
               <span className="px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
@@ -179,9 +207,9 @@ function CentreHeader({
                 {centre.region_name && <span>{centre.region_name}</span>}
               </span>
             )}
-            <Tag color={isFederal ? "purple" : "emerald"}>
+            <TagBadge color={isFederal ? "purple" : "emerald"}>
               {isFederal ? "FEDERAL" : "PROVINCIAL"}
-            </Tag>
+            </TagBadge>
           </div>
         </div>
       </div>
@@ -423,7 +451,11 @@ function EDisclosureSection({ centre }: { centre: CorrectionalCentre }) {
         <span className="flex-1 text-left text-[13px] uppercase tracking-wider text-slate-200 font-medium">
           e-Disclosure
         </span>
-        {centre.require_padlock && <Tag color="amber" size="sm">PADLOCK REQ</Tag>}
+        {centre.require_padlock && (
+          <TagBadge color="amber" size="sm">
+            PADLOCK REQ
+          </TagBadge>
+        )}
       </div>
 
       <div className="bg-slate-900/20 p-4">
@@ -490,7 +522,6 @@ export function CorrectionDetailPage({
     new Set(["contact", "callback", "visits"]),
   );
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
@@ -590,14 +621,6 @@ export function CorrectionDetailPage({
           >
             <FaArrowLeft className="w-5 h-5" />
           </button>
-
-          <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            onClear={() => setSearchQuery("")}
-            placeholder="Search centres..."
-            className="flex-1"
-          />
         </div>
 
         <CentreHeader centre={centre} collapsed={isHeaderCollapsed} />

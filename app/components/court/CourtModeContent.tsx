@@ -8,7 +8,12 @@ import { TeamsCard } from "../features/TeamsCard";
 import { CourtFieldContacts } from "../features/ContactCard";
 import { ScheduleCard } from "../features/ScheduleCard";
 import type { ContactEmailGroup, ContactPhoneItem } from "@/lib/hooks";
-import type { CourtWithRegion, CourtScheduleDate, CourtroomSchedule, TeamsLink } from "@/types";
+import type {
+  CourtWithRegion,
+  CourtScheduleDate,
+  CourtroomSchedule,
+  TeamsLink,
+} from "@/types";
 
 export type CourtSection = "contacts" | "schedule" | "teams" | null;
 export type CourtViewMode = "provincial" | "supreme" | "fnc";

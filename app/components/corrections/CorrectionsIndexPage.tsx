@@ -2,13 +2,8 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import {
-  FaMagnifyingGlass,
-  FaXmark,
-  FaSliders,
-  FaBuildingShield,
-} from "@/lib/icons";
-import { AlphabetNav, FilterModal } from "@/app/components/ui";
+import { FaBuildingShield } from "@/lib/icons";
+import { AlphabetNav } from "@/app/components/ui";
 import { cn } from "@/lib/config/theme";
 import { useCorrectionals } from "@/lib/hooks";
 import type { CorrectionalCentre } from "@/types";
@@ -57,128 +52,18 @@ interface Filters {
 }
 
 function groupByLetter(centres: CorrectionalCentre[]) {
-  const grouped = centres.reduce((acc, c) => {
-    const letter = /[A-Z]/.test(c.name[0]) ? c.name[0].toUpperCase() : "#";
-    (acc[letter] ??= []).push(c);
-    return acc;
-  }, {} as Record<string, CorrectionalCentre[]>);
+  const grouped = centres.reduce(
+    (acc, c) => {
+      const letter = /[A-Z]/.test(c.name[0]) ? c.name[0].toUpperCase() : "#";
+      (acc[letter] ??= []).push(c);
+      return acc;
+    },
+    {} as Record<string, CorrectionalCentre[]>,
+  );
 
   return Object.entries(grouped)
     .sort(([a], [b]) => (a === "#" ? 1 : b === "#" ? -1 : a.localeCompare(b)))
     .map(([letter, centres]) => ({ letter, centres }));
-}
-
-// =============================================================================
-// SUB-COMPONENTS
-// =============================================================================
-
-function SearchBar({
-  value,
-  onChange,
-  onClear,
-  onFilterClick,
-  hasActiveFilters,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  onClear: () => void;
-  onFilterClick: () => void;
-  hasActiveFilters: boolean;
-}) {
-  return (
-    <div className="flex gap-2">
-      <div className="relative flex-1">
-        <FaMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Search centres..."
-          className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl pl-11 pr-10 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-        />
-        {value && (
-          <button
-            onClick={onClear}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
-          >
-            <FaXmark className="w-4 h-4" />
-          </button>
-        )}
-      </div>
-      <button
-        onClick={onFilterClick}
-        className={cn(
-          "relative flex items-center justify-center w-12 rounded-xl border transition-all",
-          hasActiveFilters
-            ? "bg-blue-500/20 border-blue-500/50 text-blue-400"
-            : "bg-slate-800/50 border-slate-700/50 text-slate-400",
-        )}
-      >
-        <FaSliders className="w-4 h-4" />
-        {hasActiveFilters && (
-          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full" />
-        )}
-      </button>
-    </div>
-  );
-}
-
-function FilterModalContent({
-  filters,
-  onFilterChange,
-}: {
-  filters: Filters;
-  onFilterChange: (f: Filters) => void;
-}) {
-  return (
-    <div className="space-y-6">
-      <div>
-        <label className="text-xs uppercase tracking-wider text-slate-400 font-medium mb-3 block">
-          Region
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {CORRECTIONS_REGIONS.map((r) => (
-            <button
-              key={r.id}
-              onClick={() => onFilterChange({ ...filters, region: r.id })}
-              className={cn(
-                "px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all",
-                filters.region === r.id
-                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/40"
-                  : "bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:border-slate-600",
-              )}
-            >
-              {r.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <label className="text-xs uppercase tracking-wider text-slate-400 font-medium mb-3 block">
-          Jurisdiction
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {JURISDICTION_OPTIONS.map((j) => (
-            <button
-              key={j.value}
-              onClick={() =>
-                onFilterChange({ ...filters, jurisdiction: j.value })
-              }
-              className={cn(
-                "px-3 py-2 rounded-xl text-sm font-medium transition-all",
-                filters.jurisdiction === j.value
-                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/40"
-                  : "bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:border-slate-600",
-              )}
-            >
-              {j.label}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function CentreListItem({
@@ -263,16 +148,8 @@ export function CorrectionsIndexPage() {
     region: 0,
     jurisdiction: "all",
   });
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeLetter, setActiveLetter] = useState<string | null>(null);
 
-  const hasActiveFilters =
-    filters.region !== 0 || filters.jurisdiction !== "all";
-  const clearAllFilters = useCallback(() => {
-    setFilters({ region: 0, jurisdiction: "all" });
-    setSearchQuery("");
-  }, []);
   const handleCentreClick = useCallback(
     (centreId: number) => router.push(`/corrections/${centreId}`),
     [router],
@@ -288,17 +165,8 @@ export function CorrectionsIndexPage() {
     } else if (filters.jurisdiction === "federal") {
       result = result.filter((c) => isFederal(c));
     }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.short_name?.toLowerCase().includes(q) ||
-          c.region_name?.toLowerCase().includes(q),
-      );
-    }
     return result;
-  }, [centres, filters, searchQuery]);
+  }, [centres, filters]);
 
   const groupedCentres = useMemo(
     () => groupByLetter(filteredCentres),
@@ -364,35 +232,11 @@ export function CorrectionsIndexPage() {
 
   return (
     <div className="h-full flex flex-col bg-slate-950">
-      <div className="flex-shrink-0 bg-slate-950 border-b border-slate-800/50">
+      <div className="shrink-0 bg-slate-950 border-b border-slate-800/50">
         <div className="px-4 pt-4 pb-2">
-          <h1 className="text-xl font-bold text-white">
-            BC Corrections Index
-          </h1>
-        </div>
-        <div className="px-4 pb-3">
-          <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            onClear={() => setSearchQuery("")}
-            onFilterClick={() => setIsFilterOpen(true)}
-            hasActiveFilters={hasActiveFilters}
-          />
+          <h1 className="text-xl font-bold text-white">BC Corrections Index</h1>
         </div>
       </div>
-
-      <FilterModal
-        isOpen={isFilterOpen}
-        onClose={() => setIsFilterOpen(false)}
-        title="Filter Centres"
-        onReset={() => setFilters({ region: 0, jurisdiction: "all" })}
-        hasActiveFilters={hasActiveFilters}
-      >
-        <FilterModalContent
-          filters={filters}
-          onFilterChange={setFilters}
-        />
-      </FilterModal>
 
       <div className="flex-1 min-h-0 relative">
         <div ref={scrollContainerRef} className="h-full overflow-y-auto">
@@ -400,18 +244,8 @@ export function CorrectionsIndexPage() {
             <div className="flex flex-col items-center justify-center py-20 px-4">
               <FaBuildingShield className="w-12 h-12 text-slate-700 mb-4" />
               <p className="text-slate-400 text-center">
-                {searchQuery
-                  ? `No centres found for "${searchQuery}"`
-                  : "No centres match your filters"}
+                No centres match your filters
               </p>
-              {(searchQuery || hasActiveFilters) && (
-                <button
-                  onClick={clearAllFilters}
-                  className="mt-4 text-blue-400 text-sm hover:text-blue-300"
-                >
-                  Clear filters
-                </button>
-              )}
             </div>
           ) : (
             <>
@@ -433,7 +267,7 @@ export function CorrectionsIndexPage() {
           )}
         </div>
 
-        {!searchQuery && availableLetters.length > 1 && (
+        {availableLetters.length > 1 && (
           <AlphabetNav
             availableLetters={availableLetters}
             activeLetter={activeLetter}

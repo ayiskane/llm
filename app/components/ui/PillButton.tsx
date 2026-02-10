@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { pill } from '@/lib/config/theme';
+import { cn } from "@/lib/utils";
+import { pill } from "@/lib/config/theme";
 
 interface PillButtonProps {
   children: React.ReactNode;
@@ -10,14 +10,19 @@ interface PillButtonProps {
   className?: string;
 }
 
-export function PillButton({ children, isActive = false, onClick, className }: PillButtonProps) {
+export function PillButton({
+  children,
+  isActive = false,
+  onClick,
+  className,
+}: PillButtonProps) {
   return (
     <button
       onClick={onClick}
       className={cn(
         pill.base,
         isActive ? pill.active : pill.inactive,
-        className
+        className,
       )}
     >
       {children}

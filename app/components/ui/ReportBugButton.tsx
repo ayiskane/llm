@@ -49,8 +49,7 @@ export function ReportBugButton() {
     () => (pathname ? `${pathname}` : "Unknown page"),
     [pathname],
   );
-  const isFeedbackLayout =
-    kind === "general_feedback" || kind === "other";
+  const isFeedbackLayout = kind === "general_feedback" || kind === "other";
 
   const requiresIssue = kind === "bug" || kind === "inaccurate_info";
   const requiresDetails = !requiresIssue;
@@ -127,7 +126,10 @@ export function ReportBugButton() {
                   onValueChange={(value) => {
                     const nextValue = value as typeof kind;
                     setKind(nextValue);
-                    if (nextValue === "general_feedback" || nextValue === "other") {
+                    if (
+                      nextValue === "general_feedback" ||
+                      nextValue === "other"
+                    ) {
                       setTitle("");
                     }
                   }}

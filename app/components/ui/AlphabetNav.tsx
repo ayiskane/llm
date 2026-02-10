@@ -1,9 +1,15 @@
-'use client';
+"use client";
 
-import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
-import { cn } from '@/lib/utils';
+import React, {
+  useRef,
+  useCallback,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
+import { cn } from "@/lib/utils";
 
-const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#'.split('');
+const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#".split("");
 
 interface AlphabetNavProps {
   availableLetters: string[];
@@ -13,11 +19,15 @@ interface AlphabetNavProps {
 
 /**
  * AlphabetNav - iOS Contacts-style alphabet index scrubber
- * 
+ *
  * Uses native event listeners with { passive: false } to properly
  * prevent default touch behavior without browser warnings.
  */
-export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: AlphabetNavProps) {
+export function AlphabetNav({
+  availableLetters,
+  activeLetter,
+  onLetterChange,
+}: AlphabetNavProps) {
   const barRef = useRef<HTMLDivElement>(null);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [scrubLetter, setScrubLetter] = useState<string | null>(null);
@@ -27,16 +37,17 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
 
   // Build display items: available letters with collapsed gaps as dots
   const displayItems = useMemo(() => {
-    const items: { type: 'letter' | 'dot'; value: string; letter?: string }[] = [];
+    const items: { type: "letter" | "dot"; value: string; letter?: string }[] =
+      [];
     let inGap = false;
 
     ALPHABET.forEach((letter) => {
       if (availableLetters.includes(letter)) {
         inGap = false;
-        items.push({ type: 'letter', value: letter, letter });
+        items.push({ type: "letter", value: letter, letter });
       } else if (!inGap) {
         inGap = true;
-        items.push({ type: 'dot', value: '•' });
+        items.push({ type: "dot", value: "•" });
       }
     });
 
@@ -44,67 +55,79 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
   }, [availableLetters]);
 
   // Get letter at Y position
-  const getLetterAtY = useCallback((clientY: number): string | null => {
-    const bar = barRef.current;
-    if (!bar || displayItems.length === 0) return null;
+  const getLetterAtY = useCallback(
+    (clientY: number): string | null => {
+      const bar = barRef.current;
+      if (!bar || displayItems.length === 0) return null;
 
-    const rect = bar.getBoundingClientRect();
-    const relativeY = Math.max(0, Math.min(rect.height, clientY - rect.top));
-    const ratio = relativeY / rect.height;
-    const index = Math.min(displayItems.length - 1, Math.floor(ratio * displayItems.length));
-    
-    const item = displayItems[index];
-    
-    if (item.type === 'letter' && item.letter) {
-      return item.letter;
-    }
-    
-    // Find nearest letter if we hit a dot
-    for (let offset = 1; offset < displayItems.length; offset++) {
-      const preferUp = ratio < 0.5;
-      const firstDir = preferUp ? -offset : offset;
-      const secondDir = preferUp ? offset : -offset;
-      
-      const idx1 = index + firstDir;
-      const idx2 = index + secondDir;
-      
-      if (idx1 >= 0 && idx1 < displayItems.length) {
-        const item1 = displayItems[idx1];
-        if (item1.type === 'letter' && item1.letter) return item1.letter;
+      const rect = bar.getBoundingClientRect();
+      const relativeY = Math.max(0, Math.min(rect.height, clientY - rect.top));
+      const ratio = relativeY / rect.height;
+      const index = Math.min(
+        displayItems.length - 1,
+        Math.floor(ratio * displayItems.length),
+      );
+
+      const item = displayItems[index];
+
+      if (item.type === "letter" && item.letter) {
+        return item.letter;
       }
-      if (idx2 >= 0 && idx2 < displayItems.length) {
-        const item2 = displayItems[idx2];
-        if (item2.type === 'letter' && item2.letter) return item2.letter;
+
+      // Find nearest letter if we hit a dot
+      for (let offset = 1; offset < displayItems.length; offset++) {
+        const preferUp = ratio < 0.5;
+        const firstDir = preferUp ? -offset : offset;
+        const secondDir = preferUp ? offset : -offset;
+
+        const idx1 = index + firstDir;
+        const idx2 = index + secondDir;
+
+        if (idx1 >= 0 && idx1 < displayItems.length) {
+          const item1 = displayItems[idx1];
+          if (item1.type === "letter" && item1.letter) return item1.letter;
+        }
+        if (idx2 >= 0 && idx2 < displayItems.length) {
+          const item2 = displayItems[idx2];
+          if (item2.type === "letter" && item2.letter) return item2.letter;
+        }
       }
-    }
-    
-    return availableLetters[0] || null;
-  }, [displayItems, availableLetters]);
+
+      return availableLetters[0] || null;
+    },
+    [displayItems, availableLetters],
+  );
 
   const triggerHaptic = useCallback(() => {
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
       navigator.vibrate(10);
     }
   }, []);
 
-  const handleScrub = useCallback((clientY: number) => {
-    const letter = getLetterAtY(clientY);
-    setIndicatorY(clientY);
-    
-    if (letter && letter !== lastLetterRef.current) {
-      lastLetterRef.current = letter;
-      setScrubLetter(letter);
-      onLetterChange(letter);
-      triggerHaptic();
-    }
-  }, [getLetterAtY, onLetterChange, triggerHaptic]);
+  const handleScrub = useCallback(
+    (clientY: number) => {
+      const letter = getLetterAtY(clientY);
+      setIndicatorY(clientY);
 
-  const startScrub = useCallback((clientY: number) => {
-    setIsScrubbing(true);
-    isScrubbingRef.current = true;
-    lastLetterRef.current = null;
-    handleScrub(clientY);
-  }, [handleScrub]);
+      if (letter && letter !== lastLetterRef.current) {
+        lastLetterRef.current = letter;
+        setScrubLetter(letter);
+        onLetterChange(letter);
+        triggerHaptic();
+      }
+    },
+    [getLetterAtY, onLetterChange, triggerHaptic],
+  );
+
+  const startScrub = useCallback(
+    (clientY: number) => {
+      setIsScrubbing(true);
+      isScrubbingRef.current = true;
+      lastLetterRef.current = null;
+      handleScrub(clientY);
+    },
+    [handleScrub],
+  );
 
   const endScrub = useCallback(() => {
     setIsScrubbing(false);
@@ -138,24 +161,27 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
     };
 
     // Add listeners with { passive: false } to allow preventDefault
-    bar.addEventListener('touchstart', onTouchStart, { passive: false });
-    bar.addEventListener('touchmove', onTouchMove, { passive: false });
-    bar.addEventListener('touchend', onTouchEnd, { passive: false });
-    bar.addEventListener('touchcancel', onTouchEnd, { passive: false });
+    bar.addEventListener("touchstart", onTouchStart, { passive: false });
+    bar.addEventListener("touchmove", onTouchMove, { passive: false });
+    bar.addEventListener("touchend", onTouchEnd, { passive: false });
+    bar.addEventListener("touchcancel", onTouchEnd, { passive: false });
 
     return () => {
-      bar.removeEventListener('touchstart', onTouchStart);
-      bar.removeEventListener('touchmove', onTouchMove);
-      bar.removeEventListener('touchend', onTouchEnd);
-      bar.removeEventListener('touchcancel', onTouchEnd);
+      bar.removeEventListener("touchstart", onTouchStart);
+      bar.removeEventListener("touchmove", onTouchMove);
+      bar.removeEventListener("touchend", onTouchEnd);
+      bar.removeEventListener("touchcancel", onTouchEnd);
     };
   }, [startScrub, handleScrub, endScrub]);
 
   // Mouse handlers
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    startScrub(e.clientY);
-  }, [startScrub]);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      startScrub(e.clientY);
+    },
+    [startScrub],
+  );
 
   useEffect(() => {
     if (!isScrubbing) return;
@@ -163,12 +189,12 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
     const handleMouseMove = (e: MouseEvent) => handleScrub(e.clientY);
     const handleMouseUp = () => endScrub();
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isScrubbing, handleScrub, endScrub]);
 
@@ -179,11 +205,13 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
       {/* Scrub indicator */}
       {isScrubbing && scrubLetter && indicatorY !== null && (
         <div
-          className="fixed right-10 z-[60] pointer-events-none"
-          style={{ top: indicatorY, transform: 'translateY(-50%)' }}
+          className="fixed right-10 z-60 pointer-events-none"
+          style={{ top: indicatorY, transform: "translateY(-50%)" }}
         >
           <div className="w-12 h-12 rounded-xl bg-secondary/95 border border-border shadow-xl flex items-center justify-center backdrop-blur-sm">
-            <span className="text-xl font-bold text-primary">{scrubLetter}</span>
+            <span className="text-xl font-bold text-primary">
+              {scrubLetter}
+            </span>
           </div>
         </div>
       )}
@@ -192,19 +220,19 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
       <div
         ref={barRef}
         className={cn(
-          'absolute right-0 top-1/2 -translate-y-1/2 z-40',
-          'flex flex-col items-center justify-center',
-          'py-1 px-0.5',
-          'select-none',
-          isScrubbing && 'bg-background/80 rounded-l-lg'
+          "absolute right-0 top-1/2 -translate-y-1/2 z-40",
+          "flex flex-col items-center justify-center",
+          "py-1 px-0.5",
+          "select-none",
+          isScrubbing && "bg-background/80 rounded-l-lg",
         )}
-        style={{ touchAction: 'none' }}
+        style={{ touchAction: "none" }}
         onMouseDown={handleMouseDown}
         role="navigation"
         aria-label="Alphabet index"
       >
         {displayItems.map((item, idx) => {
-          if (item.type === 'dot') {
+          if (item.type === "dot") {
             return (
               <span
                 key={`dot-${idx}`}
@@ -222,8 +250,10 @@ export function AlphabetNav({ availableLetters, activeLetter, onLetterChange }: 
             <span
               key={item.letter}
               className={cn(
-                'text-[9px] font-semibold w-4 h-3.5 flex items-center justify-center transition-all duration-50',
-                isHighlighted ? 'text-primary scale-125 font-bold' : 'text-muted-foreground'
+                "text-[9px] font-semibold w-4 h-3.5 flex items-center justify-center transition-all duration-50",
+                isHighlighted
+                  ? "text-primary scale-125 font-bold"
+                  : "text-muted-foreground",
               )}
             >
               {item.value}

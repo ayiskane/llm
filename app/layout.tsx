@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { QueryProvider } from './providers/QueryProvider';
-import { BottomNavWrapper } from './components/ui/BottomNavWrapper';
+import { BottomNav } from './components/ui/BottomNav';
 import { ReportBugButton } from './components/ui/ReportBugButton';
 import { Toaster } from '@/components/ui/sonner';
 import { APP_NAME } from '@/lib/config/constants';
@@ -12,10 +12,8 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: APP_NAME,
   description: "",
-  manifest: '/manifest.json',
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/favicon.ico', sizes: '48x48' },
     ],
   },
@@ -44,16 +42,14 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/favicon.ico" sizes="48x48" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className={`${inter.className} bg-slate-900 antialiased h-dvh flex flex-col`}>
         <QueryProvider>
           <main className="flex-1 min-h-0">
             {children}
           </main>
-          <BottomNavWrapper />
+          <BottomNav />
           <ReportBugButton />
           <Toaster />
         </QueryProvider>
