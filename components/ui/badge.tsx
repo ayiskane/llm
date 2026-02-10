@@ -14,6 +14,7 @@ const badgeVariants = cva(
         provincial: "border-transparent bg-semantic-emerald-bg text-semantic-emerald-text",
         supreme: "border-transparent bg-semantic-purple-bg text-semantic-purple-text",
         circuit: "border-transparent bg-semantic-amber-bg text-semantic-amber-text",
+        federal: "border-transparent bg-semantic-sky-bg text-semantic-sky-text",
         region: "border bg-foreground/5 border-border/50 text-muted-foreground font-mono",
         courtroomType: "border border-border/60 bg-secondary/40 text-foreground/80 font-mono",
         weekday: "text-[10px] normal-case tracking-normal font-mono bg-secondary/20 text-foreground/20",
