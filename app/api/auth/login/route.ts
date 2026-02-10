@@ -27,14 +27,14 @@ export async function POST(request: NextRequest) {
     const normalizedPin = String(pin).trim().toUpperCase();
     
     if (normalizedPin.length !== 8) {
-      return NextResponse.json({ success: false, error: 'PIN must be 8 characters' });
+      return NextResponse.json({ success: false, error: 'Invalid PIN.' });
     }
     
     const supabase = getSupabaseClient();
     
     const { data: user, error } = await supabase
       .from('whatsapp_users')
-      .select('id, user_type, full_name, email, is_verified, pin_expires_at')
+      .select('id, user_type, full_name, is_verified, pin_expires_at')
       .eq('pin', normalizedPin)
       .maybeSingle();
     
@@ -69,7 +69,6 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       userType: user.user_type,
       fullName: user.full_name || 'User',
-      email: user.email,
       expiresAt: expiresAt.toISOString(),
     })
       .setProtectedHeader({ alg: 'HS256' })

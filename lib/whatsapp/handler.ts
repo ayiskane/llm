@@ -218,15 +218,12 @@ export async function handleMessage(msg: MessageData) {
 
     // === A/S REGISTRATION ===
     case 'as_name':
-      await upsertUser(from, { registration_step: 'as_email', full_name: text });
-      return prompt(pid, from, `Hello, ${text}`, 'Enter your *email address*.');
+      await upsertUser(from, { registration_step: 'as_firm', full_name: text });
+      return prompt(pid, from, `Hello, ${text}`, 'Enter your *articling firm name*.');
 
     case 'as_email':
-      if (!text.includes('@') || !text.includes('.')) {
-        return prompt(pid, from, '❌ Invalid Email', 'Enter a valid email address.');
-      }
-      await upsertUser(from, { registration_step: 'as_firm', email: text.toLowerCase().trim() });
-      return prompt(pid, from, '✓ Email Saved', 'Enter your *articling firm name*.');
+      await upsertUser(from, { registration_step: 'as_firm' });
+      return prompt(pid, from, 'Next step', 'Enter your *articling firm name*.');
 
     case 'as_firm':
       await upsertUser(from, { registration_step: 'as_principal_name', firm_name: text });
@@ -338,18 +335,13 @@ export async function handleMessage(msg: MessageData) {
 
     // === UPGRADE TO LAWYER ===
     case 'upgrade_name': {
-      await upsertUser(from, { registration_step: 'upgrade_email', temp_data: JSON.stringify({ full_name: text }) });
-      return prompt(pid, from, '✓ Name Saved', 'Enter your *email address* (as registered).');
+      await upsertUser(from, { registration_step: 'upgrade_call_date', temp_data: JSON.stringify({ full_name: text }) });
+      return prompt(pid, from, '✓ Name Saved', 'Enter your *Call to Bar date*.\n\nFormat: YYYY-MM');
     }
 
     case 'upgrade_email': {
-      if (!text.includes('@') || !text.includes('.')) {
-        return prompt(pid, from, '❌ Invalid Email', 'Enter a valid email address.');
-      }
-      const temp = JSON.parse(user?.temp_data || '{}');
-      temp.email = text.toLowerCase().trim();
-      await upsertUser(from, { registration_step: 'upgrade_call_date', temp_data: JSON.stringify(temp) });
-      return prompt(pid, from, '✓ Email Saved', 'Enter your *Call to Bar date*.\n\nFormat: YYYY-MM');
+      await upsertUser(from, { registration_step: 'upgrade_call_date' });
+      return prompt(pid, from, 'Next step', 'Enter your *Call to Bar date*.\n\nFormat: YYYY-MM');
     }
 
     case 'upgrade_call_date': {
@@ -511,11 +503,22 @@ async function handleUpgradeLSBCConfirm(pid: string, from: string, user: Record<
     return sendTextMessage(pid, from, '❌ *Upgrade Cancelled*\n\nType "menu" to return.');
   }
 
-  const { data: existingAS } = await supabase.from('whatsapp_users').select('*')
+  const digits = normalizePhone(from);
+  const last10 = digits.slice(-10);
+  const { data: exact } = await supabase.from('whatsapp_users').select('*')
     .eq('user_type', 'articling_student')
     .ilike('full_name', temp.full_name?.trim() || '')
-    .ilike('email', temp.email?.trim() || '')
+    .eq('phone_number', digits)
     .maybeSingle();
+  const { data: partial } = exact
+    ? { data: null }
+    : await supabase.from('whatsapp_users').select('*')
+        .eq('user_type', 'articling_student')
+        .ilike('full_name', temp.full_name?.trim() || '')
+        .ilike('phone_number', `%${last10}`)
+        .maybeSingle();
+
+  const existingAS = exact || partial;
 
   if (!existingAS) {
     await resetUser(from);
