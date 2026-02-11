@@ -131,15 +131,10 @@ export function ReportBugButton() {
         </DialogTrigger>
         <DialogContent className="p-5 sm:p-6 rounded-2xl">
           <DialogHeader className="space-y-2">
-            <DialogTitle className="text-[12px] uppercase tracking-[0.28em]">
-              Report a bug
-            </DialogTitle>
-            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
-              <div className="flex flex-wrap items-center gap-2">
-                <DialogDescription className="text-[11px] text-muted-foreground">
-                  Quick report · Court details page
-                </DialogDescription>
-              </div>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <DialogTitle className="text-[12px] uppercase tracking-[0.28em]">
+                Report a bug
+              </DialogTitle>
               <div className="flex items-center gap-2">
                 {canManage && (
                   <Button
@@ -165,6 +160,9 @@ export function ReportBugButton() {
                 </span>
               </div>
             </div>
+            <DialogDescription className="text-[11px] text-muted-foreground">
+              Quick report · Court details page
+            </DialogDescription>
             <div className="flex flex-wrap items-center gap-2 text-[11px]">
               <Link
                 href="/bug-reports"
