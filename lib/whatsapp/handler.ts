@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { sendTextMessage, sendButtonMessage, MessageData } from './api';
+import { sendTextMessage, sendButtonMessage, sendListMessage, MessageData } from './api';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -123,34 +123,102 @@ const prompt = (pid: string, to: string, header: string, body: string) =>
 // MENU
 // =============================================================================
 
-const showMenu = async (pid: string, to: string) => {
-  await sendButtonMessage(pid, to, 
-    '⚖️ LLM Registration',
-    'Select an option.',
-    [
-      { id: 'register_lawyer', title: '🛎️ Register (Lawyer)' },
-      { id: 'register_as', title: '🌱 Register (A/S)' },
-      { id: 'register_ls', title: '🧾 Register (Legal Staff)' },
-    ]
-  );
-  await sendButtonMessage(pid, to,
-    '✅ Verification',
-    'Lawyers only.',
-    [
-      { id: 'verify_as', title: '✅ Verify A/S' },
-      { id: 'verify_ls', title: '✅ Verify Staff' },
-    ]
-  );
-  return sendButtonMessage(pid, to,
-    '🔐 Account',
-    'Already registered?',
-    [
-      { id: 'fetch_pin', title: '🔑 Get PIN' },
-      { id: 'fetch_invite', title: '💌 Get Invite Code' },
-      { id: 'upgrade_lawyer', title: '⬆️ Upgrade to Lawyer' },
-    ]
-  );
-};
+const showMainMenu = async (pid: string, to: string) => sendListMessage(
+  pid,
+  to,
+  '⚖️ LLM Registration',
+  'Choose a section to continue.',
+  'Open Menu',
+  [
+    {
+      title: 'LLM Registration',
+      rows: [
+        { id: 'menu_lawyer_portal', title: 'I am a Lawyer' },
+        { id: 'menu_as_portal', title: 'I am an A/S' },
+        { id: 'menu_ls_portal', title: 'I am a Legal Staff' },
+      ],
+    },
+    {
+      title: 'Account Details',
+      rows: [
+        { id: 'fetch_pin', title: 'Get Access PIN' },
+        { id: 'fetch_invite', title: 'Get Invite Code' },
+      ],
+    },
+  ]
+);
+
+const showLawyerPortal = async (pid: string, to: string) => sendListMessage(
+  pid,
+  to,
+  '⚖️ Lawyer Portal',
+  'Select an action.',
+  'Open Actions',
+  [
+    {
+      title: 'Lawyer Portal',
+      rows: [
+        { id: 'register_lawyer', title: 'Register' },
+        { id: 'verify_as', title: 'Verify A/S' },
+        { id: 'menu_ls_verify_revoke', title: 'Verify/Revoke Legal Staff' },
+        { id: 'menu_main', title: '← Back to Menu' },
+      ],
+    },
+  ]
+);
+
+const showASPortal = async (pid: string, to: string) => sendListMessage(
+  pid,
+  to,
+  '🌱 A/S Portal',
+  'Select an action.',
+  'Open Actions',
+  [
+    {
+      title: 'A/S Portal',
+      rows: [
+        { id: 'register_as', title: 'Register' },
+        { id: 'upgrade_lawyer', title: 'Upgrade to Lawyer' },
+        { id: 'menu_main', title: '← Back to Menu' },
+      ],
+    },
+  ]
+);
+
+const showLegalStaffPortal = async (pid: string, to: string) => sendListMessage(
+  pid,
+  to,
+  '🧾 Legal Staff Portal',
+  'Select an action.',
+  'Open Actions',
+  [
+    {
+      title: 'Legal Staff Portal',
+      rows: [
+        { id: 'register_ls', title: 'Register' },
+        { id: 'menu_main', title: '← Back to Menu' },
+      ],
+    },
+  ]
+);
+
+const showLegalStaffVerifyRevoke = async (pid: string, to: string) => sendListMessage(
+  pid,
+  to,
+  '🧾 Legal Staff Access',
+  'Select an action.',
+  'Open Actions',
+  [
+    {
+      title: 'Legal Staff',
+      rows: [
+        { id: 'verify_ls', title: 'Verify Staff' },
+        { id: 'ls_revoke_info', title: 'Revoke Staff Access' },
+        { id: 'menu_lawyer_portal', title: '← Back to Lawyer Portal' },
+      ],
+    },
+  ]
+);
 
 // =============================================================================
 // MAIN HANDLER
@@ -166,7 +234,7 @@ export async function handleMessage(msg: MessageData) {
   // Menu commands (text shortcuts)
   if (['menu', 'hi', 'hello', 'start', 'cancel'].includes(text.toLowerCase())) {
     await resetUser(from);
-    return showMenu(pid, from);
+    return showMainMenu(pid, from);
   }
 
   // Interactive responses
@@ -175,10 +243,33 @@ export async function handleMessage(msg: MessageData) {
     if (text === 'cancel') {
       await resetUser(from);
       await sendTextMessage(pid, from, '↩️ *Cancelled*');
-      return showMenu(pid, from);
+      return showMainMenu(pid, from);
     }
 
     switch (text) {
+      case 'menu_main':
+        await resetUser(from);
+        return showMainMenu(pid, from);
+
+      case 'menu_lawyer_portal':
+        return showLawyerPortal(pid, from);
+
+      case 'menu_as_portal':
+        return showASPortal(pid, from);
+
+      case 'menu_ls_portal':
+        return showLegalStaffPortal(pid, from);
+
+      case 'menu_ls_verify_revoke':
+        return showLegalStaffVerifyRevoke(pid, from);
+
+      case 'ls_revoke_info':
+        if (user?.user_type !== 'lawyer' || !user?.is_verified) {
+          return sendTextMessage(pid, from, '❌ *Access Denied*\n\nOnly registered lawyers can revoke legal staff.\n\nType "menu" to return.');
+        }
+        await upsertUser(from, { registration_step: 'revoke_staff_phone', temp_data: '{}' });
+        return prompt(pid, from, '🧾 Revoke Staff Access', 'Enter the *staff member\'s phone number*.\n\nFormat: 6041234567');
+
       case 'register_lawyer':
         await upsertUser(from, { registration_step: 'lawyer_invite_code', user_type: 'lawyer' });
         return prompt(pid, from, '🛎️ Lawyer Registration', 'Enter your 6-character *invitation code*.');
@@ -217,6 +308,8 @@ export async function handleMessage(msg: MessageData) {
       case 'confirm_as_no': return handleASVerifyConfirm(pid, from, user, false);
       case 'confirm_ls_yes': return handleLSVerifyConfirm(pid, from, user, true);
       case 'confirm_ls_no': return handleLSVerifyConfirm(pid, from, user, false);
+      case 'confirm_revoke_staff_yes': return handleLSRevokeConfirm(pid, from, user, true);
+      case 'confirm_revoke_staff_no': return handleLSRevokeConfirm(pid, from, user, false);
       case 'confirm_oath_yes': return handleOathConfirm(pid, from, user, true);
       case 'confirm_oath_no': return handleOathConfirm(pid, from, user, false);
       case 'confirm_upgrade_lsbc_yes': return handleUpgradeLSBCConfirm(pid, from, user, true);
@@ -450,6 +543,39 @@ export async function handleMessage(msg: MessageData) {
       );
     }
 
+    // === REVOKE LEGAL STAFF ===
+    case 'revoke_staff_phone': {
+      if (user?.user_type !== 'lawyer' || !user?.is_verified) {
+        await resetUser(from);
+        return sendTextMessage(pid, from, '❌ *Access Denied*\n\nOnly registered lawyers can revoke legal staff.\n\nType "menu" to return.');
+      }
+
+      const digits = normalizePhone(text);
+      if (digits.length < 10) return prompt(pid, from, '❌ Invalid Phone', 'Enter a valid phone number (10 digits).');
+
+      const staff = await findLegalStaffByPhone(digits);
+      if (!staff || staff.user_type !== 'legal_staff') {
+        await resetUser(from);
+        return sendTextMessage(pid, from, '❌ *Staff Not Found*\n\nNo legal staff found with that phone.\n\nType "menu" to return.');
+      }
+
+      if (staff.referrer_id && user?.id && staff.referrer_id !== user.id) {
+        await resetUser(from);
+        return sendTextMessage(pid, from, '❌ *Access Denied*\n\nThis staff member is linked to another referrer.\n\nType "menu" to return.');
+      }
+
+      const staffName = staff.full_name || 'This staff member';
+      await upsertUser(from, {
+        registration_step: 'revoke_staff_confirm',
+        temp_data: JSON.stringify({ staff_id: staff.id, staff_name: staffName, staff_phone: staff.phone_number })
+      });
+
+      return sendButtonMessage(pid, from, '🧾 Confirm Revoke',
+        `Revoke access for *${staffName}*?\n\nThey will lose access until re-verified.`,
+        [{ id: 'confirm_revoke_staff_yes', title: '✓ Yes' }, { id: 'confirm_revoke_staff_no', title: '✗ No' }, { id: 'cancel', title: '❌ Cancel' }]
+      );
+    }
+
     // === UPGRADE TO LAWYER ===
     case 'upgrade_name': {
       await upsertUser(from, { registration_step: 'upgrade_call_date', temp_data: JSON.stringify({ full_name: text }) });
@@ -475,7 +601,7 @@ export async function handleMessage(msg: MessageData) {
     }
 
     default:
-      return showMenu(pid, from);
+      return showMainMenu(pid, from);
   }
 }
 
@@ -648,6 +774,67 @@ async function handleLSVerifyConfirm(pid: string, from: string, user: Record<str
 
   await sendTextMessage(pid, staff.phone_number, `🎉 *Account Activated*\n\nYour referrer has verified you.\n\n📅 Expires: ${formatDate(expiry)}\n\nYou will need re-verification every 6 months. Your PIN will stay the same.`);
   return sendTextMessage(pid, staff.phone_number, `🔑 Your PIN:\n\n\`${pin}\``);
+}
+
+async function handleLSRevokeConfirm(pid: string, from: string, user: Record<string, unknown> | null, confirmed: boolean) {
+  const temp = JSON.parse((user?.temp_data as string) || '{}');
+
+  if (!confirmed) {
+    await resetUser(from);
+    return sendTextMessage(pid, from, '❌ *Revoke Cancelled*\n\nType "menu" to return.');
+  }
+
+  if (user?.user_type !== 'lawyer' || !user?.is_verified) {
+    await resetUser(from);
+    return sendTextMessage(pid, from, '❌ *Access Denied*\n\nOnly registered lawyers can revoke legal staff.\n\nType "menu" to return.');
+  }
+
+  if (!temp.staff_id) {
+    await resetUser(from);
+    return sendTextMessage(pid, from, '❌ *Missing Staff*\n\nPlease try again.\n\nType "menu" to return.');
+  }
+
+  const { data: staff } = await supabase
+    .from('whatsapp_users')
+    .select('id, full_name, phone_number, referrer_id, user_type')
+    .eq('id', temp.staff_id)
+    .maybeSingle();
+
+  if (!staff || staff.user_type !== 'legal_staff') {
+    await resetUser(from);
+    return sendTextMessage(pid, from, '❌ *Staff Not Found*\n\nType "menu" to return.');
+  }
+
+  if (staff.referrer_id && staff.referrer_id !== user.id) {
+    await resetUser(from);
+    return sendTextMessage(pid, from, '❌ *Access Denied*\n\nThis staff member is linked to another referrer.\n\nType "menu" to return.');
+  }
+
+  const { error } = await supabase
+    .from('whatsapp_users')
+    .update({
+      is_verified: false,
+      staff_revoked_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', staff.id);
+
+  if (error) {
+    console.error('Revoke staff error:', error);
+    return sendTextMessage(pid, from, '❌ *Error*\n\nFailed to revoke staff access. Please try again.\n\nType "menu" to return.');
+  }
+
+  await resetUser(from);
+
+  const staffName = staff.full_name || 'This staff member';
+  await sendTextMessage(pid, from, `✓ *Access Revoked*\n\n${staffName} has been revoked.\n\nType "menu" to return.`);
+
+  if (staff.phone_number) {
+    sendTextMessage(pid, staff.phone_number,
+      '⚠️ *Access Revoked*\n\nYour referrer has revoked your access. Contact them to re-verify.'
+    ).catch(console.error);
+  }
+  return;
 }
 
 async function handleOathConfirm(pid: string, from: string, user: Record<string, unknown> | null, confirmed: boolean) {
