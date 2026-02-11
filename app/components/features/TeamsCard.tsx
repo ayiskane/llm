@@ -37,7 +37,7 @@ import { text, iconSize, toggle } from "@/lib/config/theme";
 import { joinTeamsMeeting } from "@/lib/utils";
 import { isVBTriageLink } from "@/lib/config/constants";
 import { Badge } from "@/components/ui/badge";
-import type { CourtroomSchedule, TeamsLink } from "@/types";
+import type { BailHub, CourtroomSchedule, TeamsLink } from "@/types";
 
 // ============================================================================
 // HELPERS
@@ -70,6 +70,11 @@ function normalizeCourtroom(value: string | null | undefined): string {
   return (value ?? "").trim().toLowerCase();
 }
 
+function isVirtualRegionLink(value: string | null | undefined): boolean {
+  if (!value) return false;
+  return /\bvr\d+\b/i.test(value);
+}
+
 const DAY_ORDER = [
   { key: "mon", label: "MON" },
   { key: "tue", label: "TUE" },
@@ -77,6 +82,7 @@ const DAY_ORDER = [
   { key: "thu", label: "THU" },
   { key: "fri", label: "FRI" },
 ];
+const VB_TRIAGE_WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"];
 
 const JCM_TYPE_ID = 10;
 const SURREY_COURT_ID = 76;
@@ -88,6 +94,7 @@ const SURREY_COURT_ID = 76;
 interface TeamsCardProps {
   links: TeamsLink[];
   schedules: CourtroomSchedule[];
+  bailHub?: BailHub | null;
   filterVBTriage?: boolean;
   pinVBTriage?: boolean;
   prioritizeJcm?: boolean;
@@ -98,6 +105,7 @@ interface TeamsCardProps {
 export function TeamsCard({
   links,
   schedules,
+  bailHub = null,
   filterVBTriage = true,
   pinVBTriage = false,
   prioritizeJcm = false,
@@ -226,6 +234,35 @@ export function TeamsCard({
     };
   }, [schedules]);
 
+  const triageSchedulesByHubId = useMemo(() => {
+    const hubList = [
+      ...(bailHub ? [bailHub] : []),
+      ...links.map((link) => link.bail_hub).filter(Boolean),
+    ] as BailHub[];
+    const unique = new Map<number, BailHub>();
+    hubList.forEach((hub) => {
+      if (hub?.id != null) unique.set(hub.id, hub);
+    });
+    const schedules = new Map<number, CourtroomSchedule>();
+    unique.forEach((hub) => {
+      const triageTime = hub.triage_time?.trim();
+      if (!triageTime) return;
+      const triageAmName = hub.triage_am_name?.trim();
+      schedules.set(hub.id, {
+        id: -hub.id,
+        court_id: hub.court_id ?? null,
+        courtroom: "VB Triage",
+        weekdays: VB_TRIAGE_WEEKDAYS,
+        times_text: triageTime,
+        is_youth: false,
+        courtroom_type: null,
+        days_text: triageAmName ? `Triage in ${triageAmName}` : null,
+        notes: null,
+      });
+    });
+    return schedules;
+  }, [bailHub, links]);
+
   if (filteredLinks.length === 0) return null;
   const hasFilters =
     searchValue.trim().length > 0 || selectedType !== "all";
@@ -323,6 +360,12 @@ export function TeamsCard({
           const typeDescription = link.courtroom_type_full_name?.trim() || "";
           // Tag source: courtroom_type_name (e.g., ASC/FXD) comes from teams_links.courtroom_type_id -> courtroom_types.name.
           const courtroomLabel = formatCourtroom(link.courtroom);
+          const isTriageLink = isVBTriageLink(
+            link.courtroom || link.type_name || "",
+          );
+          const isVrLink = isVirtualRegionLink(
+            link.courtroom || link.type_name || "",
+          );
           const surreyJcmMatch =
             link.court_id === SURREY_COURT_ID
               ? courtroomLabel.match(/^JCM FXD\s*\(([^)]+)\)\s*$/i)
@@ -358,9 +401,23 @@ export function TeamsCard({
             );
             return matches.length > 0 ? matches : entries;
           };
-          const scheduleEntries = filterByType(scheduleBucket.all);
-          const regularSchedules = filterByType(scheduleBucket.regular);
-          const youthSchedules = filterByType(scheduleBucket.youth);
+          const linkHub = isVrLink ? link.bail_hub : link.bail_hub ?? bailHub;
+          const triageSchedule =
+            linkHub?.id != null
+              ? triageSchedulesByHubId.get(linkHub.id)
+              : null;
+          const useTriageSchedule = Boolean(
+            (isTriageLink || isVrLink) && triageSchedule,
+          );
+          const scheduleEntries = useTriageSchedule
+            ? [triageSchedule!]
+            : filterByType(scheduleBucket.all);
+          const regularSchedules = useTriageSchedule
+            ? [triageSchedule!]
+            : filterByType(scheduleBucket.regular);
+          const youthSchedules = useTriageSchedule
+            ? []
+            : filterByType(scheduleBucket.youth);
           const hasSchedule = scheduleEntries.length > 0;
           const scheduleCount = scheduleEntries.length;
           const hasDialIn =
@@ -533,6 +590,12 @@ export function TeamsCard({
                           {[...regularSchedules, ...youthSchedules].map(
                             (schedule, scheduleIndex) => {
                               const isYouth = schedule.is_youth;
+                              const scheduleLabel =
+                                useTriageSchedule && isVrLink
+                                  ? "Triage"
+                                  : isYouth
+                                    ? "Youth"
+                                    : "Schedule";
                               const timeLines = splitTimesText(
                                 schedule.times_text,
                               );
@@ -561,7 +624,7 @@ export function TeamsCard({
                                             : "text-muted-foreground",
                                         )}
                                       >
-                                        {isYouth ? "Youth" : "Schedule"}
+                                          {scheduleLabel}
                                       </span>
                                       <div className="flex flex-wrap items-center gap-1">
                                         {DAY_ORDER.map((day) => {

@@ -427,6 +427,7 @@ export function BailModeContent({
           <TeamsCard
             links={bailTeams}
             schedules={courtroomSchedules}
+            bailHub={bailHub}
             filterVBTriage={false}
             pinVBTriage
             onCopy={onCopy}

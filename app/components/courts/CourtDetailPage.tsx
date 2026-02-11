@@ -255,6 +255,7 @@ export function CourtDetailPage({
             viewMode={viewMode}
             teamsLinks={teamsLinks}
             courtroomSchedules={courtroomSchedules}
+            bailHub={bailHubSummary}
             contactEmailGroups={contacts.emailGroups}
             contactPhones={contacts.phones}
             contactCount={contacts.count}

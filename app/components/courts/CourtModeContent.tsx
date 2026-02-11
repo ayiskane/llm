@@ -9,6 +9,7 @@ import { CourtFieldContacts } from "../features/ContactCard";
 import { ScheduleCard } from "../features/ScheduleCard";
 import type { ContactEmailGroup, ContactPhoneItem } from "@/lib/hooks";
 import type {
+  BailHub,
   CourtWithRegion,
   CourtScheduleDate,
   CourtroomSchedule,
@@ -83,6 +84,7 @@ interface CourtModeContentProps {
   viewMode: CourtViewMode;
   teamsLinks: TeamsLink[];
   courtroomSchedules: CourtroomSchedule[];
+  bailHub?: BailHub | null;
   contactEmailGroups: ContactEmailGroup[];
   contactPhones: ContactPhoneItem[];
   contactCount: number;
@@ -99,6 +101,7 @@ export function CourtModeContent({
   viewMode,
   teamsLinks,
   courtroomSchedules,
+  bailHub = null,
   contactEmailGroups,
   contactPhones,
   contactCount,
@@ -159,6 +162,7 @@ export function CourtModeContent({
           <TeamsCard
             links={teamsLinks}
             schedules={courtroomSchedules}
+            bailHub={bailHub}
             prioritizeJcm
             onCopy={onCopy}
             isCopied={isCopied}

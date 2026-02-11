@@ -48,6 +48,59 @@ function formatBailContactLabel(contactType: string | null): string | null {
     .replace(/\b\w/g, (match) => match.toUpperCase());
 }
 
+async function withTriageAmName(hub: BailHub | null): Promise<BailHub | null> {
+  if (!hub) return hub;
+  const [updated] = await attachTriageAmNames([hub]);
+  return updated ?? hub;
+}
+
+async function attachTriageAmNames(hubs: BailHub[]): Promise<BailHub[]> {
+  const triageIds = Array.from(
+    new Set(hubs.map((hub) => hub.triage_am).filter(Boolean)) as Set<number>
+  );
+  if (triageIds.length === 0) return hubs;
+
+  const { data, error } = await supabase
+    .from('bail_hubs')
+    .select('id, name')
+    .in('id', triageIds);
+
+  if (error) throw new Error(error.message);
+  const nameMap = new Map<number, string>();
+  (data || []).forEach((row: any) => {
+    if (row?.id != null) nameMap.set(row.id, row.name ?? '');
+  });
+
+  return hubs.map((hub) => {
+    if (!hub.triage_am) return hub;
+    return {
+      ...hub,
+      triage_am_name: nameMap.get(hub.triage_am) ?? null,
+    };
+  });
+}
+
+async function attachTriageAmNamesToTeams(
+  teams: TeamsLink[]
+): Promise<TeamsLink[]> {
+  const hubs = teams
+    .map((team) => team.bail_hub)
+    .filter(Boolean) as BailHub[];
+  if (hubs.length === 0) return teams;
+
+  const unique = new Map<number, BailHub>();
+  hubs.forEach((hub) => unique.set(hub.id, hub));
+  const enriched = await attachTriageAmNames(Array.from(unique.values()));
+  const byId = new Map(enriched.map((hub) => [hub.id, hub]));
+
+  return teams.map((team) => {
+    if (!team.bail_hub_id) return team;
+    const nextHub = byId.get(team.bail_hub_id);
+    if (!nextHub) return team;
+    return { ...team, bail_hub: nextHub };
+  });
+}
+
 async function resolveBailHubForCourt(
   courtId: number,
   regionId: number | null
@@ -61,7 +114,7 @@ async function resolveBailHubForCourt(
   const mappedHubId = mappingError ? null : mappingRows?.[0]?.bail_hub_id ?? null;
 
   const selectHubFields =
-    'id, name, region_id, court_id, sheriff_coordinator_email, sheriff_coordinator_phone, sheriff_coordinator_teams_chat';
+    'id, name, region_id, court_id, sheriff_coordinator_email, sheriff_coordinator_phone, sheriff_coordinator_teams_chat, triage_time, triage_am';
 
   if (mappedHubId) {
     const { data: hubRows, error: hubError } = await supabase
@@ -70,7 +123,7 @@ async function resolveBailHubForCourt(
       .eq('id', mappedHubId)
       .limit(1);
     if (hubError) throw new Error(hubError.message);
-    return (hubRows?.[0] as BailHub) ?? null;
+    return withTriageAmName((hubRows?.[0] as BailHub) ?? null);
   }
 
   const { data: directHubRows, error: directHubError } = await supabase
@@ -81,7 +134,7 @@ async function resolveBailHubForCourt(
 
   if (directHubError) throw new Error(directHubError.message);
   const directHub = directHubRows?.[0] as BailHub | undefined;
-  if (directHub) return directHub;
+  if (directHub) return withTriageAmName(directHub);
 
   if (!regionId) return null;
 
@@ -93,12 +146,13 @@ async function resolveBailHubForCourt(
   if (regionError) throw new Error(regionError.message);
 
   const hubs = (regionHubs || []) as BailHub[];
-  return (
+  const selected =
     hubs.find((hub) => /region justice centre/i.test(hub.name ?? '')) ??
     hubs.find((hub) => hub.court_id == null) ??
     hubs[0] ??
     null
-  );
+  ;
+  return withTriageAmName(selected);
 }
 
 export async function fetchCourtScheduleDates(courtId: number): Promise<CourtScheduleDate[]> {
@@ -269,7 +323,9 @@ export async function fetchCourtDetails(courtId: number) {
 
   const teamsPromise = supabase
     .from('teams_links')
-    .select(`*, type:teams_link_types(name), courtroom_type:courtroom_types(name, full_name)`)
+    .select(
+      `*, type:teams_link_types(name), courtroom_type:courtroom_types(name, full_name), bail_hub:bail_hubs(id, name, triage_time, triage_am)`
+    )
     .eq('court_id', publicCourt.id);
 
   const courtroomSchedulePromise = supabase
@@ -381,7 +437,7 @@ export async function fetchCourtDetails(courtId: number) {
     contacts: contactList,
   };
 
-  const teamsLinks =
+  let teamsLinks =
     (teamsRows || []).map((row: any) => ({
       id: row.id,
       court_id: row.court_id ?? null,
@@ -400,7 +456,17 @@ export async function fetchCourtDetails(courtId: number) {
       toll_free_number: row.toll_free_number ?? null,
       conference_id: row.conference_id ?? null,
       bail_hub_id: row.bail_hub_id ?? null,
+      bail_hub: row.bail_hub
+        ? {
+            id: row.bail_hub.id,
+            name: row.bail_hub.name,
+            triage_time: row.bail_hub.triage_time ?? null,
+            triage_am: row.bail_hub.triage_am ?? null,
+          }
+        : null,
     })) ?? [];
+
+  teamsLinks = await attachTriageAmNamesToTeams(teamsLinks);
 
   const courtroomSchedules =
     (courtroomScheduleRows || []).map((row: any) => ({
@@ -434,7 +500,9 @@ export async function fetchBailDetails(
   if (bailHub) {
     const { data: bailTeamRows, error: bailTeamError } = await supabase
       .from('teams_links')
-      .select(`*, type:teams_link_types(name), courtroom_type:courtroom_types(name, full_name)`)
+      .select(
+        `*, type:teams_link_types(name), courtroom_type:courtroom_types(name, full_name), bail_hub:bail_hubs(id, name, triage_time, triage_am)`
+      )
       .eq('bail_hub_id', bailHub.id);
 
     if (bailTeamError) throw new Error(bailTeamError.message);
@@ -457,7 +525,17 @@ export async function fetchBailDetails(
         toll_free_number: row.toll_free_number ?? null,
         conference_id: row.conference_id ?? null,
         bail_hub_id: row.bail_hub_id ?? null,
+        bail_hub: row.bail_hub
+          ? {
+              id: row.bail_hub.id,
+              name: row.bail_hub.name,
+              triage_time: row.bail_hub.triage_time ?? null,
+              triage_am: row.bail_hub.triage_am ?? null,
+            }
+          : null,
       })) ?? [];
+
+    bailTeams = await attachTriageAmNamesToTeams(bailTeams);
 
     const { data: bailContactRows, error: bailContactError } = await supabase
       .from('bail_hub_contacts')
@@ -524,13 +602,14 @@ export async function fetchBailHubDetails(
   const { data: hubRows, error: hubError } = await supabase
     .from('bail_hubs')
     .select(
-      'id, name, region_id, court_id, sheriff_coordinator_email, sheriff_coordinator_phone, sheriff_coordinator_teams_chat'
+      'id, name, region_id, court_id, sheriff_coordinator_email, sheriff_coordinator_phone, sheriff_coordinator_teams_chat, triage_time, triage_am'
     )
     .eq('id', bailHubId)
     .limit(1);
 
   if (hubError) throw new Error(hubError.message);
-  const bailHub = (hubRows?.[0] as BailHub) ?? null;
+  let bailHub = (hubRows?.[0] as BailHub) ?? null;
+  bailHub = await withTriageAmName(bailHub);
   if (!bailHub) {
     return {
       bailHub: null,
@@ -543,11 +622,13 @@ export async function fetchBailHubDetails(
 
   const { data: bailTeamRows, error: bailTeamError } = await supabase
     .from('teams_links')
-    .select(`*, type:teams_link_types(name), courtroom_type:courtroom_types(name, full_name)`)
+    .select(
+      `*, type:teams_link_types(name), courtroom_type:courtroom_types(name, full_name), bail_hub:bail_hubs(id, name, triage_time, triage_am)`
+    )
     .eq('bail_hub_id', bailHub.id);
 
   if (bailTeamError) throw new Error(bailTeamError.message);
-  const bailTeams =
+  let bailTeams =
     (bailTeamRows || []).map((row: any) => ({
       id: row.id,
       court_id: row.court_id ?? null,
@@ -566,7 +647,17 @@ export async function fetchBailHubDetails(
       toll_free_number: row.toll_free_number ?? null,
       conference_id: row.conference_id ?? null,
       bail_hub_id: row.bail_hub_id ?? null,
+      bail_hub: row.bail_hub
+        ? {
+            id: row.bail_hub.id,
+            name: row.bail_hub.name,
+            triage_time: row.bail_hub.triage_time ?? null,
+            triage_am: row.bail_hub.triage_am ?? null,
+          }
+        : null,
     })) ?? [];
+
+  bailTeams = await attachTriageAmNamesToTeams(bailTeams);
 
   const { data: bailContactRows, error: bailContactError } = await supabase
     .from('bail_hub_contacts')

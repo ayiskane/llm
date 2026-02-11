@@ -80,6 +80,7 @@ export interface TeamsLink {
   toll_free_number?: string | null;
   conference_id?: string | null;
   bail_hub_id?: number | null;
+  bail_hub?: BailHub | null;
 }
 
 export interface BailHub {
@@ -90,6 +91,9 @@ export interface BailHub {
   sheriff_coordinator_email?: string | null;
   sheriff_coordinator_phone?: string | null;
   sheriff_coordinator_teams_chat?: string | null;
+  triage_time?: string | null;
+  triage_am?: number | null;
+  triage_am_name?: string | null;
 }
 
 export interface BailContact {
@@ -135,7 +139,7 @@ export interface CourtroomSchedule {
   weekdays?: string[] | null;
   times_text?: string | null;
   is_youth?: boolean | null;
-  courtroom_type?: number[] | null;
+  courtroom_type?: number | null;
   days_text?: string | null;
   notes?: string | null;
 }
