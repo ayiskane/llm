@@ -580,9 +580,15 @@ async function handleVerification(payload: any) {
 }
 
 export async function POST(request: NextRequest) {
+  let aesKey: Buffer | null = null;
+  let iv: Buffer | null = null;
+  let payload: any = null;
   try {
     const body = await request.json();
-    const { payload, aesKey, iv } = decryptFlowPayload(body);
+    const decrypted = decryptFlowPayload(body);
+    payload = decrypted.payload;
+    aesKey = decrypted.aesKey;
+    iv = decrypted.iv;
 
     const flowId = payload.flow_id || payload.flowId || "";
     const action = payload.action || payload.type || "data_exchange";
@@ -621,6 +627,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(response);
   } catch (error) {
     console.error("Flow endpoint error:", error);
+    const fallback = buildResponse(payload?.screen || SCREENS.ROLE_SELECT, payload?.data || {}, { message: "Flow error" });
+    if (aesKey && iv) {
+      return new NextResponse(encryptFlowResponse(fallback, aesKey, iv), { status: 200, headers: { "Content-Type": "text/plain" } });
+    }
     return NextResponse.json({ error: "Flow error" }, { status: 200 });
   }
 }
