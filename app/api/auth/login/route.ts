@@ -54,11 +54,16 @@ export async function POST(request: NextRequest) {
       });
     }
     
-    if (user.user_type === 'articling_student' && user.pin_expires_at) {
+    if (
+      (user.user_type === 'articling_student' || user.user_type === 'legal_staff') &&
+      user.pin_expires_at
+    ) {
       if (new Date() > new Date(user.pin_expires_at)) {
         return NextResponse.json({ 
           success: false, 
-          error: 'Your access has expired. Please contact your referrer or register as a lawyer if you have been called to the bar.' 
+          error: user.user_type === 'legal_staff'
+            ? 'Your access has expired. Please ask your referrer to re-verify your account.'
+            : 'Your access has expired. Please contact your referrer or register as a lawyer if you have been called to the bar.' 
         });
       }
     }

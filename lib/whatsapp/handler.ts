@@ -7,6 +7,7 @@ const supabase = createClient(
 );
 
 const MAX_AS_ACCESS_MONTHS = 9;
+const STAFF_ACCESS_MONTHS = 6;
 const MAX_CODE_ATTEMPTS = 10;
 
 // =============================================================================
@@ -89,6 +90,17 @@ const findVerifiedLawyerByPhone = async (phone: string) => {
   return partial;
 };
 
+const findLegalStaffByPhone = async (phone: string) => {
+  const digits = normalizePhone(phone);
+  const last10 = digits.slice(-10);
+  const { data: exact } = await supabase.from('whatsapp_users').select('*')
+    .eq('phone_number', digits).eq('user_type', 'legal_staff').maybeSingle();
+  if (exact) return exact;
+  const { data: partial } = await supabase.from('whatsapp_users').select('*')
+    .ilike('phone_number', `%${last10}`).eq('user_type', 'legal_staff').maybeSingle();
+  return partial;
+};
+
 const validateInvitationCode = async (code: string) => {
   const { data } = await supabase.from('whatsapp_users').select('*')
     .eq('invitation_code', code.toUpperCase().trim())
@@ -118,7 +130,15 @@ const showMenu = async (pid: string, to: string) => {
     [
       { id: 'register_lawyer', title: '🛎️ Register (Lawyer)' },
       { id: 'register_as', title: '🌱 Register (A/S)' },
+      { id: 'register_ls', title: '🧾 Register (Legal Staff)' },
+    ]
+  );
+  await sendButtonMessage(pid, to,
+    '✅ Verification',
+    'Lawyers only.',
+    [
       { id: 'verify_as', title: '✅ Verify A/S' },
+      { id: 'verify_ls', title: '✅ Verify Staff' },
     ]
   );
   return sendButtonMessage(pid, to,
@@ -167,12 +187,23 @@ export async function handleMessage(msg: MessageData) {
         await upsertUser(from, { registration_step: 'as_name', user_type: 'articling_student' });
         return prompt(pid, from, '🌱 A/S Registration', 'Enter your *full name*.');
 
+      case 'register_ls':
+        await upsertUser(from, { registration_step: 'ls_name', user_type: 'legal_staff' });
+        return prompt(pid, from, '🧾 Legal Staff Registration', 'Enter your *full name*.');
+
       case 'verify_as':
         if (user?.user_type !== 'lawyer' || !user?.is_verified) {
           return sendTextMessage(pid, from, '❌ *Access Denied*\n\nOnly registered lawyers can verify articling students.\n\nType "menu" to return.');
         }
         await upsertUser(from, { registration_step: 'verify_student_name', temp_data: '{}' });
         return prompt(pid, from, '✅ Verify A/S', 'Enter the *student\'s full name*.');
+
+      case 'verify_ls':
+        if (user?.user_type !== 'lawyer' || !user?.is_verified) {
+          return sendTextMessage(pid, from, '❌ *Access Denied*\n\nOnly registered lawyers can verify legal staff.\n\nType "menu" to return.');
+        }
+        await upsertUser(from, { registration_step: 'verify_staff_name', temp_data: '{}' });
+        return prompt(pid, from, '✅ Verify Staff', 'Enter the *staff member\'s full name*.');
 
       case 'upgrade_lawyer':
         await upsertUser(from, { registration_step: 'upgrade_name', temp_data: '{}' });
@@ -184,6 +215,8 @@ export async function handleMessage(msg: MessageData) {
       case 'confirm_lsbc_no': return handleLawyerConfirm(pid, from, user, false);
       case 'confirm_as_yes': return handleASVerifyConfirm(pid, from, user, true);
       case 'confirm_as_no': return handleASVerifyConfirm(pid, from, user, false);
+      case 'confirm_ls_yes': return handleLSVerifyConfirm(pid, from, user, true);
+      case 'confirm_ls_no': return handleLSVerifyConfirm(pid, from, user, false);
       case 'confirm_oath_yes': return handleOathConfirm(pid, from, user, true);
       case 'confirm_oath_no': return handleOathConfirm(pid, from, user, false);
       case 'confirm_upgrade_lsbc_yes': return handleUpgradeLSBCConfirm(pid, from, user, true);
@@ -297,6 +330,64 @@ export async function handleMessage(msg: MessageData) {
       return sendTextMessage(pid, from, 'Type "menu" to return.');
     }
 
+    // === LEGAL STAFF REGISTRATION ===
+    case 'ls_name':
+      await upsertUser(from, { registration_step: 'ls_firm', full_name: text, user_type: 'legal_staff' });
+      return prompt(pid, from, `Hello, ${text}`, 'Enter your *firm name*.');
+
+    case 'ls_firm':
+      await upsertUser(from, { registration_step: 'ls_referrer_name', firm_name: text });
+      return prompt(pid, from, '✓ Firm Saved', 'Enter your *lawyer referrer\'s full name*.');
+
+    case 'ls_referrer_name':
+      await upsertUser(from, { registration_step: 'ls_referrer_phone', temp_data: JSON.stringify({ referrer_name: text }) });
+      return prompt(pid, from, '✓ Referrer Name Saved', `Enter *${text}'s phone number*.\n\nFormat: 6041234567`);
+
+    case 'ls_referrer_phone': {
+      const digits = normalizePhone(text);
+      if (digits.length < 10) {
+        return prompt(pid, from, '❌ Invalid Phone', 'Enter a valid phone number (10 digits).');
+      }
+
+      const referrer = await findVerifiedLawyerByPhone(digits);
+      if (!referrer) {
+        await resetUser(from);
+        return sendTextMessage(pid, from, '❌ *Referrer Not Found*\n\nYour referrer must be a registered LLM lawyer.\n\nType "menu" to return.');
+      }
+
+      const temp = JSON.parse(user?.temp_data || '{}');
+      const existingPin = user?.pin as string | undefined;
+      const pin = existingPin || await generateUniquePin();
+
+      await upsertUser(from, {
+        registration_step: 'idle',
+        user_type: 'legal_staff',
+        pin,
+        is_verified: false,
+        referrer_id: referrer.id,
+        referrer_name: temp.referrer_name,
+        referrer_phone: digits,
+        temp_data: null,
+        staff_verified_at: null,
+        staff_revoked_at: null
+      });
+
+      const staffUser = await getUser(from);
+      const staffName = staffUser?.full_name || 'A staff member';
+      const staffFirm = staffUser?.firm_name || '—';
+
+      await sendTextMessage(pid, from,
+        `✓ *Registration Complete*\n\n⏳ Status: *Pending Verification*\n\nYour PIN will be active once your referrer verifies you.\n\nYour PIN will expire every 6 months and must be re-verified (you keep the same PIN).`
+      );
+      await sendTextMessage(pid, from, `🔑 Your PIN:\n\n\`${pin}\``);
+
+      sendTextMessage(pid, referrer.phone_number,
+        `📬 *Verification Request*\n\n*${staffName}* has listed you as their lawyer referrer.\n\nFirm: ${staffFirm}\nPhone: ${from}\n\nUse "✅ Verify Staff" to verify them.\n\n⚠️ Staff must be re-verified every 6 months. If they leave your firm, revoke their access in the app at /staff.`
+      ).catch(console.error);
+
+      return sendTextMessage(pid, from, 'Type "menu" to return.');
+    }
+
     // === VERIFY A/S ===
     case 'verify_student_name': {
       await upsertUser(from, { temp_data: JSON.stringify({ student_name: text }) });
@@ -330,6 +421,32 @@ export async function handleMessage(msg: MessageData) {
       return sendButtonMessage(pid, from, '⚖️ Confirm Verification',
         `Confirm *${temp.student_name}* is a registered articling student under the LSBC?`,
         [{ id: 'confirm_as_yes', title: '✓ Yes' }, { id: 'confirm_as_no', title: '✗ No' }, { id: 'cancel', title: '❌ Cancel' }]
+      );
+    }
+
+    // === VERIFY LEGAL STAFF ===
+    case 'verify_staff_name': {
+      await upsertUser(from, { temp_data: JSON.stringify({ staff_name: text }) });
+      await upsertUser(from, { registration_step: 'verify_staff_phone' });
+      return prompt(pid, from, '✓ Name Saved', `Enter *${text}'s phone number*.\n\nFormat: 6041234567`);
+    }
+
+    case 'verify_staff_phone': {
+      const digits = normalizePhone(text);
+      if (digits.length < 10) return prompt(pid, from, '❌ Invalid Phone', 'Enter a valid phone number.');
+      const temp = JSON.parse(user?.temp_data || '{}');
+      temp.staff_phone = digits;
+      await upsertUser(from, { registration_step: 'verify_staff_firm', temp_data: JSON.stringify(temp) });
+      return prompt(pid, from, '✓ Phone Saved', 'Enter the *firm name* where this staff works.');
+    }
+
+    case 'verify_staff_firm': {
+      const temp = JSON.parse(user?.temp_data || '{}');
+      temp.firm_name = text;
+      await upsertUser(from, { registration_step: 'verify_staff_confirm', temp_data: JSON.stringify(temp) });
+      return sendButtonMessage(pid, from, '⚖️ Confirm Verification',
+        `Confirm *${temp.staff_name}* is legal staff at *${temp.firm_name}*?`,
+        [{ id: 'confirm_ls_yes', title: '✓ Yes' }, { id: 'confirm_ls_no', title: '✗ No' }, { id: 'cancel', title: '❌ Cancel' }]
       );
     }
 
@@ -372,6 +489,7 @@ async function handleFetchPin(pid: string, from: string, user: Record<string, un
   }
 
   const isLawyer = user.user_type === 'lawyer';
+  const isLegalStaff = user.user_type === 'legal_staff';
   const expiry = user.pin_expires_at ? new Date(user.pin_expires_at as string) : null;
   const isExpired = expiry && expiry < new Date();
 
@@ -381,7 +499,9 @@ async function handleFetchPin(pid: string, from: string, user: Record<string, un
   } else if (!user.is_verified) {
     status = '⏳ Status: *Pending Verification*';
   } else if (isExpired) {
-    status = '❌ Status: *Expired*\n\nUse "⬆️ Upgrade" if called to the bar.';
+    status = isLegalStaff
+      ? '❌ Status: *Expired*\n\nAsk your referrer to re-verify you. Your PIN will stay the same.'
+      : '❌ Status: *Expired*\n\nUse "⬆️ Upgrade" if called to the bar.';
   } else if (expiry) {
     status = `✓ Status: *Active*\n📅 Expires: ${formatDate(expiry)}`;
   } else {
@@ -481,6 +601,53 @@ async function handleASVerifyConfirm(pid: string, from: string, user: Record<str
   
   await sendTextMessage(pid, student.phone_number, `🎉 *Account Activated*\n\nYour referrer has verified you.\n\n📅 Expires: ${formatDate(finalExpiry)}`);
   return sendTextMessage(pid, student.phone_number, `🔑 Your PIN:\n\n\`${student.pin}\``);
+}
+
+async function handleLSVerifyConfirm(pid: string, from: string, user: Record<string, unknown> | null, confirmed: boolean) {
+  const temp = JSON.parse((user?.temp_data as string) || '{}');
+
+  if (!confirmed) {
+    await resetUser(from);
+    return sendTextMessage(pid, from, '❌ *Verification Cancelled*\n\nType "menu" to return.');
+  }
+
+  const staff = await findLegalStaffByPhone(temp.staff_phone);
+  if (!staff || staff.user_type !== 'legal_staff') {
+    await resetUser(from);
+    return sendTextMessage(pid, from, '❌ *Staff Not Found*\n\nNo legal staff found with that phone.\n\nType "menu" to return.');
+  }
+
+  if (user?.id && staff.referrer_id && staff.referrer_id !== user.id) {
+    await resetUser(from);
+    return sendTextMessage(pid, from, '❌ *Access Denied*\n\nThis staff member is linked to another referrer.\n\nType "menu" to return.');
+  }
+
+  const expiry = new Date();
+  expiry.setMonth(expiry.getMonth() + STAFF_ACCESS_MONTHS);
+  const pin = staff.pin || await generateUniquePin();
+
+  const { error } = await supabase.from('whatsapp_users').update({
+    is_verified: true,
+    pin,
+    pin_expires_at: expiry.toISOString(),
+    firm_name: temp.firm_name || staff.firm_name,
+    referrer_id: user?.id || staff.referrer_id,
+    staff_verified_at: new Date().toISOString(),
+    staff_revoked_at: null,
+    updated_at: new Date().toISOString()
+  }).eq('id', staff.id);
+
+  if (error) {
+    console.error('Verify staff error:', error);
+    return sendTextMessage(pid, from, '❌ *Error*\n\nFailed to verify. Please try again.\n\nType "menu" to return.');
+  }
+
+  await resetUser(from);
+
+  await sendTextMessage(pid, from, `✓ *Verification Complete*\n\n${temp.staff_name}'s account is active.\n📅 Expires: ${formatDate(expiry)}\n\nType "menu" to return.`);
+
+  await sendTextMessage(pid, staff.phone_number, `🎉 *Account Activated*\n\nYour referrer has verified you.\n\n📅 Expires: ${formatDate(expiry)}\n\nYou will need re-verification every 6 months. Your PIN will stay the same.`);
+  return sendTextMessage(pid, staff.phone_number, `🔑 Your PIN:\n\n\`${pin}\``);
 }
 
 async function handleOathConfirm(pid: string, from: string, user: Record<string, unknown> | null, confirmed: boolean) {
