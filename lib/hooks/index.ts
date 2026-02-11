@@ -5,6 +5,7 @@ export { useCourtDetails } from './useCourtDetails';
 export { useCourtScheduleDates } from './useCourtScheduleDates';
 export { useBailDetails } from './useBailDetails';
 export { useBailHubDetails } from './useBailHubDetails';
+export { useAdminStatus } from './useAdminStatus';
 export { useBugReports } from './useBugReports';
 export { useCorrectionals } from './useCorrectionals';
 export { useCorrectional } from './useCorrectional';

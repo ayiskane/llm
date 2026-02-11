@@ -24,7 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createBugReport } from "@/lib/api/bugReports";
-import { useBugReports } from "@/lib/hooks";
+import { toggleAdminStatus } from "@/lib/api/admin";
+import { useAdminStatus, useBugReports } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -45,7 +46,9 @@ export function ReportBugButton() {
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(false);
   const { data: bugReports } = useBugReports();
+  const { status, canManage, isLoading: statusLoading } = useAdminStatus();
 
   const pageLabel = useMemo(
     () => (pathname ? `${pathname}` : "Unknown page"),
@@ -55,6 +58,7 @@ export function ReportBugButton() {
     () => bugReports.filter((report) => report.status !== "fixed").length,
     [bugReports],
   );
+  const statusLabel = status === "online" ? "Online" : "Offline";
   const isFeedbackLayout = kind === "general_feedback" || kind === "other";
 
   const requiresIssue = kind === "bug" || kind === "inaccurate_info";
@@ -98,6 +102,20 @@ export function ReportBugButton() {
     }
   };
 
+  const handleToggleStatus = async () => {
+    if (statusUpdating) return;
+    setStatusUpdating(true);
+    try {
+      const updated = await toggleAdminStatus();
+      queryClient.setQueryData(["adminStatus"], updated);
+      toast.success(`Dev is now ${updated.status}.`);
+    } catch {
+      toast.error("Could not update status.");
+    } finally {
+      setStatusUpdating(false);
+    }
+  };
+
   return (
     <div className="fixed bottom-20 right-4 z-50">
       <Dialog open={open} onOpenChange={setOpen}>
@@ -116,11 +134,11 @@ export function ReportBugButton() {
             <DialogTitle className="text-[12px] uppercase tracking-[0.28em]">
               Report a bug
             </DialogTitle>
-            <DialogDescription className="text-[11px] text-muted-foreground">
-              Quick report · Court details page
-            </DialogDescription>
-            <div className="flex items-center gap-2 text-[11px]">
-              <Link href="/bug-reports" className="text-indigo-300 hover:underline">
+            <div className="flex flex-wrap items-center gap-2 text-[11px]">
+              <Link
+                href="/bug-reports"
+                className="text-indigo-300 hover:underline"
+              >
                 View submitted reports
               </Link>
               <span
@@ -133,6 +151,38 @@ export function ReportBugButton() {
               >
                 Reported Bugs: {unfixedCount}
               </span>
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-secondary/20 px-2.5 py-2 text-[11px]">
+              <span className="uppercase tracking-widest text-[9px] text-muted-foreground">
+                Status
+              </span>
+              <span
+                className={cn(
+                  "rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide font-semibold",
+                  status === "online"
+                    ? "text-emerald-300 bg-emerald-500/10"
+                    : "text-red-300 bg-red-500/10",
+                )}
+              >
+                Dev is {statusLabel}
+              </span>
+              {statusLoading ? (
+                <span className="text-[10px] text-muted-foreground">
+                  Updating…
+                </span>
+              ) : null}
+              {canManage && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleToggleStatus}
+                  disabled={statusUpdating}
+                  className="h-7 px-3 text-[10px] uppercase tracking-widest"
+                >
+                  Set {status === "online" ? "Offline" : "Online"}
+                </Button>
+              )}
             </div>
           </DialogHeader>
 
