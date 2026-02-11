@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createBugReport } from "@/lib/api/bugReports";
+import { useBugReports } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -44,10 +45,15 @@ export function ReportBugButton() {
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const { data: bugReports } = useBugReports();
 
   const pageLabel = useMemo(
     () => (pathname ? `${pathname}` : "Unknown page"),
     [pathname],
+  );
+  const unfixedCount = useMemo(
+    () => bugReports.filter((report) => report.status !== "fixed").length,
+    [bugReports],
   );
   const isFeedbackLayout = kind === "general_feedback" || kind === "other";
 
@@ -113,12 +119,21 @@ export function ReportBugButton() {
             <DialogDescription className="text-[11px] text-muted-foreground">
               Quick report · Court details page
             </DialogDescription>
-            <Link
-              href="/bug-reports"
-              className="text-[11px] text-indigo-300 hover:underline"
-            >
-              View submitted reports
-            </Link>
+            <div className="flex items-center gap-2 text-[11px]">
+              <Link href="/bug-reports" className="text-indigo-300 hover:underline">
+                View submitted reports
+              </Link>
+              <span
+                className={cn(
+                  "rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide font-semibold",
+                  unfixedCount === 0
+                    ? "text-emerald-300 bg-emerald-500/10"
+                    : "text-red-300 bg-red-500/10",
+                )}
+              >
+                Reported Bugs: {unfixedCount}
+              </span>
+            </div>
           </DialogHeader>
 
           <fieldset className="space-y-3 pt-2" disabled={submitting}>
