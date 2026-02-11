@@ -123,100 +123,67 @@ const prompt = (pid: string, to: string, header: string, body: string) =>
 // MENU
 // =============================================================================
 
-const showMainMenu = async (pid: string, to: string) => sendListMessage(
-  pid,
-  to,
-  '⚖️ LLM Registration',
-  'Choose a section to continue.',
-  'Open Menu',
-  [
-    {
-      title: 'LLM Registration',
-      rows: [
-        { id: 'menu_lawyer_portal', title: 'I am a Lawyer' },
-        { id: 'menu_as_portal', title: 'I am an A/S' },
-        { id: 'menu_ls_portal', title: 'I am a Legal Staff' },
-      ],
-    },
-    {
-      title: 'Account Details',
-      rows: [
-        { id: 'fetch_pin', title: 'Get Access PIN' },
-        { id: 'fetch_invite', title: 'Get Invite Code' },
-      ],
-    },
-  ]
-);
+const showMainMenu = async (pid: string, to: string) => {
+  await sendButtonMessage(
+    pid,
+    to,
+    '⚖️ LLM Registration',
+    'Select an option.',
+    [
+      { id: 'menu_lawyer_portal', title: 'I am a LAWYER' },
+      { id: 'menu_as_portal', title: 'I am an A/S' },
+      { id: 'menu_ls_portal', title: 'I am a LEGAL STAFF' },
+    ]
+  );
+  return sendButtonMessage(
+    pid,
+    to,
+    'Account Details',
+    'Already registered?',
+    [
+      { id: 'fetch_pin', title: 'Get Access PIN' },
+      { id: 'fetch_invite', title: 'Get Invite Code' },
+    ]
+  );
+};
 
 const showLawyerPortal = async (pid: string, to: string) => sendListMessage(
   pid,
   to,
   '⚖️ Lawyer Portal',
   'Select an action.',
-  'Open Actions',
+  'Open Menu',
   [
     {
       title: 'Lawyer Portal',
       rows: [
         { id: 'register_lawyer', title: 'Register' },
         { id: 'verify_as', title: 'Verify A/S' },
-        { id: 'menu_ls_verify_revoke', title: 'Verify/Revoke Legal Staff' },
-        { id: 'menu_main', title: '← Back to Menu' },
+        { id: 'verify_ls', title: 'Verify Legal Staff' },
+        { id: 'ls_revoke_info', title: 'Revoke Legal Staff' },
       ],
     },
   ]
 );
 
-const showASPortal = async (pid: string, to: string) => sendListMessage(
+const showASPortal = async (pid: string, to: string) => sendButtonMessage(
   pid,
   to,
   '🌱 A/S Portal',
   'Select an action.',
-  'Open Actions',
   [
-    {
-      title: 'A/S Portal',
-      rows: [
-        { id: 'register_as', title: 'Register' },
-        { id: 'upgrade_lawyer', title: 'Upgrade to Lawyer' },
-        { id: 'menu_main', title: '← Back to Menu' },
-      ],
-    },
+    { id: 'register_as', title: 'Register' },
+    { id: 'upgrade_lawyer', title: 'Upgrade to Lawyer' },
   ]
 );
 
-const showLegalStaffPortal = async (pid: string, to: string) => sendListMessage(
+const showLegalStaffPortal = async (pid: string, to: string) => sendButtonMessage(
   pid,
   to,
   '🧾 Legal Staff Portal',
   'Select an action.',
-  'Open Actions',
   [
-    {
-      title: 'Legal Staff Portal',
-      rows: [
-        { id: 'register_ls', title: 'Register' },
-        { id: 'menu_main', title: '← Back to Menu' },
-      ],
-    },
-  ]
-);
-
-const showLegalStaffVerifyRevoke = async (pid: string, to: string) => sendListMessage(
-  pid,
-  to,
-  '🧾 Legal Staff Access',
-  'Select an action.',
-  'Open Actions',
-  [
-    {
-      title: 'Legal Staff',
-      rows: [
-        { id: 'verify_ls', title: 'Verify Staff' },
-        { id: 'ls_revoke_info', title: 'Revoke Staff Access' },
-        { id: 'menu_lawyer_portal', title: '← Back to Lawyer Portal' },
-      ],
-    },
+    { id: 'register_ls', title: 'Register' },
   ]
 );
 
@@ -247,10 +214,6 @@ export async function handleMessage(msg: MessageData) {
     }
 
     switch (text) {
-      case 'menu_main':
-        await resetUser(from);
-        return showMainMenu(pid, from);
-
       case 'menu_lawyer_portal':
         return showLawyerPortal(pid, from);
 
@@ -259,9 +222,6 @@ export async function handleMessage(msg: MessageData) {
 
       case 'menu_ls_portal':
         return showLegalStaffPortal(pid, from);
-
-      case 'menu_ls_verify_revoke':
-        return showLegalStaffVerifyRevoke(pid, from);
 
       case 'ls_revoke_info':
         if (user?.user_type !== 'lawyer' || !user?.is_verified) {
