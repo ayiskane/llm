@@ -406,7 +406,8 @@ const formatStaffStatus = async (user: Record<string, unknown>) => {
 };
 
 const showPortalForUser = async (pid: string, to: string, user: Record<string, unknown> | null) => {
-  const type = user?.user_type as string | undefined;
+  if (!user) return showMainMenu(pid, to);
+  const type = user.user_type as string | undefined;
   if (type === 'lawyer') {
     return showLawyerPortal(pid, to, user);
   }
