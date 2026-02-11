@@ -1,0 +1,135 @@
+{
+"version": "7.2",
+  "data_api_version": "3.0",
+  "routing_model": {
+    "ROLE_SELECT": ["LAWYER_INVITE_CODE", "AS_INFO", "STAFF_INFO"],
+    "LAWYER_INVITE_CODE": ["LAWYER_DETAILS"],
+    "LAWYER_DETAILS": ["SUCCESS"],
+    "AS_INFO": ["AS_REFERRER"],
+    "AS_REFERRER": ["SUCCESS"],
+    "STAFF_INFO": ["STAFF_REFERRER"],
+    "STAFF_REFERRER": ["SUCCESS"]
+  },
+  "screens": [
+    {
+      "id": "ROLE_SELECT",
+      "title": "LLM Registration",
+      "terminal": false,
+      "data": {},
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          { "type": "RadioButtonsGroup", "name": "role", "label": "I am a...", "required": true,
+            "data-source": [
+              { "id": "lawyer", "title": "Lawyer", "description": "Active LSBC member. Requires invite code." },
+              { "id": "articling_student", "title": "Articling Student", "description": "Currently articling. Needs lawyer referrer." },
+              { "id": "legal_staff", "title": "Legal Staff", "description": "Support staff at a law firm." }
+            ]
+          },
+          { "type": "Footer", "label": "Continue", "on-click-action": { "name": "data_exchange", "payload": { "role": "${form.role}" } } }
+        ]
+      }
+    },
+    {
+      "id": "LAWYER_INVITE_CODE", "title": "LLM Registration", "terminal": false, "refresh_on_back": false,
+      "data": { "error_message": { "type": "string", "__example__": "" } },
+      "layout": { "type": "SingleColumnLayout", "children": [
+        { "type": "TextSubheading", "text": "Invitation Code" },
+        { "type": "TextBody", "text": "${data.error_message}" },
+        { "type": "TextInput", "name": "invite_code", "label": "Enter your 6-character code", "required": true, "input-type": "text" },
+        { "type": "Footer", "label": "Verify Code", "on-click-action": { "name": "data_exchange", "payload": { "invite_code": "${form.invite_code}" } } }
+      ]}
+    },
+    {
+      "id": "LAWYER_DETAILS", "title": "LLM Registration", "terminal": false, "refresh_on_back": false,
+      "data": {
+        "invite_code": { "type": "string", "__example__": "ABC123" },
+        "invite_code_id": { "type": "string", "__example__": "1" },
+        "inviter_name": { "type": "string", "__example__": "Michael Tran" },
+        "error_message": { "type": "string", "__example__": "" }
+      },
+      "layout": { "type": "SingleColumnLayout", "children": [
+        { "type": "TextSubheading", "text": "Your Details" },
+        { "type": "TextBody", "text": "✓ Code accepted. Invited by: ${data.inviter_name}" },
+        { "type": "TextBody", "text": "${data.error_message}" },
+        { "type": "TextInput", "name": "full_name", "label": "Full Name", "required": true, "input-type": "text", "helper-text": "As it appears on the LSBC register" },
+        { "type": "OptIn", "name": "lsbc_confirmed", "label": "I am an active member of the Law Society of BC in good standing.", "required": true },
+        { "type": "Footer", "label": "Complete Registration", "on-click-action": { "name": "data_exchange", "payload": { "full_name": "${form.full_name}", "lsbc_confirmed": "${form.lsbc_confirmed}", "invite_code": "${data.invite_code}", "invite_code_id": "${data.invite_code_id}" } } }
+      ]}
+    },
+    {
+      "id": "AS_INFO", "title": "LLM Registration", "terminal": false, "refresh_on_back": false,
+      "data": { "error_message": { "type": "string", "__example__": "" } },
+      "layout": { "type": "SingleColumnLayout", "children": [
+        { "type": "TextSubheading", "text": "Your Information" },
+        { "type": "TextBody", "text": "${data.error_message}" },
+        { "type": "TextInput", "name": "full_name", "label": "Full Name", "required": true, "input-type": "text" },
+        { "type": "TextInput", "name": "firm_name", "label": "Firm Name", "required": true, "input-type": "text" },
+        { "type": "TextInput", "name": "principal_name", "label": "Principal's Full Name", "required": true, "input-type": "text" },
+        { "type": "Footer", "label": "Continue", "on-click-action": { "name": "data_exchange", "payload": { "full_name": "${form.full_name}", "firm_name": "${form.firm_name}", "principal_name": "${form.principal_name}" } } }
+      ]}
+    },
+    {
+      "id": "AS_REFERRER", "title": "LLM Registration", "terminal": false, "refresh_on_back": false,
+      "data": {
+        "full_name": { "type": "string", "__example__": "James Park" },
+        "firm_name": { "type": "string", "__example__": "Miller Thomson LLP" },
+        "principal_name": { "type": "string", "__example__": "David Wong" },
+        "error_message": { "type": "string", "__example__": "" }
+      },
+      "layout": { "type": "SingleColumnLayout", "children": [
+        { "type": "TextSubheading", "text": "Referrer & Dates" },
+        { "type": "TextBody", "text": "${data.error_message}" },
+        { "type": "TextInput", "name": "referrer_name", "label": "Referrer's Full Name", "required": true, "input-type": "text", "helper-text": "Must be a registered LLM lawyer" },
+        { "type": "TextInput", "name": "referrer_phone", "label": "Referrer's Phone Number", "required": true, "input-type": "phone" },
+        { "type": "DatePicker", "name": "articling_end", "label": "Articling End Date", "required": true, "helper-text": "Max 9 months access from today" },
+        { "type": "Footer", "label": "Submit Registration", "on-click-action": { "name": "data_exchange", "payload": { "full_name": "${data.full_name}", "firm_name": "${data.firm_name}", "principal_name": "${data.principal_name}", "referrer_name": "${form.referrer_name}", "referrer_phone": "${form.referrer_phone}", "articling_end": "${form.articling_end}" } } }
+      ]}
+    },
+    {
+      "id": "STAFF_INFO", "title": "LLM Registration", "terminal": false, "refresh_on_back": false,
+      "data": { "error_message": { "type": "string", "__example__": "" } },
+      "layout": { "type": "SingleColumnLayout", "children": [
+        { "type": "TextSubheading", "text": "Your Information" },
+        { "type": "TextBody", "text": "${data.error_message}" },
+        { "type": "TextInput", "name": "full_name", "label": "Full Name", "required": true, "input-type": "text" },
+        { "type": "TextInput", "name": "firm_name", "label": "Firm Name", "required": true, "input-type": "text" },
+        { "type": "RadioButtonsGroup", "name": "staff_role", "label": "I am a...", "required": true,
+          "data-source": [
+            { "id": "legal_assistant", "title": "Legal Assistant" },
+            { "id": "paralegal", "title": "Paralegal" },
+            { "id": "other", "title": "Other" }
+          ]
+        },
+        { "type": "TextInput", "name": "staff_role_other", "label": "Please specify", "required": false, "input-type": "text" },
+        { "type": "Footer", "label": "Continue", "on-click-action": { "name": "data_exchange", "payload": { "full_name": "${form.full_name}", "firm_name": "${form.firm_name}", "staff_role": "${form.staff_role}", "staff_role_other": "${form.staff_role_other}" } } }
+      ]}
+    },
+    {
+      "id": "STAFF_REFERRER", "title": "LLM Registration", "terminal": false, "refresh_on_back": false,
+      "data": {
+        "full_name": { "type": "string", "__example__": "Maria Santos" },
+        "firm_name": { "type": "string", "__example__": "Lawson Lundell LLP" },
+        "staff_role": { "type": "string", "__example__": "paralegal" },
+        "staff_role_other": { "type": "string", "__example__": "" },
+        "error_message": { "type": "string", "__example__": "" }
+      },
+      "layout": { "type": "SingleColumnLayout", "children": [
+        { "type": "TextSubheading", "text": "Lawyer Referrer" },
+        { "type": "TextBody", "text": "${data.error_message}" },
+        { "type": "TextInput", "name": "referrer_name", "label": "Referrer's Full Name", "required": true, "input-type": "text", "helper-text": "Must be a registered LLM lawyer" },
+        { "type": "TextInput", "name": "referrer_phone", "label": "Referrer's Phone Number", "required": true, "input-type": "phone" },
+        { "type": "Footer", "label": "Submit Registration", "on-click-action": { "name": "data_exchange", "payload": { "full_name": "${data.full_name}", "firm_name": "${data.firm_name}", "staff_role": "${data.staff_role}", "staff_role_other": "${data.staff_role_other}", "referrer_name": "${form.referrer_name}", "referrer_phone": "${form.referrer_phone}" } } }
+      ]}
+    },
+    {
+      "id": "SUCCESS", "title": "Complete", "terminal": true,
+      "data": { "extension_message_response": { "type": "object", "__example__": { "params": { "flow_token": "token", "status": "active" } } } },
+      "layout": { "type": "SingleColumnLayout", "children": [
+        { "type": "TextHeading", "text": "Registration Complete" },
+        { "type": "TextBody", "text": "Check your chat for your PIN and further instructions." },
+        { "type": "Footer", "label": "Done", "on-click-action": { "name": "complete", "payload": { "extension_message_response": "${data.extension_message_response}" } } }
+      ]}
+    }
+  ]
+}
