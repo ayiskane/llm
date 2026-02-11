@@ -130,10 +130,41 @@ export function ReportBugButton() {
           </Button>
         </DialogTrigger>
         <DialogContent className="p-5 sm:p-6 rounded-2xl">
-          <DialogHeader className="space-y-1.5">
+          <DialogHeader className="space-y-2">
             <DialogTitle className="text-[12px] uppercase tracking-[0.28em]">
               Report a bug
             </DialogTitle>
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+              <div className="flex flex-wrap items-center gap-2">
+                <DialogDescription className="text-[11px] text-muted-foreground">
+                  Quick report · Court details page
+                </DialogDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                {canManage && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleToggleStatus}
+                    disabled={statusUpdating}
+                    className="h-6 px-2.5 text-[9px] uppercase tracking-widest"
+                  >
+                    Set {status === "online" ? "Offline" : "Online"}
+                  </Button>
+                )}
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-0.5 text-[9px] uppercase tracking-wide font-semibold",
+                    status === "online"
+                      ? "text-emerald-300 bg-emerald-500/10"
+                      : "text-red-300 bg-red-500/10",
+                  )}
+                >
+                  Dev {statusLabel}
+                </span>
+              </div>
+            </div>
             <div className="flex flex-wrap items-center gap-2 text-[11px]">
               <Link
                 href="/bug-reports"
@@ -151,38 +182,11 @@ export function ReportBugButton() {
               >
                 Reported Bugs: {unfixedCount}
               </span>
-            </div>
-            <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-secondary/20 px-2.5 py-2 text-[11px]">
-              <span className="uppercase tracking-widest text-[9px] text-muted-foreground">
-                Status
-              </span>
-              <span
-                className={cn(
-                  "rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide font-semibold",
-                  status === "online"
-                    ? "text-emerald-300 bg-emerald-500/10"
-                    : "text-red-300 bg-red-500/10",
-                )}
-              >
-                Dev is {statusLabel}
-              </span>
               {statusLoading ? (
                 <span className="text-[10px] text-muted-foreground">
                   Updating…
                 </span>
               ) : null}
-              {canManage && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleToggleStatus}
-                  disabled={statusUpdating}
-                  className="h-7 px-3 text-[10px] uppercase tracking-widest"
-                >
-                  Set {status === "online" ? "Offline" : "Online"}
-                </Button>
-              )}
             </div>
           </DialogHeader>
 
