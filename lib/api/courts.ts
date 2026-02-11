@@ -608,7 +608,7 @@ export async function fetchBailHubDetails(
     .limit(1);
 
   if (hubError) throw new Error(hubError.message);
-  let bailHub = (hubRows?.[0] as BailHub) ?? null;
+  let bailHub: BailHub | null = (hubRows?.[0] as BailHub) ?? null;
   bailHub = await withTriageAmName(bailHub);
   if (!bailHub) {
     return {

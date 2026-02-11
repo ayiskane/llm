@@ -224,8 +224,8 @@ export function TeamsCard({
   }, [schedules]);
 
   const jcmBuckets = useMemo(() => {
-    const all = schedules.filter((schedule) =>
-      (schedule.courtroom_type ?? []).includes(JCM_TYPE_ID),
+    const all = schedules.filter(
+      (schedule) => schedule.courtroom_type === JCM_TYPE_ID,
     );
     return {
       all,
@@ -396,8 +396,8 @@ export function TeamsCard({
           const linkTypeId = link.courtroom_type_id ?? null;
           const filterByType = (entries: CourtroomSchedule[]) => {
             if (!linkTypeId) return entries;
-            const matches = entries.filter((schedule) =>
-              (schedule.courtroom_type ?? []).includes(linkTypeId),
+            const matches = entries.filter(
+              (schedule) => schedule.courtroom_type === linkTypeId,
             );
             return matches.length > 0 ? matches : entries;
           };
