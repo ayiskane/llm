@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { sendTextMessage, sendButtonMessage, sendListMessage, MessageData } from './api';
+import { sendTextMessage, sendButtonMessage, sendFlowMessage, MessageData } from './api';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,6 +9,9 @@ const supabase = createClient(
 const MAX_AS_ACCESS_MONTHS = 9;
 const STAFF_ACCESS_MONTHS = 6;
 const MAX_CODE_ATTEMPTS = 10;
+const REGISTRATION_FLOW_ID = process.env.WHATSAPP_REGISTRATION_FLOW_ID || '';
+const VERIFICATION_FLOW_ID = process.env.WHATSAPP_VERIFICATION_FLOW_ID || '';
+const REGISTRATION_FLOW_ROLE_SCREEN = process.env.WHATSAPP_REGISTRATION_FLOW_ROLE_SCREEN || 'ROLE_SELECT';
 
 // =============================================================================
 // UTILITIES
@@ -47,6 +50,9 @@ const parseDate = (s: string): Date | null => {
 };
 
 const normalizePhone = (phone: string) => phone.replace(/\D/g, '');
+
+const hasAccount = (user: Record<string, unknown> | null) =>
+  Boolean(user?.user_type);
 
 // =============================================================================
 // DATABASE HELPERS
@@ -123,69 +129,297 @@ const prompt = (pid: string, to: string, header: string, body: string) =>
 // MENU
 // =============================================================================
 
-const showMainMenu = async (pid: string, to: string) => {
-  await sendButtonMessage(
-    pid,
-    to,
-    '⚖️ LLM Registration',
-    'Select an option.',
-    [
-      { id: 'menu_lawyer_portal', title: 'I am a LAWYER' },
-      { id: 'menu_as_portal', title: 'I am an A/S' },
-      { id: 'menu_ls_portal', title: 'I am a LEGAL STAFF' },
-    ]
-  );
+const showAccountDetails = async (pid: string, to: string, user?: Record<string, unknown> | null) => {
+  const type = user?.user_type as string | undefined;
+  const buttons = [{ id: 'fetch_pin', title: 'Get Access PIN' }];
+  if (type === 'lawyer') {
+    buttons.push({ id: 'fetch_invite', title: 'Get Invite Code' });
+  }
   return sendButtonMessage(
     pid,
     to,
     'Account Details',
     'Already registered?',
-    [
-      { id: 'fetch_pin', title: 'Get Access PIN' },
-      { id: 'fetch_invite', title: 'Get Invite Code' },
-    ]
+    buttons
   );
 };
 
-const showLawyerPortal = async (pid: string, to: string) => sendListMessage(
-  pid,
-  to,
-  '⚖️ Lawyer Portal',
-  'Select an action.',
-  'Open Menu',
-  [
-    {
-      title: 'Lawyer Portal',
-      rows: [
-        { id: 'register_lawyer', title: 'Register' },
-        { id: 'verify_as', title: 'Verify A/S' },
-        { id: 'verify_ls', title: 'Verify Legal Staff' },
-        { id: 'ls_revoke_info', title: 'Revoke Legal Staff' },
-      ],
-    },
-  ]
-);
+const showMainMenu = async (pid: string, to: string) => {
+  if (REGISTRATION_FLOW_ID) {
+    await sendFlowMessage(
+      pid,
+      to,
+      '⚖️ LLM Registration',
+      'Register with LLM to receive your access PIN.',
+      'Register',
+      REGISTRATION_FLOW_ID,
+      { flowToken: to, screen: REGISTRATION_FLOW_ROLE_SCREEN, action: 'data_exchange' }
+    );
+  } else {
+    await sendTextMessage(
+      pid,
+      to,
+      '⚠️ Registration flow is not configured. Please contact support.'
+    );
+  }
+  return showAccountDetails(pid, to);
+};
 
-const showASPortal = async (pid: string, to: string) => sendButtonMessage(
+const showLawyerPortal = async (pid: string, to: string, user: Record<string, unknown>) => {
+  const lawyerName = (user.full_name as string | undefined) || 'there';
+
+  await sendTextMessage(
+    pid,
+    to,
+    `⚖️ *Lawyer Portal*\n\nWelcome back, ${lawyerName}.`
+  );
+
+  const pendingStudents = await supabase
+    .from('whatsapp_users')
+    .select('id, full_name, phone_number, firm_name, temp_data')
+    .eq('user_type', 'articling_student')
+    .eq('referrer_id', user.id)
+    .eq('is_verified', false);
+
+  const pendingStaff = await supabase
+    .from('whatsapp_users')
+    .select('id, full_name, phone_number, firm_name, staff_role, staff_role_other')
+    .eq('user_type', 'legal_staff')
+    .eq('referrer_id', user.id)
+    .eq('is_verified', false)
+    .is('staff_revoked_at', null);
+
+  const expiringStaff = await supabase
+    .from('whatsapp_users')
+    .select('id, full_name, phone_number, firm_name, staff_role, staff_role_other, pin_expires_at')
+    .eq('user_type', 'legal_staff')
+    .eq('referrer_id', user.id)
+    .eq('is_verified', true)
+    .is('staff_revoked_at', null)
+    .lte('pin_expires_at', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString());
+
+  const pendingStudentRows = pendingStudents.data || [];
+  const pendingStaffRows = pendingStaff.data || [];
+  const expiringStaffRows = expiringStaff.data || [];
+
+  if (VERIFICATION_FLOW_ID) {
+    for (const student of pendingStudentRows) {
+      let temp: Record<string, unknown> = {};
+      if (student.temp_data) {
+        try {
+          temp = typeof student.temp_data === 'string' ? JSON.parse(student.temp_data) : student.temp_data;
+        } catch {
+          temp = {};
+        }
+      }
+      await sendFlowMessage(
+        pid,
+        to,
+        '✅ Verify A/S',
+        `${student.full_name || 'A student'} has listed you as their referrer.`,
+        'Verify Student',
+        VERIFICATION_FLOW_ID,
+        {
+          screen: 'VERIFY_AS_SCREEN',
+          action: 'data_exchange',
+          flowToken: to,
+          data: {
+            user_id: student.id,
+            student_name: student.full_name,
+            student_phone: student.phone_number,
+            firm: student.firm_name,
+            articling_end: temp.articling_end || null,
+            type: 'articling_student',
+          },
+        }
+      );
+    }
+
+    for (const staff of pendingStaffRows) {
+      const roleName = staff.staff_role === 'other'
+        ? staff.staff_role_other || 'Other'
+        : staff.staff_role === 'legal_assistant'
+          ? 'Legal Assistant'
+          : staff.staff_role === 'paralegal'
+            ? 'Paralegal'
+            : staff.staff_role || 'Staff';
+      await sendFlowMessage(
+        pid,
+        to,
+        '✅ Verify Legal Staff',
+        `${staff.full_name || 'A staff member'} has listed you as their referrer.`,
+        'Verify Staff',
+        VERIFICATION_FLOW_ID,
+        {
+          screen: 'VERIFY_STAFF_SCREEN',
+          action: 'data_exchange',
+          flowToken: to,
+          data: {
+            user_id: staff.id,
+            staff_name: staff.full_name,
+            staff_phone: staff.phone_number,
+            staff_role: roleName,
+            firm: staff.firm_name,
+            type: 'legal_staff',
+          },
+        }
+      );
+    }
+
+    for (const staff of expiringStaffRows) {
+      const roleName = staff.staff_role === 'other'
+        ? staff.staff_role_other || 'Other'
+        : staff.staff_role === 'legal_assistant'
+          ? 'Legal Assistant'
+          : staff.staff_role === 'paralegal'
+            ? 'Paralegal'
+            : staff.staff_role || 'Staff';
+      await sendFlowMessage(
+        pid,
+        to,
+        '🔁 Re-Verify Staff',
+        `${staff.full_name || 'A staff member'} expires soon. Re-verify to extend access.`,
+        'Re-Verify Staff',
+        VERIFICATION_FLOW_ID,
+        {
+          screen: 'REVERIFY_STAFF_SCREEN',
+          action: 'data_exchange',
+          flowToken: to,
+          data: {
+            user_id: staff.id,
+            staff_name: staff.full_name,
+            staff_phone: staff.phone_number,
+            staff_role: roleName,
+            firm: staff.firm_name,
+            type: 'reverify',
+          },
+        }
+      );
+    }
+  }
+
+  const pendingCount = pendingStudentRows.length + pendingStaffRows.length;
+  const expiringCount = expiringStaffRows.length;
+
+  if (pendingCount || expiringCount) {
+    await sendTextMessage(
+      pid,
+      to,
+      `You have ${pendingCount} pending verification${pendingCount === 1 ? '' : 's'} and ${expiringCount} expiring staff member${expiringCount === 1 ? '' : 's'}.`
+    );
+  } else {
+    await sendTextMessage(pid, to, 'No pending verifications right now.');
+  }
+
+  const actionButtons = [
+    { id: 'fetch_pin', title: 'Get Access PIN' },
+    { id: 'fetch_invite', title: 'Get Invite Code' },
+    { id: 'ls_revoke_info', title: 'Revoke Staff' },
+  ];
+
+  if (!VERIFICATION_FLOW_ID) {
+    actionButtons.unshift({ id: 'verify_ls', title: 'Verify Staff' });
+    actionButtons.unshift({ id: 'verify_as', title: 'Verify A/S' });
+  }
+
+  return sendButtonMessage(
+    pid,
+    to,
+    'Lawyer Actions',
+    'Account options.',
+    actionButtons
+  );
+};
+
+const showASMenu = async (pid: string, to: string, user: Record<string, unknown>) => sendButtonMessage(
   pid,
   to,
-  '🌱 A/S Portal',
-  'Select an action.',
+  '🌱 Articling Student Portal',
+  'Options.',
   [
-    { id: 'register_as', title: 'Register' },
+    { id: 'fetch_pin', title: 'Get Access PIN' },
     { id: 'upgrade_lawyer', title: 'Upgrade to Lawyer' },
   ]
 );
 
-const showLegalStaffPortal = async (pid: string, to: string) => sendButtonMessage(
-  pid,
-  to,
-  '🧾 Legal Staff Portal',
-  'Select an action.',
-  [
-    { id: 'register_ls', title: 'Register' },
-  ]
-);
+const showStaffMenu = async (pid: string, to: string, user: Record<string, unknown>) => {
+  const revoked = Boolean(user.staff_revoked_at);
+  if (revoked) return;
+  return sendButtonMessage(
+    pid,
+    to,
+    '🧾 Legal Staff Portal',
+    'Options.',
+    [
+      { id: 'fetch_pin', title: 'Get Access PIN' },
+    ]
+  );
+};
+
+const formatASStatus = async (user: Record<string, unknown>) => {
+  const name = (user.full_name as string | undefined) || 'there';
+  const expiry = user.pin_expires_at ? new Date(user.pin_expires_at as string) : null;
+  const isExpired = expiry && expiry < new Date();
+  const isVerified = Boolean(user.is_verified);
+
+  if (!isVerified) {
+    const referrer = (user.referrer_name as string | undefined) || 'your referrer';
+    return `🌱 *Articling Student Portal*\n\nWelcome back, ${name}.\n\n⏳ Status: *Pending Verification*\n\nYour referrer (${referrer}) has not yet verified your account.`;
+  }
+
+  if (isExpired && expiry) {
+    return `🌱 *Articling Student Portal*\n\nWelcome back, ${name}.\n\n❌ Status: *Expired*\n📅 Expired: ${formatDate(expiry)}\n\nIf you've been called to the bar, upgrade to Lawyer below.`;
+  }
+
+  if (expiry) {
+    return `🌱 *Articling Student Portal*\n\nWelcome back, ${name}.\n\n✓ Status: *Active*\n📅 Expires: ${formatDate(expiry)}`;
+  }
+
+  return `🌱 *Articling Student Portal*\n\nWelcome back, ${name}.\n\n✓ Status: *Active*`;
+};
+
+const formatStaffStatus = async (user: Record<string, unknown>) => {
+  const name = (user.full_name as string | undefined) || 'there';
+  const expiry = user.pin_expires_at ? new Date(user.pin_expires_at as string) : null;
+  const isExpired = expiry && expiry < new Date();
+  const isVerified = Boolean(user.is_verified);
+  const isRevoked = Boolean(user.staff_revoked_at);
+
+  if (isRevoked) {
+    return `🧾 *Legal Staff Portal*\n\nWelcome back, ${name}.\n\n🚫 Status: *Revoked*\n\nYour access has been revoked by your referrer. Contact them to discuss.`;
+  }
+
+  if (!isVerified) {
+    const referrer = (user.referrer_name as string | undefined) || 'your referrer';
+    return `🧾 *Legal Staff Portal*\n\nWelcome back, ${name}.\n\n⏳ Status: *Pending Verification*\n\nYour referrer (${referrer}) has not yet verified your account.`;
+  }
+
+  if (isExpired && expiry) {
+    return `🧾 *Legal Staff Portal*\n\nWelcome back, ${name}.\n\n❌ Status: *Expired*\n📅 Expired: ${formatDate(expiry)}\n\nAsk your referrer to re-verify you. Your PIN will stay the same.`;
+  }
+
+  if (expiry) {
+    return `🧾 *Legal Staff Portal*\n\nWelcome back, ${name}.\n\n✓ Status: *Active*\n📅 Expires: ${formatDate(expiry)}\n\nYour access must be re-verified every 6 months.`;
+  }
+
+  return `🧾 *Legal Staff Portal*\n\nWelcome back, ${name}.\n\n✓ Status: *Active*`;
+};
+
+const showPortalForUser = async (pid: string, to: string, user: Record<string, unknown> | null) => {
+  const type = user?.user_type as string | undefined;
+  if (type === 'lawyer') {
+    return showLawyerPortal(pid, to, user);
+  }
+  if (type === 'articling_student') {
+    await sendTextMessage(pid, to, await formatASStatus(user));
+    return showASMenu(pid, to, user);
+  }
+  if (type === 'legal_staff') {
+    await sendTextMessage(pid, to, await formatStaffStatus(user));
+    return showStaffMenu(pid, to, user);
+  }
+  return showMainMenu(pid, to);
+};
 
 // =============================================================================
 // MAIN HANDLER
@@ -201,6 +435,9 @@ export async function handleMessage(msg: MessageData) {
   // Menu commands (text shortcuts)
   if (['menu', 'hi', 'hello', 'start', 'cancel'].includes(text.toLowerCase())) {
     await resetUser(from);
+    if (hasAccount(user)) {
+      return showPortalForUser(pid, from, user);
+    }
     return showMainMenu(pid, from);
   }
 
@@ -210,18 +447,25 @@ export async function handleMessage(msg: MessageData) {
     if (text === 'cancel') {
       await resetUser(from);
       await sendTextMessage(pid, from, '↩️ *Cancelled*');
+      if (hasAccount(user)) {
+        return showPortalForUser(pid, from, user);
+      }
       return showMainMenu(pid, from);
+    }
+
+    if (text === 'flow_reply' && msg.flow?.data) {
+      return handleRegistrationFlow(pid, from, msg.flow.data, user);
     }
 
     switch (text) {
       case 'menu_lawyer_portal':
-        return showLawyerPortal(pid, from);
+        return showPortalForUser(pid, from, user);
 
       case 'menu_as_portal':
-        return showASPortal(pid, from);
+        return showPortalForUser(pid, from, user);
 
       case 'menu_ls_portal':
-        return showLegalStaffPortal(pid, from);
+        return showPortalForUser(pid, from, user);
 
       case 'ls_revoke_info':
         if (user?.user_type !== 'lawyer' || !user?.is_verified) {
@@ -231,14 +475,20 @@ export async function handleMessage(msg: MessageData) {
         return prompt(pid, from, '🧾 Revoke Staff Access', 'Enter the *staff member\'s phone number*.\n\nFormat: 6041234567');
 
       case 'register_lawyer':
-        await upsertUser(from, { registration_step: 'lawyer_invite_code', user_type: 'lawyer' });
-        return prompt(pid, from, '🛎️ Lawyer Registration', 'Enter your 6-character *invitation code*.');
-
       case 'register_as':
-        await upsertUser(from, { registration_step: 'as_name', user_type: 'articling_student' });
-        return prompt(pid, from, '🌱 A/S Registration', 'Enter your *full name*.');
-
       case 'register_ls':
+        if (REGISTRATION_FLOW_ID) {
+          await resetUser(from);
+          return showMainMenu(pid, from);
+        }
+        if (text === 'register_lawyer') {
+          await upsertUser(from, { registration_step: 'lawyer_invite_code', user_type: 'lawyer' });
+          return prompt(pid, from, '🛎️ Lawyer Registration', 'Enter your 6-character *invitation code*.');
+        }
+        if (text === 'register_as') {
+          await upsertUser(from, { registration_step: 'as_name', user_type: 'articling_student' });
+          return prompt(pid, from, '🌱 A/S Registration', 'Enter your *full name*.');
+        }
         await upsertUser(from, { registration_step: 'ls_name', user_type: 'legal_staff' });
         return prompt(pid, from, '🧾 Legal Staff Registration', 'Enter your *full name*.');
 
@@ -368,7 +618,30 @@ export async function handleMessage(msg: MessageData) {
 
       if (user?.referrer_phone) {
         findVerifiedLawyerByPhone(user.referrer_phone).then(referrer => {
-          if (referrer) {
+          if (!referrer) return;
+          if (VERIFICATION_FLOW_ID) {
+            sendFlowMessage(
+              pid,
+              referrer.phone_number,
+              '✅ Verify A/S',
+              `${user?.full_name || 'A student'} has listed you as their referrer.`,
+              'Verify Student',
+              VERIFICATION_FLOW_ID,
+              {
+                screen: 'VERIFY_AS_SCREEN',
+                action: 'data_exchange',
+                flowToken: referrer.phone_number,
+                data: {
+                  user_id: user?.id,
+                  student_name: user?.full_name,
+                  student_phone: user?.phone_number,
+                  firm: user?.firm_name,
+                  articling_end: endDate.toISOString().slice(0, 10),
+                  type: 'articling_student',
+                },
+              }
+            ).catch(console.error);
+          } else {
             sendTextMessage(pid, referrer.phone_number,
               `📬 *Verification Request*\n\n*${user.full_name}* has listed you as their referrer.\n\nUse "✅ Verify A/S" to verify them.`
             ).catch(console.error);
@@ -434,9 +707,40 @@ export async function handleMessage(msg: MessageData) {
       );
       await sendTextMessage(pid, from, `🔑 Your PIN:\n\n\`${pin}\``);
 
-      sendTextMessage(pid, referrer.phone_number,
-        `📬 *Verification Request*\n\n*${staffName}* has listed you as their lawyer referrer.\n\nFirm: ${staffFirm}\nPhone: ${from}\n\nUse "✅ Verify Staff" to verify them.\n\n⚠️ Staff must be re-verified every 6 months. If they leave your firm, revoke their access in the app at /staff.`
-      ).catch(console.error);
+      if (VERIFICATION_FLOW_ID) {
+        const roleName = staffUser?.staff_role === 'other'
+          ? staffUser?.staff_role_other || 'Other'
+          : staffUser?.staff_role === 'legal_assistant'
+            ? 'Legal Assistant'
+            : staffUser?.staff_role === 'paralegal'
+              ? 'Paralegal'
+              : staffUser?.staff_role || 'Staff';
+        sendFlowMessage(
+          pid,
+          referrer.phone_number,
+          '✅ Verify Staff',
+          `${staffName} has listed you as their lawyer referrer.`,
+          'Verify Staff',
+          VERIFICATION_FLOW_ID,
+          {
+            screen: 'VERIFY_STAFF_SCREEN',
+            action: 'data_exchange',
+            flowToken: referrer.phone_number,
+            data: {
+              user_id: staffUser?.id,
+              staff_name: staffName,
+              staff_phone: staffUser?.phone_number,
+              staff_role: roleName,
+              firm: staffFirm,
+              type: 'legal_staff',
+            },
+          }
+        ).catch(console.error);
+      } else {
+        sendTextMessage(pid, referrer.phone_number,
+          `📬 *Verification Request*\n\n*${staffName}* has listed you as their lawyer referrer.\n\nFirm: ${staffFirm}\nPhone: ${from}\n\nUse \"✅ Verify Staff\" to verify them.\n\n⚠️ Staff must be re-verified every 6 months. If they leave your firm, revoke their access in the app at /staff.`
+        ).catch(console.error);
+      }
 
       return sendTextMessage(pid, from, 'Type "menu" to return.');
     }
@@ -561,6 +865,9 @@ export async function handleMessage(msg: MessageData) {
     }
 
     default:
+      if (hasAccount(user)) {
+        return showPortalForUser(pid, from, user);
+      }
       return showMainMenu(pid, from);
   }
 }
@@ -576,12 +883,15 @@ async function handleFetchPin(pid: string, from: string, user: Record<string, un
 
   const isLawyer = user.user_type === 'lawyer';
   const isLegalStaff = user.user_type === 'legal_staff';
+  const isRevoked = Boolean(user.staff_revoked_at);
   const expiry = user.pin_expires_at ? new Date(user.pin_expires_at as string) : null;
   const isExpired = expiry && expiry < new Date();
 
   let status: string;
   if (isLawyer) {
     status = '✓ Status: *Active* (No expiry)';
+  } else if (isLegalStaff && isRevoked) {
+    status = '🚫 Status: *Revoked*\n\nContact your referrer to restore access.';
   } else if (!user.is_verified) {
     status = '⏳ Status: *Pending Verification*';
   } else if (isExpired) {
@@ -615,6 +925,199 @@ async function handleFetchInviteCode(pid: string, from: string, user: Record<str
   await sendTextMessage(pid, from, '💌 *Your Invitation Code*\n\nShare with lawyers who want to register:');
   await sendTextMessage(pid, from, `\`${user.invitation_code}\``);
   return sendTextMessage(pid, from, 'Type "menu" to return.');
+}
+
+async function handleRegistrationFlow(
+  pid: string,
+  from: string,
+  data: Record<string, unknown>,
+  existingUser: Record<string, unknown> | null
+) {
+  const fullName = String(data.full_name ?? data.fullName ?? data.name ?? '').trim();
+  const roleRaw = String(data.role ?? data.user_type ?? data.i_am ?? data.role_selection ?? '').toLowerCase();
+  const firmName = String(data.firm_name ?? data.firmName ?? data.firm ?? '').trim();
+  const principalName = String(data.principal_name ?? data.principal ?? data.firm_principal ?? '').trim();
+  const referrerName = String(data.referrer_name ?? data.referrer ?? '').trim();
+  const referrerPhoneRaw = String(data.referrer_phone ?? data.referrerPhone ?? '').trim();
+  const lsbcConfirmed = Boolean(data.lsbc_confirm ?? data.lsbc_active ?? data.lsbc_status);
+
+  if (!fullName || !roleRaw) {
+    return sendTextMessage(pid, from, '❌ *Registration Incomplete*\n\nPlease try again and complete all required fields.');
+  }
+
+  let role: 'lawyer' | 'articling_student' | 'legal_staff' | null = null;
+  if (roleRaw.includes('lawyer')) role = 'lawyer';
+  if (roleRaw.includes('articling') || roleRaw.includes('a/s')) role = 'articling_student';
+  if (roleRaw.includes('legal')) role = 'legal_staff';
+
+  if (!role) {
+    return sendTextMessage(pid, from, '❌ *Unknown Role*\n\nPlease try again and select a valid role.');
+  }
+
+  if (role === 'lawyer') {
+    if (!lsbcConfirmed) {
+      return sendTextMessage(pid, from, '❌ *Registration Cancelled*\n\nYou must confirm LSBC active status.\n\nType "menu" to return.');
+    }
+
+    const pin = (existingUser?.pin as string | undefined) || await generateUniquePin();
+    const inviteCode = (existingUser?.invitation_code as string | undefined) || await generateUniqueInviteCode();
+
+    await upsertUser(from, {
+      registration_step: 'idle',
+      user_type: 'lawyer',
+      full_name: fullName,
+      firm_name: firmName || null,
+      pin,
+      invitation_code: inviteCode,
+      is_verified: true,
+      pin_expires_at: null,
+      temp_data: null,
+    });
+
+    await sendTextMessage(pid, from,
+      'Thank you for registering for LLM.\n\nYour Access PIN and Invite Code are below.'
+    );
+    await sendTextMessage(pid, from, `🔑 Access PIN:\n\`${pin}\``);
+    await sendTextMessage(pid, from, `💌 Invite Code:\n\`${inviteCode}\``);
+    return sendTextMessage(
+      pid,
+      from,
+      'If you need to retrieve your access PIN and/or invite code, verify an articling student or legal staff, please send another message to access your account portal.'
+    );
+  }
+
+  if (role === 'articling_student') {
+    const referrerPhone = normalizePhone(referrerPhoneRaw);
+    if (!principalName || !referrerName || referrerPhone.length < 10) {
+      return sendTextMessage(pid, from, '❌ *Registration Incomplete*\n\nPlease provide your firm/principal name and referrer details.');
+    }
+
+    const referrer = await findVerifiedLawyerByPhone(referrerPhone);
+    if (!referrer) {
+      return sendTextMessage(pid, from, '❌ *Referrer Not Found*\n\nYour referrer must be a registered LLM lawyer.\n\nType "menu" to return.');
+    }
+
+    const pin = (existingUser?.pin as string | undefined) || await generateUniquePin();
+    await upsertUser(from, {
+      registration_step: 'idle',
+      user_type: 'articling_student',
+      full_name: fullName,
+      firm_name: principalName,
+      principal_name: principalName,
+      pin,
+      is_verified: false,
+      referrer_id: referrer.id,
+      referrer_name: referrerName,
+      referrer_phone: referrerPhone,
+      temp_data: null,
+    });
+
+    await sendTextMessage(pid, from,
+      'Thank you for registering for LLM.\n\nYour account will need to be verified by the referrer lawyer through this bot. Once they have verified your status, your account will be active and you can send another message to access your account portal.'
+    );
+    await sendTextMessage(pid, from, `🔑 Your PIN:\n\`${pin}\``);
+
+    if (VERIFICATION_FLOW_ID) {
+      const student = await getUser(from);
+      sendFlowMessage(
+        pid,
+        referrer.phone_number,
+        '✅ Verify A/S',
+        `${fullName} has listed you as their referrer.`,
+        'Verify Student',
+        VERIFICATION_FLOW_ID,
+        {
+          screen: 'VERIFY_AS_SCREEN',
+          action: 'data_exchange',
+          flowToken: referrer.phone_number,
+          data: {
+            user_id: student?.id,
+            student_name: fullName,
+            student_phone: from,
+            firm: principalName,
+            type: 'articling_student',
+          },
+        }
+      ).catch(console.error);
+    } else {
+      sendTextMessage(pid, referrer.phone_number,
+        `📬 *Verification Request*\n\n*${fullName}* has listed you as their referrer.\n\nUse "✅ Verify A/S" to verify them.`
+      ).catch(console.error);
+    }
+
+    return;
+  }
+
+  if (role === 'legal_staff') {
+    const referrerPhone = normalizePhone(referrerPhoneRaw);
+    if (!referrerName || referrerPhone.length < 10) {
+      return sendTextMessage(pid, from, '❌ *Registration Incomplete*\n\nPlease provide your referrer details.');
+    }
+
+    const referrer = await findVerifiedLawyerByPhone(referrerPhone);
+    if (!referrer) {
+      return sendTextMessage(pid, from, '❌ *Referrer Not Found*\n\nYour referrer must be a registered LLM lawyer.\n\nType "menu" to return.');
+    }
+
+    const pin = (existingUser?.pin as string | undefined) || await generateUniquePin();
+    await upsertUser(from, {
+      registration_step: 'idle',
+      user_type: 'legal_staff',
+      full_name: fullName,
+      firm_name: firmName || null,
+      pin,
+      is_verified: false,
+      referrer_id: referrer.id,
+      referrer_name: referrerName,
+      referrer_phone: referrerPhone,
+      staff_verified_at: null,
+      staff_revoked_at: null,
+      temp_data: null,
+    });
+
+    await sendTextMessage(pid, from,
+      'Thank you for registering for LLM.\n\nYour account will need to be verified by the referrer lawyer through this bot. Once they have verified your status, your account will be active and you can send another message to access your account portal.'
+    );
+    await sendTextMessage(pid, from, `🔑 Your PIN:\n\`${pin}\``);
+
+    if (VERIFICATION_FLOW_ID) {
+      const staffUser = await getUser(from);
+      const roleName = staffUser?.staff_role === 'other'
+        ? staffUser?.staff_role_other || 'Other'
+        : staffUser?.staff_role === 'legal_assistant'
+          ? 'Legal Assistant'
+          : staffUser?.staff_role === 'paralegal'
+            ? 'Paralegal'
+            : staffUser?.staff_role || 'Staff';
+      sendFlowMessage(
+        pid,
+        referrer.phone_number,
+        '✅ Verify Staff',
+        `${fullName} has listed you as their lawyer referrer.`,
+        'Verify Staff',
+        VERIFICATION_FLOW_ID,
+        {
+          screen: 'VERIFY_STAFF_SCREEN',
+          action: 'data_exchange',
+          flowToken: referrer.phone_number,
+          data: {
+            user_id: staffUser?.id,
+            staff_name: fullName,
+            staff_phone: from,
+            staff_role: roleName,
+            firm: firmName || null,
+            type: 'legal_staff',
+          },
+        }
+      ).catch(console.error);
+    } else {
+      sendTextMessage(pid, referrer.phone_number,
+        `📬 *Verification Request*\n\n*${fullName}* has listed you as their lawyer referrer.\n\nFirm: ${firmName || '—'}\nPhone: ${from}\n\nUse "✅ Verify Staff" to verify them.\n\n⚠️ Staff must be re-verified every 6 months. If they leave your firm, revoke their access in the app at /staff.`
+      ).catch(console.error);
+    }
+
+    return;
+  }
 }
 
 async function handleLawyerConfirm(pid: string, from: string, user: Record<string, unknown> | null, confirmed: boolean) {
