@@ -13,34 +13,39 @@
       "terminal": false,
       "data": {
         "user_id": { "type": "string", "__example__": "1" },
-        "student_name": { "type": "string", "__example__": "Matty Matlock" },
-        "student_phone": { "type": "string", "__example__": "16046664200" },
-        "firm": { "type": "string", "__example__": "Defence Bar BC" },
+        "student_name": { "type": "string", "__example__": "Madeline Matlock" },
+        "student_phone": { "type": "string", "__example__": "16046661234" },
+        "principal_name": { "type": "string", "__example__": "Ben Matlock" },
         "articling_end": { "type": "string", "__example__": "2025-12-31" },
         "type": { "type": "string", "__example__": "articling_student" },
-        "error_message": { "type": "string", "__example__": "" }
+        "error_message": { "type": "string", "__example__": "Error" },
+        "has_error": { "type": "boolean", "__example__": false }
       },
       "layout": {
         "type": "SingleColumnLayout",
         "children": [
           { "type": "TextHeading", "text": "Student Verification" },
-          { "type": "TextBody", "text": "${data.error_message}" },
+          {
+            "type": "TextBody",
+            "text": "${data.error_message}",
+            "visible": "${data.has_error}"
+          },
           {
             "type": "TextInput",
             "name": "student_name_display",
             "label": "Student Name",
             "init-value": "${data.student_name}",
             "enabled": false,
-            "required": true,
+            "required": false,
             "input-type": "text"
           },
           {
             "type": "TextInput",
-            "name": "Principal_display",
+            "name": "principal_display",
             "label": "Principal",
             "init-value": "${data.principal_name}",
             "enabled": false,
-            "required": true,
+            "required": false,
             "input-type": "text"
           },
           {
@@ -48,12 +53,13 @@
             "name": "articling_end",
             "label": "Articling End Date",
             "required": true,
-            "helper-text": "Confirm or adjust the end date"
+            "init-value": "${data.articling_end}",
+            "helper-text": "Adjust the end date if it is incorrect. Do NOT include PLTC."
           },
           {
             "type": "OptIn",
             "name": "confirmed",
-            "label": "I confirm this person is an articling student and vouch for their registration.",
+            "label": "I confirm this person is a current articling student with LSBC, and I accept responsibility for their use of this tool.",
             "required": true
           },
           {
@@ -78,18 +84,22 @@
       "terminal": false,
       "data": {
         "user_id": { "type": "string", "__example__": "2" },
-        "staff_name": { "type": "string", "__example__": "Maria Santos" },
-        "staff_phone": { "type": "string", "__example__": "16045559876" },
+        "staff_name": { "type": "string", "__example__": "Donna Paulsen" },
+        "staff_phone": { "type": "string", "__example__": "17786661337" },
         "staff_role": { "type": "string", "__example__": "Paralegal" },
-        "firm": { "type": "string", "__example__": "Lawson Lundell LLP" },
         "type": { "type": "string", "__example__": "legal_staff" },
-        "error_message": { "type": "string", "__example__": "" }
+        "error_message": { "type": "string", "__example__": "Error" },
+        "has_error": { "type": "boolean", "__example__": false }
       },
       "layout": {
         "type": "SingleColumnLayout",
         "children": [
           { "type": "TextSubheading", "text": "Staff Verification" },
-          { "type": "TextBody", "text": "${data.error_message}" },
+          {
+            "type": "TextBody",
+            "text": "${data.error_message}",
+            "visible": "${data.has_error}"
+          },
           {
             "type": "TextInput",
             "name": "staff_name_display",
@@ -109,18 +119,9 @@
             "input-type": "text"
           },
           {
-            "type": "TextInput",
-            "name": "firm_display",
-            "label": "Firm",
-            "init-value": "${data.firm}",
-            "enabled": false,
-            "required": false,
-            "input-type": "text"
-          },
-          {
             "type": "OptIn",
             "name": "confirmed",
-            "label": "I confirm this person works at my firm and I authorize 6 months of access.",
+            "label": "I confirm this person works at my firm, and I accept responsibility for their use of this tool.",
             "required": true
           },
           {
@@ -144,12 +145,12 @@
       "terminal": false,
       "data": {
         "user_id": { "type": "string", "__example__": "2" },
-        "staff_name": { "type": "string", "__example__": "Maria Santos" },
-        "staff_phone": { "type": "string", "__example__": "16045559876" },
+        "staff_name": { "type": "string", "__example__": "Donna Paulsen" },
+        "staff_phone": { "type": "string", "__example__": "17786661337" },
         "staff_role": { "type": "string", "__example__": "Paralegal" },
-        "firm": { "type": "string", "__example__": "Defence Bar BC" },
-        "type": { "type": "string", "__example__": "reverify" },
-        "error_message": { "type": "string", "__example__": "" }
+        "error_message": { "type": "string", "__example__": "Error" },
+        "has_error": { "type": "boolean", "__example__": false },
+        "type": { "type": "string", "__example__": "reverify" }
       },
       "layout": {
         "type": "SingleColumnLayout",
@@ -159,7 +160,11 @@
             "type": "TextBody",
             "text": "This staff member's access is expiring soon."
           },
-          { "type": "TextBody", "text": "${data.error_message}" },
+          {
+            "type": "TextBody",
+            "text": "${data.error_message}",
+            "visible": "${data.has_error}"
+          },
           {
             "type": "TextInput",
             "name": "staff_name_display",
@@ -181,12 +186,12 @@
           {
             "type": "OptIn",
             "name": "confirmed",
-            "label": "I confirm this person still works at my firm. Extend access by 6 months.",
+            "label": "I confirm this person still works at my firm, and I accept responsibility for their use of this tool.",
             "required": true
           },
           {
             "type": "Footer",
-            "label": "Re-Verify",
+            "label": "Submit",
             "on-click-action": {
               "name": "data_exchange",
               "payload": {
@@ -217,11 +222,11 @@
           { "type": "TextHeading", "text": "Verification Complete" },
           {
             "type": "TextBody",
-            "text": "The user has been notified that their account is now active."
+            "text": "The user has been verified and their access has been granted."
           },
           {
             "type": "Footer",
-            "label": "Done",
+            "label": "Complete",
             "on-click-action": {
               "name": "complete",
               "payload": {
