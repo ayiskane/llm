@@ -172,17 +172,12 @@
             "text": "\u270d\ufe0f Your Details"
           },
           {
-            "type": "TextBody",
-            "text": "\u2714\ufe0f Invited by ${data.inviter_name}"
+            "type": "TextCaption",
+            "text": "\u2714\ufe0f Invited by"
           },
           {
-            "type": "TextInput",
-            "name": "inviter_debug",
-            "label": "Inviter Debug",
-            "init-value": "${data.inviter_name}",
-            "enabled": false,
-            "required": false,
-            "input-type": "text"
+            "type": "TextBody",
+            "text": "${data.inviter_name}"
           },
           {
             "type": "TextCaption",
