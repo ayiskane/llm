@@ -11,13 +11,16 @@ const normalizeRecipient = (to: string) => {
   return digits ? `+${digits}` : trimmed;
 };
 
+const isValidE164 = (value: string) => /^\+\d{10,15}$/.test(value);
+
 export async function sendTextMessage(phoneNumberId: string, to: string, message: string): Promise<boolean> {
   const token = process.env.WHATSAPP_ACCESS_TOKEN;
   if (!token) { console.error('WHATSAPP_ACCESS_TOKEN not set'); return false; }
 
   const recipient = normalizeRecipient(to);
-  if (!recipient.startsWith('+')) {
-    console.warn('WhatsApp recipient not E.164 (text)', { to, recipient });
+  if (!isValidE164(recipient)) {
+    console.warn('WhatsApp recipient not E.164 (text)', { to, recipient, phoneNumberId });
+    return false;
   }
 
   try {
@@ -45,8 +48,9 @@ export async function sendListMessage(
   if (!token) return false;
 
   const recipient = normalizeRecipient(to);
-  if (!recipient.startsWith('+')) {
-    console.warn('WhatsApp recipient not E.164 (list)', { to, recipient });
+  if (!isValidE164(recipient)) {
+    console.warn('WhatsApp recipient not E.164 (list)', { to, recipient, phoneNumberId });
+    return false;
   }
 
   try {
@@ -91,8 +95,9 @@ const sendFlowMessageInternal = async (
   if (!token) return { ok: false, error: 'WHATSAPP_ACCESS_TOKEN not set' };
 
   const recipient = normalizeRecipient(to);
-  if (!recipient.startsWith('+')) {
-    console.warn('WhatsApp recipient not E.164 (flow)', { to, recipient });
+  if (!isValidE164(recipient)) {
+    console.warn('WhatsApp recipient not E.164 (flow)', { to, recipient, phoneNumberId });
+    return { ok: false, error: 'Invalid recipient format' };
   }
 
   try {
@@ -134,7 +139,7 @@ const sendFlowMessageInternal = async (
       try {
         const payload = await res.json();
         message = payload?.error?.message || payload?.message || message;
-        console.error('WhatsApp Flow Error:', payload);
+        console.error('WhatsApp Flow Error:', { recipient, phoneNumberId, payload });
       } catch (e) {
         console.error('WhatsApp Flow Error (parse):', e);
       }
@@ -196,8 +201,9 @@ export async function sendButtonMessage(
   if (!token) return false;
 
   const recipient = normalizeRecipient(to);
-  if (!recipient.startsWith('+')) {
-    console.warn('WhatsApp recipient not E.164 (button)', { to, recipient });
+  if (!isValidE164(recipient)) {
+    console.warn('WhatsApp recipient not E.164 (button)', { to, recipient, phoneNumberId });
+    return false;
   }
 
   try {
