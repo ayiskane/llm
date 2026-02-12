@@ -71,16 +71,17 @@ const generateUniqueInviteCode = async (supabase: ReturnType<typeof getSupabase>
 const getPhoneNumberId = (payload: any) =>
   payload?.phone_number_id || payload?.phoneNumberId || payload?.metadata?.phone_number_id || DEFAULT_PHONE_NUMBER_ID;
 
-const getSenderPhone = (payload: any) =>
-  normalizePhone(
+const getSenderPhone = (payload: any) => {
+  const raw =
     payload?.user?.phone_number ||
     payload?.user?.wa_id ||
     payload?.from ||
     payload?.phone_number ||
     payload?.wa_id ||
-    payload?.flow_token ||
-    ""
-  );
+    "";
+  const digits = normalizePhone(raw);
+  return digits.length >= 10 ? digits : "";
+};
 
 const decryptFlowPayload = (body: any) => {
   const encryptedData = body.encrypted_flow_data || body.encrypted_data;
@@ -318,7 +319,7 @@ async function handleRegistration(payload: any) {
       updated_at: new Date().toISOString(),
     }, { onConflict: "phone_number" });
 
-    if (phoneNumberId) {
+    if (phoneNumberId && from) {
       await sendTextMessage(phoneNumberId, from, "✓ Registration Complete\n\nYour account is active.");
       await sendTextMessage(phoneNumberId, from, `🔑 Your PIN:\n\n\`${pin}\``);
       await sendTextMessage(phoneNumberId, from, `💌 Your Invite Code:\n\n\`${inviteCode}\``);
@@ -398,7 +399,7 @@ async function handleRegistration(payload: any) {
 
     const { data: student } = await supabase.from("whatsapp_users").select("id").eq("phone_number", from).maybeSingle();
 
-    if (phoneNumberId) {
+    if (phoneNumberId && from) {
       await sendTextMessage(
         phoneNumberId,
         from,
@@ -498,7 +499,7 @@ async function handleRegistration(payload: any) {
         ? "Legal Assistant"
         : "Paralegal";
 
-    if (phoneNumberId) {
+    if (phoneNumberId && from) {
       await sendTextMessage(
         phoneNumberId,
         from,
