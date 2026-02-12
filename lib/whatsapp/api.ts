@@ -1,4 +1,4 @@
-const WHATSAPP_API_URL = 'https://graph.facebook.com/v24.0';
+const WHATSAPP_API_URL = 'https://graph.facebook.com/v18.0';
 
 export async function sendTextMessage(phoneNumberId: string, to: string, message: string): Promise<boolean> {
   const token = process.env.WHATSAPP_ACCESS_TOKEN;
@@ -50,62 +50,6 @@ export async function sendListMessage(
   } catch (e) { console.error('sendListMessage error:', e); return false; }
 }
 
-export async function sendFlowMessage(
-  phoneNumberId: string,
-  to: string,
-  headerText: string,
-  bodyText: string,
-  buttonText: string,
-  flowId: string,
-  options?: {
-    flowToken?: string;
-    screen?: string;
-    data?: Record<string, unknown>;
-    action?: 'navigate' | 'data_exchange';
-  }
-): Promise<boolean> {
-  const token = process.env.WHATSAPP_ACCESS_TOKEN;
-  if (!token) return false;
-
-  try {
-    const parameters: Record<string, unknown> = {
-      flow_message_version: '3',
-      flow_id: flowId,
-      flow_cta: buttonText,
-      flow_token: options?.flowToken,
-      flow_action: options?.action || 'data_exchange',
-    };
-    if (options?.screen || options?.data) {
-      parameters.flow_action_payload = {
-        screen: options?.screen,
-        data: options?.data || {},
-      };
-    }
-
-    const res = await fetch(`${WHATSAPP_API_URL}/${phoneNumberId}/messages`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        recipient_type: 'individual',
-        to,
-        type: 'interactive',
-        interactive: {
-          type: 'flow',
-          header: { type: 'text', text: headerText },
-          body: { text: bodyText },
-          action: {
-            name: 'flow',
-            parameters,
-          },
-        },
-      }),
-    });
-    if (!res.ok) { console.error('WhatsApp Flow Error:', await res.json()); return false; }
-    return true;
-  } catch (e) { console.error('sendFlowMessage error:', e); return false; }
-}
-
 export async function sendButtonMessage(
   phoneNumberId: string, to: string, headerText: string, bodyText: string,
   buttons: Array<{ id: string; title: string }>
@@ -140,12 +84,6 @@ export interface MessageData {
   phoneNumberId: string;
   type: 'text' | 'interactive';
   content: string;
-  flow?: {
-    id?: string;
-    token?: string;
-    screen?: string;
-    data?: Record<string, unknown>;
-  };
 }
 
 export function extractMessageData(body: any): MessageData | null {
@@ -162,38 +100,6 @@ export function extractMessageData(body: any): MessageData | null {
     }
     if (message.type === 'interactive') {
       const i = message.interactive;
-      if (i.type === 'flow_reply' && i.flow_reply) {
-        const raw = i.flow_reply;
-        let data: Record<string, unknown> | undefined = undefined;
-        if (raw.data) {
-          if (typeof raw.data === 'string') {
-            try { data = JSON.parse(raw.data); } catch { data = { value: raw.data }; }
-          } else if (typeof raw.data === 'object') {
-            data = raw.data;
-          }
-        }
-        return {
-          from,
-          phoneNumberId,
-          type: 'interactive',
-          content: 'flow_reply',
-          flow: { id: raw.flow_id, token: raw.flow_token, screen: raw.screen, data },
-        };
-      }
-      if (i.type === 'nfm_reply' && i.nfm_reply) {
-        const raw = i.nfm_reply;
-        let data: Record<string, unknown> | undefined = undefined;
-        if (raw.response_json) {
-          try { data = JSON.parse(raw.response_json); } catch { data = { value: raw.response_json }; }
-        }
-        return {
-          from,
-          phoneNumberId,
-          type: 'interactive',
-          content: 'flow_reply',
-          flow: { id: raw.flow_id, token: raw.flow_token, screen: raw.screen, data },
-        };
-      }
       const content = i.type === 'list_reply' ? i.list_reply.id : i.type === 'button_reply' ? i.button_reply.id : null;
       if (content) return { from, phoneNumberId, type: 'interactive', content };
     }
