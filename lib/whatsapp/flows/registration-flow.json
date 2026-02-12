@@ -47,17 +47,17 @@
             "data-source": [
               {
                 "id": "lawyer",
-                "title": "?? Lawyer",
+                "title": "\u2696\ufe0f Lawyer",
                 "description": "Active LSBC member in good standing"
               },
               {
                 "id": "articling_student",
-                "title": "?? Articling Student",
+                "title": "\ud83c\udf31 Articling Student",
                 "description": "Currently enrolled in the LSAP"
               },
               {
                 "id": "legal_staff",
-                "title": "?? Legal Staff",
+                "title": "\ud83d\udc65 Legal Staff",
                 "description": "Support staff at a law firm"
               }
             ]
@@ -91,11 +91,11 @@
         "children": [
           {
             "type": "TextCaption",
-            "text": "STEP 1 OF 2 ? LAWYER REGISTRATION"
+            "text": "STEP 1 OF 2 \u2014 LAWYER REGISTRATION"
           },
           {
             "type": "TextHeading",
-            "text": "?? Invite Code"
+            "text": "\ud83d\udc8c Invite Code"
           },
           {
             "type": "TextBody",
@@ -156,15 +156,15 @@
         "children": [
           {
             "type": "TextCaption",
-            "text": "STEP 2 OF 2 ? LAWYER REGISTRATION"
+            "text": "STEP 2 OF 2 \u2014 LAWYER REGISTRATION"
           },
           {
             "type": "TextHeading",
-            "text": "?? Your Details"
+            "text": "\u270d\ufe0f Your Details"
           },
           {
             "type": "TextBody",
-            "text": "? Invited by ${data.inviter_name}"
+            "text": "\u2714\ufe0f Invited by ${data.inviter_name}"
           },
           {
             "type": "TextCaption",
@@ -212,7 +212,7 @@
     },
     {
       "id": "AS_REFERRER",
-      "title": "Referrer",
+      "title": "Lawyer Referrer",
       "terminal": false,
       "refresh_on_back": false,
       "data": {
@@ -226,11 +226,11 @@
         "children": [
           {
             "type": "TextCaption",
-            "text": "STEP 1 OF 2 ? ARTICLING STUDENT REGISTRATION"
+            "text": "STEP 1 OF 2 \u2014 ARTICLING STUDENT REGISTRATION"
           },
           {
             "type": "TextHeading",
-            "text": "?? Lawyer Referrer"
+            "text": "\u2696\ufe0f Lawyer Referrer"
           },
           {
             "type": "TextBody",
@@ -281,11 +281,11 @@
         },
         "min_date": {
           "type": "string",
-          "__example__": "1751241600000"
+          "__example__": "2026-02-12"
         },
         "max_date": {
           "type": "string",
-          "__example__": "1774915200000"
+          "__example__": "2026-11-12"
         },
         "referrer_name": {
           "type": "string",
@@ -301,11 +301,11 @@
         "children": [
           {
             "type": "TextCaption",
-            "text": "STEP 2 OF 2 ? ARTICLING STUDENT REGISTRATION"
+            "text": "STEP 2 OF 2 \u2014 ARTICLING STUDENT REGISTRATION"
           },
           {
             "type": "TextHeading",
-            "text": "?? Your Details"
+            "text": "\u270d\ufe0f Your Details"
           },
           {
             "type": "TextCaption",
@@ -384,11 +384,11 @@
         "children": [
           {
             "type": "TextCaption",
-            "text": "STEP 1 OF 2 ? LEGAL STAFF REGISTRATION"
+            "text": "STEP 1 OF 2 \u2014 LEGAL STAFF REGISTRATION"
           },
           {
             "type": "TextHeading",
-            "text": "?? Lawyer Referrer"
+            "text": "\u2696\ufe0f Lawyer Referrer"
           },
           {
             "type": "TextBody",
@@ -451,11 +451,11 @@
         "children": [
           {
             "type": "TextCaption",
-            "text": "STEP 2 OF 2 ? LEGAL STAFF REGISTRATION"
+            "text": "STEP 2 OF 2 \u2014 LEGAL STAFF REGISTRATION"
           },
           {
             "type": "TextHeading",
-            "text": "?? Your Details"
+            "text": "\u270d\ufe0f Your Details"
           },
           {
             "type": "TextCaption",
@@ -548,15 +548,15 @@
         "children": [
           {
             "type": "TextHeading",
-            "text": "?? Legendary!"
+            "text": "\ud83c\udf89 Legendary! \ud83c\udf89"
           },
           {
             "type": "TextBody",
-            "text": "Your registration is now complete. Head on over to https://bcllm.vercel.app!"
+            "text": "Your registration is now complete."
           },
           {
             "type": "TextBody",
-            "text": "You can use the bot at anytime to retrieve your PIN and personal Invite Code."
+            "text": "You can use this bot at anytime to retrieve your PIN and personal Invite Code, and verify any articling students or staff members."
           },
           {
             "type": "Footer",
@@ -591,7 +591,7 @@
         "children": [
           {
             "type": "TextHeading",
-            "text": "? Verification Needed"
+            "text": "Pending Verification"
           },
           {
             "type": "TextBody",
@@ -599,7 +599,7 @@
           },
           {
             "type": "TextBody",
-            "text": "We will notify you once your account is approved."
+            "text": "Please check back later or contact your referring lawyer for status updates."
           },
           {
             "type": "Footer",

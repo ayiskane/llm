@@ -205,14 +205,16 @@ const computeASExpiry = (endDate: Date) => {
   return finalExpiry;
 };
 
+const formatDateISO = (d: Date) => d.toISOString().slice(0, 10);
+
 const getASDateBounds = () => {
   const now = new Date();
   const minDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const maxDate = new Date(minDate);
   maxDate.setMonth(maxDate.getMonth() + MAX_AS_ACCESS_MONTHS);
   return {
-    min_date: String(minDate.getTime()),
-    max_date: String(maxDate.getTime()),
+    min_date: formatDateISO(minDate),
+    max_date: formatDateISO(maxDate),
   };
 };
 
