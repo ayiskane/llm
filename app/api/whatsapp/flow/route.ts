@@ -150,10 +150,10 @@ const buildSuccessResponse = (
 const BACK_MAP: Record<string, string> = {
   LAWYER_INVITE_CODE: SCREENS.ROLE_SELECT,
   LAWYER_DETAILS: SCREENS.LAWYER_INVITE_CODE,
-  AS_INFO: SCREENS.ROLE_SELECT,
-  AS_REFERRER: SCREENS.AS_INFO,
-  STAFF_INFO: SCREENS.ROLE_SELECT,
-  STAFF_REFERRER: SCREENS.STAFF_INFO,
+  AS_REFERRER: SCREENS.ROLE_SELECT,
+  AS_INFO: SCREENS.AS_REFERRER,
+  STAFF_REFERRER: SCREENS.ROLE_SELECT,
+  STAFF_INFO: SCREENS.STAFF_REFERRER,
 };
 
 const handleInit = (payload: any) => {
@@ -248,8 +248,8 @@ async function handleRegistration(payload: any) {
       return buildResponse(SCREENS.ROLE_SELECT, data, { message: "Please select a role." });
     }
     if (role === "lawyer") return buildResponse(SCREENS.LAWYER_INVITE_CODE);
-    if (role === "articling_student") return buildResponse(SCREENS.AS_INFO, getASDateBounds());
-    if (role === "legal_staff") return buildResponse(SCREENS.STAFF_INFO);
+    if (role === "articling_student") return buildResponse(SCREENS.AS_REFERRER);
+    if (role === "legal_staff") return buildResponse(SCREENS.STAFF_REFERRER);
     return buildResponse(SCREENS.ROLE_SELECT, data, { message: "Please select a valid role." });
   }
 
@@ -311,47 +311,55 @@ async function handleRegistration(payload: any) {
     return buildSuccessResponse(flowToken, { status: "active", name: fullName, expiry: "Never" }, SCREENS.SUCCESS_ACTIVE);
   }
 
-  if (screen === SCREENS.AS_INFO) {
-    const fullName = String(data.full_name || "").trim();
-    const firmName = String(data.firm_name || "").trim();
-    const principalName = String(data.principal_name || "").trim();
-    const articlingEnd = String(data.articling_end || "").trim();
-    if (!fullName || !firmName || !principalName || !articlingEnd) {
-      return buildResponse(SCREENS.AS_INFO, { ...data, ...getASDateBounds() }, { message: "All fields are required." });
-    }
-    return buildResponse(SCREENS.AS_REFERRER, {
-      full_name: fullName,
-      firm_name: firmName,
-      principal_name: principalName,
-      articling_end: articlingEnd,
-    });
-  }
-
   if (screen === SCREENS.AS_REFERRER) {
-    const fullName = String(data.full_name || "").trim();
-    const firmName = String(data.firm_name || "").trim();
-    const principalName = String(data.principal_name || "").trim();
     const referrerName = String(data.referrer_name || "").trim();
     const referrerPhone = normalizePhone(String(data.referrer_phone || ""));
-    const endDateRaw = String(data.articling_end || "").trim();
 
-    if (!referrerName || referrerPhone.length < 10 || !endDateRaw) {
-      return buildResponse(SCREENS.AS_REFERRER, data, { message: "Referrer and end date are required." });
-    }
-
-    const endDate = parseDate(endDateRaw);
-    if (!endDate || endDate <= new Date()) {
-      return buildResponse(SCREENS.AS_REFERRER, data, { message: "Enter a valid future date." });
-    }
-    const maxEndDate = new Date();
-    maxEndDate.setMonth(maxEndDate.getMonth() + MAX_AS_ACCESS_MONTHS);
-    if (endDate > maxEndDate) {
-      return buildResponse(SCREENS.AS_REFERRER, data, { message: "Date cannot exceed 9 months from today." });
+    if (!referrerName || referrerPhone.length < 10) {
+      return buildResponse(SCREENS.AS_REFERRER, data, { message: "Referrer name and phone are required." });
     }
 
     const referrer = await findVerifiedLawyerByPhone(supabase, referrerPhone);
     if (!referrer) {
       return buildResponse(SCREENS.AS_REFERRER, data, { message: "No registered lawyer found with that phone number." });
+    }
+
+    return buildResponse(SCREENS.AS_INFO, {
+      referrer_name: referrerName,
+      referrer_phone: referrerPhone,
+      ...getASDateBounds(),
+    });
+  }
+
+  if (screen === SCREENS.AS_INFO) {
+    const fullName = String(data.full_name || "").trim();
+    const firmName = String(data.firm_name || "").trim();
+    const principalName = String(data.principal_name || "").trim();
+    const articlingEnd = String(data.articling_end || "").trim();
+    const tocConfirmed = data.toc_confirmed === true || data.toc_confirmed === "true" || data.toc_confirmed === "on";
+    const referrerName = String(data.referrer_name || "").trim();
+    const referrerPhone = normalizePhone(String(data.referrer_phone || ""));
+
+    if (!fullName || !principalName || !articlingEnd || !referrerName || referrerPhone.length < 10) {
+      return buildResponse(SCREENS.AS_INFO, { ...data, ...getASDateBounds() }, { message: "Please complete all required fields." });
+    }
+    if (!tocConfirmed) {
+      return buildResponse(SCREENS.AS_INFO, { ...data, ...getASDateBounds() }, { message: "You must accept the terms to continue." });
+    }
+
+    const endDate = parseDate(articlingEnd);
+    if (!endDate || endDate <= new Date()) {
+      return buildResponse(SCREENS.AS_INFO, { ...data, ...getASDateBounds() }, { message: "Enter a valid future date." });
+    }
+    const maxEndDate = new Date();
+    maxEndDate.setMonth(maxEndDate.getMonth() + MAX_AS_ACCESS_MONTHS);
+    if (endDate > maxEndDate) {
+      return buildResponse(SCREENS.AS_INFO, { ...data, ...getASDateBounds() }, { message: "Date cannot exceed 9 months from today." });
+    }
+
+    const referrer = await findVerifiedLawyerByPhone(supabase, referrerPhone);
+    if (!referrer) {
+      return buildResponse(SCREENS.AS_REFERRER, { referrer_name: referrerName, referrer_phone: referrerPhone }, { message: "No registered lawyer found with that phone number." });
     }
 
     const expiry = computeASExpiry(endDate);
@@ -360,7 +368,7 @@ async function handleRegistration(payload: any) {
       phone_number: from,
       user_type: "articling_student",
       full_name: fullName,
-      firm_name: firmName,
+      firm_name: firmName || null,
       principal_name: principalName,
       pin,
       is_verified: false,
@@ -368,14 +376,16 @@ async function handleRegistration(payload: any) {
       referrer_name: referrerName,
       referrer_phone: referrerPhone,
       pin_expires_at: expiry.toISOString(),
-      temp_data: JSON.stringify({ articling_end: endDateRaw }),
+      temp_data: JSON.stringify({ articling_end: articlingEnd }),
       updated_at: new Date().toISOString(),
     }, { onConflict: "phone_number" });
 
     const { data: student } = await supabase.from("whatsapp_users").select("id").eq("phone_number", from).maybeSingle();
 
     if (phoneNumberId) {
-      await sendTextMessage(phoneNumberId, from,
+      await sendTextMessage(
+        phoneNumberId,
+        from,
         "Thank you for registering for LLM.\n\nYour account will need to be verified by your referrer lawyer."
       );
       await sendTextMessage(phoneNumberId, from, `🔑 Your PIN:\n\n\`${pin}\``);
@@ -392,8 +402,8 @@ async function handleRegistration(payload: any) {
           user_id: student?.id,
           student_name: fullName,
           student_phone: from,
-          firm: firmName,
-          articling_end: endDateRaw,
+          firm: firmName || "",
+          articling_end: articlingEnd,
           type: "articling_student",
         }
       );
@@ -403,33 +413,10 @@ async function handleRegistration(payload: any) {
       status: "pending",
       name: fullName,
       referrer: referrerName,
-      expiry: endDateRaw,
+      expiry: articlingEnd,
     }, SCREENS.SUCCESS_PENDING);
   }
-
-  if (screen === SCREENS.STAFF_INFO) {
-    const fullName = String(data.full_name || "").trim();
-    const firmName = String(data.firm_name || "").trim();
-    const staffRole = String(data.staff_role || "").trim();
-    const staffRoleOther = String(data.staff_role_other || "").trim();
-
-    if (!fullName || !firmName || !staffRole || (staffRole === "other" && !staffRoleOther)) {
-      return buildResponse(SCREENS.STAFF_INFO, data, { message: "Complete all required fields." });
-    }
-
-    return buildResponse(SCREENS.STAFF_REFERRER, {
-      full_name: fullName,
-      firm_name: firmName,
-      staff_role: staffRole,
-      staff_role_other: staffRoleOther,
-    });
-  }
-
   if (screen === SCREENS.STAFF_REFERRER) {
-    const fullName = String(data.full_name || "").trim();
-    const firmName = String(data.firm_name || "").trim();
-    const staffRole = String(data.staff_role || "").trim();
-    const staffRoleOther = String(data.staff_role_other || "").trim();
     const referrerName = String(data.referrer_name || "").trim();
     const referrerPhone = normalizePhone(String(data.referrer_phone || ""));
 
@@ -442,12 +429,39 @@ async function handleRegistration(payload: any) {
       return buildResponse(SCREENS.STAFF_REFERRER, data, { message: "No registered lawyer found with that phone number." });
     }
 
+    return buildResponse(SCREENS.STAFF_INFO, {
+      referrer_name: referrerName,
+      referrer_phone: referrerPhone,
+    });
+  }
+
+  if (screen === SCREENS.STAFF_INFO) {
+    const fullName = String(data.full_name || "").trim();
+    const firmName = String(data.firm_name || "").trim();
+    const staffRole = String(data.staff_role || "").trim();
+    const staffRoleOther = String(data.staff_role_other || "").trim();
+    const tocConfirmed = data.toc_confirmed === true || data.toc_confirmed === "true" || data.toc_confirmed === "on";
+    const referrerName = String(data.referrer_name || "").trim();
+    const referrerPhone = normalizePhone(String(data.referrer_phone || ""));
+
+    if (!fullName || !staffRole || (staffRole === "other" && !staffRoleOther) || !referrerName || referrerPhone.length < 10) {
+      return buildResponse(SCREENS.STAFF_INFO, data, { message: "Please complete all required fields." });
+    }
+    if (!tocConfirmed) {
+      return buildResponse(SCREENS.STAFF_INFO, data, { message: "You must accept the terms to continue." });
+    }
+
+    const referrer = await findVerifiedLawyerByPhone(supabase, referrerPhone);
+    if (!referrer) {
+      return buildResponse(SCREENS.STAFF_REFERRER, { referrer_name: referrerName, referrer_phone: referrerPhone }, { message: "No registered lawyer found with that phone number." });
+    }
+
     const pin = await generateUniquePin(supabase);
     await supabase.from("whatsapp_users").upsert({
       phone_number: from,
       user_type: "legal_staff",
       full_name: fullName,
-      firm_name: firmName,
+      firm_name: firmName || null,
       staff_role: staffRole || null,
       staff_role_other: staffRole === "other" ? staffRoleOther : null,
       pin,
@@ -468,7 +482,9 @@ async function handleRegistration(payload: any) {
         : "Paralegal";
 
     if (phoneNumberId) {
-      await sendTextMessage(phoneNumberId, from,
+      await sendTextMessage(
+        phoneNumberId,
+        from,
         "Thank you for registering for LLM.\n\nYour account will need to be verified by your referrer lawyer."
       );
       await sendTextMessage(phoneNumberId, from, `🔑 Your PIN:\n\n\`${pin}\``);
@@ -486,7 +502,7 @@ async function handleRegistration(payload: any) {
           staff_name: fullName,
           staff_phone: from,
           staff_role: roleDisplay,
-          firm: firmName,
+          firm: firmName || "",
           type: "legal_staff",
         }
       );
