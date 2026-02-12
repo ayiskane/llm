@@ -330,7 +330,6 @@ async function handleRegistration(payload: any) {
       user_type: "lawyer",
       full_name: fullName,
       is_verified: true,
-      lsbc_confirmed: true,
       pin,
       invitation_code: inviteCode,
       pin_expires_at: null,
