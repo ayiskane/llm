@@ -126,9 +126,13 @@ const encryptFlowResponse = (payload: any, aesKey: Buffer, iv: Buffer) => {
 };
 
 const buildResponse = (screen: string, data: Record<string, unknown> = {}, error?: { message: string }) => {
-  const response: any = { screen, data };
+  const response: any = { screen, data: { ...data } };
   if (error) {
-    response.data = { ...data, error_message: error.message };
+    response.data.error_message = error.message;
+    response.data.has_error = true;
+  } else {
+    if (response.data.error_message === undefined) response.data.error_message = "";
+    if (response.data.has_error === undefined) response.data.has_error = false;
   }
   return response;
 };

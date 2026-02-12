@@ -2,13 +2,29 @@
   "version": "7.2",
   "data_api_version": "3.0",
   "routing_model": {
-    "ROLE_SELECT": ["LAWYER_INVITE_CODE", "AS_REFERRER", "STAFF_REFERRER"],
-    "LAWYER_INVITE_CODE": ["LAWYER_DETAILS"],
-    "LAWYER_DETAILS": ["SUCCESS_ACTIVE"],
-    "AS_REFERRER": ["AS_INFO"],
-    "AS_INFO": ["SUCCESS_PENDING"],
-    "STAFF_REFERRER": ["STAFF_INFO"],
-    "STAFF_INFO": ["SUCCESS_PENDING"]
+    "ROLE_SELECT": [
+      "LAWYER_INVITE_CODE",
+      "AS_REFERRER",
+      "STAFF_REFERRER"
+    ],
+    "LAWYER_INVITE_CODE": [
+      "LAWYER_DETAILS"
+    ],
+    "LAWYER_DETAILS": [
+      "SUCCESS_ACTIVE"
+    ],
+    "AS_REFERRER": [
+      "AS_INFO"
+    ],
+    "AS_INFO": [
+      "SUCCESS_PENDING"
+    ],
+    "STAFF_REFERRER": [
+      "STAFF_INFO"
+    ],
+    "STAFF_INFO": [
+      "SUCCESS_PENDING"
+    ]
   },
   "screens": [
     {
@@ -67,7 +83,11 @@
       "data": {
         "error_message": {
           "type": "string",
-          "__example__": ""
+          "__example__": "Error"
+        },
+        "has_error": {
+          "type": "boolean",
+          "__example__": false
         }
       },
       "layout": {
@@ -98,7 +118,7 @@
           {
             "type": "TextCaption",
             "text": "${data.error_message}",
-            "visible": "${data.error_message}"
+            "visible": "${data.has_error}"
           },
           {
             "type": "Footer",
@@ -133,7 +153,11 @@
         },
         "error_message": {
           "type": "string",
-          "__example__": ""
+          "__example__": "Error"
+        },
+        "has_error": {
+          "type": "boolean",
+          "__example__": false
         }
       },
       "layout": {
@@ -154,7 +178,7 @@
           {
             "type": "TextCaption",
             "text": "${data.error_message}",
-            "visible": "${data.error_message}"
+            "visible": "${data.has_error}"
           },
           {
             "type": "TextInput",
@@ -200,7 +224,11 @@
       "data": {
         "error_message": {
           "type": "string",
-          "__example__": ""
+          "__example__": "Error"
+        },
+        "has_error": {
+          "type": "boolean",
+          "__example__": false
         }
       },
       "layout": {
@@ -221,7 +249,7 @@
           {
             "type": "TextCaption",
             "text": "${data.error_message}",
-            "visible": "${data.error_message}"
+            "visible": "${data.has_error}"
           },
           {
             "type": "TextInput",
@@ -260,7 +288,7 @@
       "data": {
         "error_message": {
           "type": "string",
-          "__example__": ""
+          "__example__": "Error"
         },
         "min_date": {
           "type": "string",
@@ -277,6 +305,10 @@
         "referrer_phone": {
           "type": "string",
           "__example__": "16045551234"
+        },
+        "has_error": {
+          "type": "boolean",
+          "__example__": false
         }
       },
       "layout": {
@@ -293,7 +325,7 @@
           {
             "type": "TextCaption",
             "text": "${data.error_message}",
-            "visible": "${data.error_message}"
+            "visible": "${data.has_error}"
           },
           {
             "type": "TextInput",
@@ -360,7 +392,11 @@
       "data": {
         "error_message": {
           "type": "string",
-          "__example__": ""
+          "__example__": "Error"
+        },
+        "has_error": {
+          "type": "boolean",
+          "__example__": false
         }
       },
       "layout": {
@@ -381,7 +417,7 @@
           {
             "type": "TextCaption",
             "text": "${data.error_message}",
-            "visible": "${data.error_message}"
+            "visible": "${data.has_error}"
           },
           {
             "type": "TextInput",
@@ -420,7 +456,7 @@
       "data": {
         "error_message": {
           "type": "string",
-          "__example__": ""
+          "__example__": "Error"
         },
         "referrer_name": {
           "type": "string",
@@ -429,6 +465,10 @@
         "referrer_phone": {
           "type": "string",
           "__example__": "16045551234"
+        },
+        "has_error": {
+          "type": "boolean",
+          "__example__": false
         }
       },
       "layout": {
@@ -445,7 +485,7 @@
           {
             "type": "TextCaption",
             "text": "${data.error_message}",
-            "visible": "${data.error_message}"
+            "visible": "${data.has_error}"
           },
           {
             "type": "TextInput",
@@ -577,7 +617,7 @@
         "children": [
           {
             "type": "TextHeading",
-            "text": "⏳ Now Verifying..."
+            "text": "\u23f3 Now Verifying..."
           },
           {
             "type": "TextBody",
