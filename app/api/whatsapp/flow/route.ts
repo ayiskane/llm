@@ -105,6 +105,10 @@ const resolvePhoneFromToken = async (supabase: ReturnType<typeof getSupabase>, t
   const { data } = await supabase.from("whatsapp_users").select("phone_number").eq("id", token).maybeSingle();
   const digits = normalizePhone(String(data?.phone_number || ""));
   if (digits.length >= 10 && digits.length <= 15) return digits;
+  console.warn("Flow token did not resolve to a valid phone", {
+    token,
+    phone_number: data?.phone_number || null,
+  });
   return "";
 };
 
@@ -315,6 +319,15 @@ async function handleRegistration(payload: any) {
 
   if (!from && flowToken) {
     from = await resolvePhoneFromToken(supabase, flowToken);
+  }
+  if (!from) {
+    console.warn("Flow registration missing sender", {
+      screen,
+      flow_token: flowToken || null,
+      payload_from: payload?.from || null,
+      payload_user: payload?.user || null,
+      data_keys: Object.keys(data || {}),
+    });
   }
 
   if (screen === SCREENS.ROLE_SELECT) {
@@ -789,6 +802,10 @@ export async function POST(request: NextRequest) {
       action,
       screen: payload?.screen,
       data_keys: payload?.data ? Object.keys(payload.data) : [],
+      flow_token: payload?.flow_token || payload?.flowToken || null,
+      from: payload?.from || payload?.phone_number || payload?.wa_id || null,
+      user_wa_id: payload?.user?.wa_id || null,
+      user_phone: payload?.user?.phone_number || null,
     });
 
     if (action === "ping") {
