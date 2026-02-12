@@ -278,8 +278,8 @@ async function handleRegistration(payload: any) {
     }
     return buildResponse(SCREENS.LAWYER_DETAILS, {
       invite_code: code,
-      invite_code_id: inviter.id,
-      inviter_name: inviter.full_name || "",
+      invite_code_id: String(inviter.id ?? ""),
+      inviter_name: String(inviter.full_name || ""),
     });
   }
 
