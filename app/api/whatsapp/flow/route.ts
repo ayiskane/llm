@@ -21,6 +21,8 @@ const SCREENS = {
   AS_REFERRER: "AS_REFERRER",
   STAFF_INFO: "STAFF_INFO",
   STAFF_REFERRER: "STAFF_REFERRER",
+  SUCCESS_ACTIVE: "SUCCESS_ACTIVE",
+  SUCCESS_PENDING: "SUCCESS_PENDING",
   SUCCESS: "SUCCESS",
   VERIFY_AS_SCREEN: "VERIFY_AS_SCREEN",
   VERIFY_STAFF_SCREEN: "VERIFY_STAFF_SCREEN",
@@ -131,8 +133,12 @@ const buildResponse = (screen: string, data: Record<string, unknown> = {}, error
   return response;
 };
 
-const buildSuccessResponse = (flowToken: string, params: Record<string, unknown> = {}) =>
-  buildResponse(SCREENS.SUCCESS, {
+const buildSuccessResponse = (
+  flowToken: string,
+  params: Record<string, unknown> = {},
+  screen: string = SCREENS.SUCCESS
+) =>
+  buildResponse(screen, {
     extension_message_response: {
       params: {
         flow_token: flowToken,
@@ -302,7 +308,7 @@ async function handleRegistration(payload: any) {
       await sendTextMessage(phoneNumberId, from, `💌 Your Invite Code:\n\n\`${inviteCode}\``);
     }
 
-    return buildSuccessResponse(flowToken, { status: "active", name: fullName, expiry: "Never" });
+    return buildSuccessResponse(flowToken, { status: "active", name: fullName, expiry: "Never" }, SCREENS.SUCCESS_ACTIVE);
   }
 
   if (screen === SCREENS.AS_INFO) {
@@ -398,7 +404,7 @@ async function handleRegistration(payload: any) {
       name: fullName,
       referrer: referrerName,
       expiry: endDateRaw,
-    });
+    }, SCREENS.SUCCESS_PENDING);
   }
 
   if (screen === SCREENS.STAFF_INFO) {
@@ -491,7 +497,7 @@ async function handleRegistration(payload: any) {
       name: fullName,
       role: roleDisplay,
       referrer: referrerName,
-    });
+    }, SCREENS.SUCCESS_PENDING);
   }
 
   return buildResponse(screen, data, { message: "Unsupported screen." });

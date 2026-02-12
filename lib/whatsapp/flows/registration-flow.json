@@ -11,19 +11,19 @@
       "LAWYER_DETAILS"
     ],
     "LAWYER_DETAILS": [
-      "SUCCESS"
+      "SUCCESS_ACTIVE"
     ],
     "AS_INFO": [
       "AS_REFERRER"
     ],
     "AS_REFERRER": [
-      "SUCCESS"
+      "SUCCESS_PENDING"
     ],
     "STAFF_INFO": [
       "STAFF_REFERRER"
     ],
     "STAFF_REFERRER": [
-      "SUCCESS"
+      "SUCCESS_PENDING"
     ]
   },
   "screens": [
@@ -492,7 +492,7 @@
       }
     },
     {
-      "id": "SUCCESS",
+      "id": "SUCCESS_ACTIVE",
       "title": "Complete",
       "terminal": true,
       "data": {
@@ -515,7 +515,46 @@
           },
           {
             "type": "TextBody",
-            "text": "Check your chat for your PIN and further instructions."
+            "text": "Your account is active. Check your chat for your PIN and invite code."
+          },
+          {
+            "type": "Footer",
+            "label": "Done",
+            "on-click-action": {
+              "name": "complete",
+              "payload": {
+                "extension_message_response": "${data.extension_message_response}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "SUCCESS_PENDING",
+      "title": "Complete",
+      "terminal": true,
+      "data": {
+        "extension_message_response": {
+          "type": "object",
+          "__example__": {
+            "params": {
+              "flow_token": "token",
+              "status": "pending"
+            }
+          }
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "TextHeading",
+            "text": "Registration Submitted"
+          },
+          {
+            "type": "TextBody",
+            "text": "Your account requires lawyer verification. We will notify you once approved."
           },
           {
             "type": "Footer",
