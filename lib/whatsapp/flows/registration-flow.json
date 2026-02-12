@@ -2,29 +2,13 @@
   "version": "7.2",
   "data_api_version": "3.0",
   "routing_model": {
-    "ROLE_SELECT": [
-      "LAWYER_INVITE_CODE",
-      "AS_REFERRER",
-      "STAFF_REFERRER"
-    ],
-    "LAWYER_INVITE_CODE": [
-      "LAWYER_DETAILS"
-    ],
-    "LAWYER_DETAILS": [
-      "SUCCESS_ACTIVE"
-    ],
-    "AS_REFERRER": [
-      "AS_INFO"
-    ],
-    "AS_INFO": [
-      "SUCCESS_PENDING"
-    ],
-    "STAFF_REFERRER": [
-      "STAFF_INFO"
-    ],
-    "STAFF_INFO": [
-      "SUCCESS_PENDING"
-    ]
+    "ROLE_SELECT": ["LAWYER_INVITE_CODE", "AS_REFERRER", "STAFF_REFERRER"],
+    "LAWYER_INVITE_CODE": ["LAWYER_DETAILS"],
+    "LAWYER_DETAILS": ["SUCCESS_ACTIVE"],
+    "AS_REFERRER": ["AS_INFO"],
+    "AS_INFO": ["SUCCESS_PENDING"],
+    "STAFF_REFERRER": ["STAFF_INFO"],
+    "STAFF_INFO": ["SUCCESS_PENDING"]
   },
   "screens": [
     {
@@ -113,7 +97,8 @@
           },
           {
             "type": "TextCaption",
-            "text": "${data.error_message}"
+            "text": "${data.error_message}",
+            "visible": "${data.error_message}"
           },
           {
             "type": "Footer",
@@ -168,7 +153,8 @@
           },
           {
             "type": "TextCaption",
-            "text": "${data.error_message}"
+            "text": "${data.error_message}",
+            "visible": "${data.error_message}"
           },
           {
             "type": "TextInput",
@@ -177,10 +163,6 @@
             "required": true,
             "input-type": "text",
             "helper-text": "As it appears on the LSBC Lawyer Directory"
-          },
-          {
-            "type": "TextCaption",
-            "text": "CONFIRMATIONS"
           },
           {
             "type": "OptIn",
@@ -238,7 +220,8 @@
           },
           {
             "type": "TextCaption",
-            "text": "${data.error_message}"
+            "text": "${data.error_message}",
+            "visible": "${data.error_message}"
           },
           {
             "type": "TextInput",
@@ -309,7 +292,8 @@
           },
           {
             "type": "TextCaption",
-            "text": "${data.error_message}"
+            "text": "${data.error_message}",
+            "visible": "${data.error_message}"
           },
           {
             "type": "TextInput",
@@ -396,7 +380,8 @@
           },
           {
             "type": "TextCaption",
-            "text": "${data.error_message}"
+            "text": "${data.error_message}",
+            "visible": "${data.error_message}"
           },
           {
             "type": "TextInput",
@@ -459,7 +444,8 @@
           },
           {
             "type": "TextCaption",
-            "text": "${data.error_message}"
+            "text": "${data.error_message}",
+            "visible": "${data.error_message}"
           },
           {
             "type": "TextInput",

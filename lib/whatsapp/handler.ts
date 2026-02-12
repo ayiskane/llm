@@ -64,6 +64,13 @@ const getUser = async (phone: string) => {
   return data;
 };
 
+const ensureUser = async (phone: string) => {
+  let user = await getUser(phone);
+  if (user) return user;
+  await upsertUser(phone, { registration_step: 'idle' });
+  return getUser(phone);
+};
+
 const upsertUser = async (phone: string, updates: Record<string, unknown>) => {
   const { error } = await supabase.from('whatsapp_users').upsert(
     { phone_number: phone, ...updates, updated_at: new Date().toISOString() },
@@ -144,7 +151,7 @@ const showAccountDetails = async (pid: string, to: string, user?: Record<string,
   );
 };
 
-const showMainMenu = async (pid: string, to: string) => {
+const showMainMenu = async (pid: string, to: string, user?: Record<string, unknown> | null) => {
   if (REGISTRATION_FLOW_ID) {
     await sendFlowMessage(
       pid,
@@ -153,7 +160,7 @@ const showMainMenu = async (pid: string, to: string) => {
       'Register with LLM to receive your access PIN.',
       'Register',
       REGISTRATION_FLOW_ID,
-      { flowToken: to, screen: REGISTRATION_FLOW_ROLE_SCREEN, action: 'data_exchange' }
+      { flowToken: (user?.id as string | undefined) || to, screen: REGISTRATION_FLOW_ROLE_SCREEN, action: 'data_exchange' }
     );
   } else {
     await sendTextMessage(
@@ -162,7 +169,7 @@ const showMainMenu = async (pid: string, to: string) => {
       '⚠️ Registration flow is not configured. Please contact support.'
     );
   }
-  return showAccountDetails(pid, to);
+  return showAccountDetails(pid, to, user);
 };
 
 const showLawyerPortal = async (pid: string, to: string, user: Record<string, unknown>) => {
@@ -222,7 +229,7 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
         {
           screen: 'VERIFY_AS_SCREEN',
           action: 'data_exchange',
-          flowToken: to,
+          flowToken: user.id as string,
           data: {
             user_id: student.id,
             student_name: student.full_name,
@@ -253,7 +260,7 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
         {
           screen: 'VERIFY_STAFF_SCREEN',
           action: 'data_exchange',
-          flowToken: to,
+          flowToken: user.id as string,
           data: {
             user_id: staff.id,
             staff_name: staff.full_name,
@@ -284,7 +291,7 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
         {
           screen: 'REVERIFY_STAFF_SCREEN',
           action: 'data_exchange',
-          flowToken: to,
+          flowToken: user.id as string,
           data: {
             user_id: staff.id,
             staff_name: staff.full_name,
@@ -419,7 +426,7 @@ const showPortalForUser = async (pid: string, to: string, user: Record<string, u
     await sendTextMessage(pid, to, await formatStaffStatus(user));
     return showStaffMenu(pid, to, user);
   }
-  return showMainMenu(pid, to);
+  return showMainMenu(pid, to, user);
 };
 
 // =============================================================================
@@ -430,7 +437,7 @@ export async function handleMessage(msg: MessageData) {
   const { from, phoneNumberId: pid, type, content } = msg;
   const text = content.trim();
   
-  let user = await getUser(from);
+  let user = await ensureUser(from);
   const step = user?.registration_step || 'idle';
 
   // Menu commands (text shortcuts)
@@ -439,7 +446,7 @@ export async function handleMessage(msg: MessageData) {
     if (hasAccount(user)) {
       return showPortalForUser(pid, from, user);
     }
-    return showMainMenu(pid, from);
+    return showMainMenu(pid, from, user);
   }
 
   // Interactive responses
@@ -451,7 +458,7 @@ export async function handleMessage(msg: MessageData) {
       if (hasAccount(user)) {
         return showPortalForUser(pid, from, user);
       }
-      return showMainMenu(pid, from);
+      return showMainMenu(pid, from, user);
     }
 
     if (text === 'flow_reply' && msg.flow?.data) {
@@ -480,7 +487,7 @@ export async function handleMessage(msg: MessageData) {
       case 'register_ls':
         if (REGISTRATION_FLOW_ID) {
           await resetUser(from);
-          return showMainMenu(pid, from);
+          return showMainMenu(pid, from, user);
         }
         if (text === 'register_lawyer') {
           await upsertUser(from, { registration_step: 'lawyer_invite_code', user_type: 'lawyer' });
@@ -631,7 +638,7 @@ export async function handleMessage(msg: MessageData) {
               {
                 screen: 'VERIFY_AS_SCREEN',
                 action: 'data_exchange',
-                flowToken: referrer.phone_number,
+                flowToken: referrer.id as string,
                 data: {
                   user_id: user?.id,
                   student_name: user?.full_name,
@@ -726,7 +733,7 @@ export async function handleMessage(msg: MessageData) {
           {
             screen: 'VERIFY_STAFF_SCREEN',
             action: 'data_exchange',
-            flowToken: referrer.phone_number,
+            flowToken: referrer.id as string,
             data: {
               user_id: staffUser?.id,
               staff_name: staffName,
@@ -1030,7 +1037,7 @@ async function handleRegistrationFlow(
         {
           screen: 'VERIFY_AS_SCREEN',
           action: 'data_exchange',
-          flowToken: referrer.phone_number,
+          flowToken: referrer.id as string,
           data: {
             user_id: student?.id,
             student_name: fullName,
@@ -1100,7 +1107,7 @@ async function handleRegistrationFlow(
         {
           screen: 'VERIFY_STAFF_SCREEN',
           action: 'data_exchange',
-          flowToken: referrer.phone_number,
+          flowToken: referrer.id as string,
           data: {
             user_id: staffUser?.id,
             staff_name: fullName,

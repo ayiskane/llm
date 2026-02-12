@@ -219,7 +219,15 @@ const getASDateBounds = () => {
 };
 
 
-const sendVerificationFlow = async (pid: string, to: string, screen: string, title: string, body: string, data: Record<string, unknown>) => {
+const sendVerificationFlow = async (
+  pid: string,
+  to: string,
+  screen: string,
+  title: string,
+  body: string,
+  data: Record<string, unknown>,
+  flowToken?: string
+) => {
   if (!VERIFICATION_FLOW_ID) return;
   await sendFlowMessage(
     pid,
@@ -228,7 +236,7 @@ const sendVerificationFlow = async (pid: string, to: string, screen: string, tit
     body,
     title,
     VERIFICATION_FLOW_ID,
-    { screen, data, action: "data_exchange", flowToken: to }
+    { screen, data, action: "data_exchange", flowToken: flowToken || to }
   );
 };
 
@@ -407,7 +415,8 @@ async function handleRegistration(payload: any) {
           firm: firmName || "",
           articling_end: articlingEnd,
           type: "articling_student",
-        }
+        },
+        referrer.id
       );
     }
 
@@ -506,7 +515,8 @@ async function handleRegistration(payload: any) {
           staff_role: roleDisplay,
           firm: firmName || "",
           type: "legal_staff",
-        }
+        },
+        referrer.id
       );
     }
 
