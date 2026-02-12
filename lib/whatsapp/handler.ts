@@ -183,7 +183,7 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
 
   const pendingStudents = await supabase
     .from('whatsapp_users')
-    .select('id, full_name, phone_number, firm_name, temp_data')
+    .select('id, full_name, phone_number, firm_name, principal_name, temp_data')
     .eq('user_type', 'articling_student')
     .eq('referrer_id', user.id)
     .eq('is_verified', false);
@@ -234,6 +234,7 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
             user_id: student.id,
             student_name: student.full_name,
             student_phone: student.phone_number,
+            principal_name: student.principal_name || student.firm_name || null,
             firm: student.firm_name,
             articling_end: temp.articling_end || null,
             type: 'articling_student',
@@ -1042,7 +1043,8 @@ async function handleRegistrationFlow(
             user_id: student?.id,
             student_name: fullName,
             student_phone: from,
-            firm: principalName,
+            principal_name: principalName,
+            firm: firmName || principalName || null,
             type: 'articling_student',
           },
         }
