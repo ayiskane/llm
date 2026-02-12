@@ -50,22 +50,24 @@ export async function sendListMessage(
   } catch (e) { console.error('sendListMessage error:', e); return false; }
 }
 
-export async function sendFlowMessage(
+type FlowOptions = {
+  flowToken?: string;
+  screen?: string;
+  data?: Record<string, unknown>;
+  action?: 'navigate' | 'data_exchange';
+};
+
+const sendFlowMessageInternal = async (
   phoneNumberId: string,
   to: string,
   headerText: string,
   bodyText: string,
   buttonText: string,
   flowId: string,
-  options?: {
-    flowToken?: string;
-    screen?: string;
-    data?: Record<string, unknown>;
-    action?: 'navigate' | 'data_exchange';
-  }
-): Promise<boolean> {
+  options?: FlowOptions
+): Promise<{ ok: boolean; error?: string }> => {
   const token = process.env.WHATSAPP_ACCESS_TOKEN;
-  if (!token) return false;
+  if (!token) return { ok: false, error: 'WHATSAPP_ACCESS_TOKEN not set' };
 
   try {
     const parameters: Record<string, unknown> = {
@@ -101,9 +103,63 @@ export async function sendFlowMessage(
         },
       }),
     });
-    if (!res.ok) { console.error('WhatsApp Flow Error:', await res.json()); return false; }
-    return true;
-  } catch (e) { console.error('sendFlowMessage error:', e); return false; }
+    if (!res.ok) {
+      let message = 'Unknown error';
+      try {
+        const payload = await res.json();
+        message = payload?.error?.message || payload?.message || message;
+        console.error('WhatsApp Flow Error:', payload);
+      } catch (e) {
+        console.error('WhatsApp Flow Error (parse):', e);
+      }
+      return { ok: false, error: message };
+    }
+    return { ok: true };
+  } catch (e) {
+    console.error('sendFlowMessage error:', e);
+    return { ok: false, error: 'Network error while sending flow' };
+  }
+};
+
+export async function sendFlowMessage(
+  phoneNumberId: string,
+  to: string,
+  headerText: string,
+  bodyText: string,
+  buttonText: string,
+  flowId: string,
+  options?: FlowOptions
+): Promise<boolean> {
+  const result = await sendFlowMessageInternal(
+    phoneNumberId,
+    to,
+    headerText,
+    bodyText,
+    buttonText,
+    flowId,
+    options
+  );
+  return result.ok;
+}
+
+export async function sendFlowMessageWithError(
+  phoneNumberId: string,
+  to: string,
+  headerText: string,
+  bodyText: string,
+  buttonText: string,
+  flowId: string,
+  options?: FlowOptions
+): Promise<{ ok: boolean; error?: string }> {
+  return sendFlowMessageInternal(
+    phoneNumberId,
+    to,
+    headerText,
+    bodyText,
+    buttonText,
+    flowId,
+    options
+  );
 }
 
 export async function sendButtonMessage(
