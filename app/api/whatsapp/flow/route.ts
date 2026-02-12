@@ -182,7 +182,7 @@ const handleBack = (payload: any) => {
 const validateInvitationCode = async (supabase: ReturnType<typeof getSupabase>, code: string) => {
   const { data } = await supabase
     .from("whatsapp_users")
-    .select("id, full_name")
+    .select("id, full_name, phone_number")
     .eq("invitation_code", code.toUpperCase().trim())
     .eq("user_type", "lawyer")
     .eq("is_verified", true)
@@ -276,10 +276,12 @@ async function handleRegistration(payload: any) {
     if (!inviter) {
       return buildResponse(SCREENS.LAWYER_INVITE_CODE, data, { message: "Invalid invitation code. Please check and try again." });
     }
+    const inviterName = String(inviter.full_name || inviter.phone_number || "LLM member");
+    const inviterId = String(inviter.id ?? "");
     return buildResponse(SCREENS.LAWYER_DETAILS, {
       invite_code: code,
-      invite_code_id: String(inviter.id ?? ""),
-      inviter_name: String(inviter.full_name || ""),
+      invite_code_id: inviterId,
+      inviter_name: inviterName,
     });
   }
 
