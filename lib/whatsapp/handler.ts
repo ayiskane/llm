@@ -175,7 +175,7 @@ const sendRegistrationFlow = async (pid: string, to: string, user?: Record<strin
     'Register with LLM to receive your access PIN.',
     'Register',
     REGISTRATION_FLOW_ID,
-    { flowToken: (user?.id as string | undefined) || to, screen: REGISTRATION_FLOW_ROLE_SCREEN, action: 'data_exchange' }
+    { flowToken: (user?.id as string | undefined) || to }
   );
   if (!result.ok) {
     return sendTextMessage(
