@@ -152,6 +152,11 @@ const showAccountDetails = async (pid: string, to: string, user?: Record<string,
 };
 
 const showMainMenu = async (pid: string, to: string, user?: Record<string, unknown> | null) => {
+  await sendTextMessage(
+    pid,
+    to,
+    "👋 Welcome to LLM!\n\nTap Register to get started. If you're already registered, use the button below to get your PIN."
+  );
   if (REGISTRATION_FLOW_ID) {
     await sendFlowMessage(
       pid,
