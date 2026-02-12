@@ -285,6 +285,7 @@ async function handleRegistration(payload: any) {
     }
     const inviterName = String(inviter.full_name || inviter.phone_number || "LLM member");
     const inviterId = String(inviter.id ?? "");
+    console.log("Flow LAWYER_INVITE_CODE resolved inviter", { code, inviterId, inviterName });
     return buildResponse(SCREENS.LAWYER_DETAILS, {
       invite_code: code,
       invite_code_id: inviterId,
