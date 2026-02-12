@@ -29,6 +29,16 @@ const SCREENS = {
   REVERIFY_STAFF_SCREEN: "REVERIFY_STAFF_SCREEN",
 };
 
+const isVerificationScreen = (screen: string | undefined) =>
+  screen === SCREENS.VERIFY_AS_SCREEN ||
+  screen === SCREENS.VERIFY_STAFF_SCREEN ||
+  screen === SCREENS.REVERIFY_STAFF_SCREEN;
+
+const isVerificationType = (type: unknown) => {
+  const value = String(type || "").toLowerCase();
+  return value === "articling_student" || value === "legal_staff" || value === "reverify";
+};
+
 const getSupabase = () => {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -177,11 +187,7 @@ const BACK_MAP: Record<string, string> = {
 };
 
 const resolveVerificationScreen = (screen: string | undefined, data: any) => {
-  if (
-    screen === SCREENS.VERIFY_AS_SCREEN ||
-    screen === SCREENS.VERIFY_STAFF_SCREEN ||
-    screen === SCREENS.REVERIFY_STAFF_SCREEN
-  ) {
+  if (isVerificationScreen(screen)) {
     console.log("Flow verify resolve screen (explicit):", { screen });
     return screen;
   }
@@ -774,7 +780,11 @@ export async function POST(request: NextRequest) {
       response = handleInit(payload);
     } else if (action === "BACK") {
       response = handleBack(payload);
-    } else if (flowId === VERIFICATION_FLOW_ID) {
+    } else if (
+      flowId === VERIFICATION_FLOW_ID ||
+      isVerificationScreen(payload?.screen) ||
+      isVerificationType(payload?.data?.type)
+    ) {
       response = await handleVerification(payload);
     } else {
       response = await handleRegistration(payload);
