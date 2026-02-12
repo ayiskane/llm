@@ -157,7 +157,7 @@ const showAccountDetails = async (pid: string, to: string, user?: Record<string,
 };
 
 const showMainMenu = async (pid: string, to: string, user?: Record<string, unknown> | null) => {
-  return showAccountDetails(pid, to, user);
+  return sendRegistrationFlow(pid, to, user);
 };
 
 const sendRegistrationFlow = async (pid: string, to: string, user?: Record<string, unknown> | null) => {
