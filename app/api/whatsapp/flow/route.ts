@@ -186,7 +186,7 @@ const BACK_MAP: Record<string, string> = {
   STAFF_INFO: SCREENS.STAFF_REFERRER,
 };
 
-const resolveVerificationScreen = (screen: string | undefined, data: any) => {
+const resolveVerificationScreen = (screen: string | undefined, data: any): string => {
   if (isVerificationScreen(screen)) {
     console.log("Flow verify resolve screen (explicit):", { screen });
     return screen;
