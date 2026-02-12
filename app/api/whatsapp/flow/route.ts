@@ -72,15 +72,21 @@ const getPhoneNumberId = (payload: any) =>
   payload?.phone_number_id || payload?.phoneNumberId || payload?.metadata?.phone_number_id || DEFAULT_PHONE_NUMBER_ID;
 
 const getSenderPhone = (payload: any) => {
-  const raw =
-    payload?.user?.phone_number ||
-    payload?.user?.wa_id ||
-    payload?.from ||
-    payload?.phone_number ||
-    payload?.wa_id ||
-    "";
-  const digits = normalizePhone(raw);
-  return digits.length >= 10 ? digits : "";
+  const candidates = [
+    payload?.user?.phone_number,
+    payload?.user?.wa_id,
+    payload?.from,
+    payload?.phone_number,
+    payload?.wa_id,
+    payload?.flow_token,
+    payload?.flowToken,
+  ];
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const digits = normalizePhone(String(candidate));
+    if (digits.length >= 10) return digits;
+  }
+  return "";
 };
 
 const decryptFlowPayload = (body: any) => {
