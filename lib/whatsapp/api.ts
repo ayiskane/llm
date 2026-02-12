@@ -16,6 +16,9 @@ export async function sendTextMessage(phoneNumberId: string, to: string, message
   if (!token) { console.error('WHATSAPP_ACCESS_TOKEN not set'); return false; }
 
   const recipient = normalizeRecipient(to);
+  if (!recipient.startsWith('+')) {
+    console.warn('WhatsApp recipient not E.164 (text)', { to, recipient });
+  }
 
   try {
     const res = await fetch(`${WHATSAPP_API_URL}/${phoneNumberId}/messages`, {
@@ -42,6 +45,9 @@ export async function sendListMessage(
   if (!token) return false;
 
   const recipient = normalizeRecipient(to);
+  if (!recipient.startsWith('+')) {
+    console.warn('WhatsApp recipient not E.164 (list)', { to, recipient });
+  }
 
   try {
     const res = await fetch(`${WHATSAPP_API_URL}/${phoneNumberId}/messages`, {
@@ -85,6 +91,9 @@ const sendFlowMessageInternal = async (
   if (!token) return { ok: false, error: 'WHATSAPP_ACCESS_TOKEN not set' };
 
   const recipient = normalizeRecipient(to);
+  if (!recipient.startsWith('+')) {
+    console.warn('WhatsApp recipient not E.164 (flow)', { to, recipient });
+  }
 
   try {
     const parameters: Record<string, unknown> = {
@@ -187,6 +196,9 @@ export async function sendButtonMessage(
   if (!token) return false;
 
   const recipient = normalizeRecipient(to);
+  if (!recipient.startsWith('+')) {
+    console.warn('WhatsApp recipient not E.164 (button)', { to, recipient });
+  }
 
   try {
     const res = await fetch(`${WHATSAPP_API_URL}/${phoneNumberId}/messages`, {
