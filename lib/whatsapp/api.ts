@@ -1,8 +1,21 @@
 const WHATSAPP_API_URL = 'https://graph.facebook.com/v24.0';
 
+const normalizeRecipient = (to: string) => {
+  const trimmed = (to || '').trim();
+  if (!trimmed) return trimmed;
+  if (trimmed.startsWith('+')) {
+    const digits = trimmed.slice(1).replace(/\D/g, '');
+    return digits ? `+${digits}` : trimmed;
+  }
+  const digits = trimmed.replace(/\D/g, '');
+  return digits ? `+${digits}` : trimmed;
+};
+
 export async function sendTextMessage(phoneNumberId: string, to: string, message: string): Promise<boolean> {
   const token = process.env.WHATSAPP_ACCESS_TOKEN;
   if (!token) { console.error('WHATSAPP_ACCESS_TOKEN not set'); return false; }
+
+  const recipient = normalizeRecipient(to);
 
   try {
     const res = await fetch(`${WHATSAPP_API_URL}/${phoneNumberId}/messages`, {
@@ -11,7 +24,7 @@ export async function sendTextMessage(phoneNumberId: string, to: string, message
       body: JSON.stringify({
         messaging_product: 'whatsapp',
         recipient_type: 'individual',
-        to,
+        to: recipient,
         type: 'text',
         text: { preview_url: false, body: message },
       }),
@@ -28,6 +41,8 @@ export async function sendListMessage(
   const token = process.env.WHATSAPP_ACCESS_TOKEN;
   if (!token) return false;
 
+  const recipient = normalizeRecipient(to);
+
   try {
     const res = await fetch(`${WHATSAPP_API_URL}/${phoneNumberId}/messages`, {
       method: 'POST',
@@ -35,7 +50,7 @@ export async function sendListMessage(
       body: JSON.stringify({
         messaging_product: 'whatsapp',
         recipient_type: 'individual',
-        to,
+        to: recipient,
         type: 'interactive',
         interactive: {
           type: 'list',
@@ -69,6 +84,8 @@ const sendFlowMessageInternal = async (
   const token = process.env.WHATSAPP_ACCESS_TOKEN;
   if (!token) return { ok: false, error: 'WHATSAPP_ACCESS_TOKEN not set' };
 
+  const recipient = normalizeRecipient(to);
+
   try {
     const parameters: Record<string, unknown> = {
       flow_message_version: '3',
@@ -90,7 +107,7 @@ const sendFlowMessageInternal = async (
       body: JSON.stringify({
         messaging_product: 'whatsapp',
         recipient_type: 'individual',
-        to,
+        to: recipient,
         type: 'interactive',
         interactive: {
           type: 'flow',
@@ -169,6 +186,8 @@ export async function sendButtonMessage(
   const token = process.env.WHATSAPP_ACCESS_TOKEN;
   if (!token) return false;
 
+  const recipient = normalizeRecipient(to);
+
   try {
     const res = await fetch(`${WHATSAPP_API_URL}/${phoneNumberId}/messages`, {
       method: 'POST',
@@ -176,7 +195,7 @@ export async function sendButtonMessage(
       body: JSON.stringify({
         messaging_product: 'whatsapp',
         recipient_type: 'individual',
-        to,
+        to: recipient,
         type: 'interactive',
         interactive: {
           type: 'button',

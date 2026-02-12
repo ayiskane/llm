@@ -478,6 +478,10 @@ export async function handleMessage(msg: MessageData) {
     }
 
     if (text === 'flow_reply' && msg.flow?.data) {
+      // Flows are handled via the flow endpoint; ignore flow replies to avoid double-processing.
+      if (msg.flow?.id && (msg.flow.id === REGISTRATION_FLOW_ID || msg.flow.id === VERIFICATION_FLOW_ID)) {
+        return;
+      }
       return handleRegistrationFlow(pid, from, msg.flow.data, user);
     }
 
