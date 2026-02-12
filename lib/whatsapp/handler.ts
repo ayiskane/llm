@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { sendTextMessage, sendButtonMessage, sendFlowMessage, MessageData } from './api';
+import { sendTextMessage, sendButtonMessage, sendFlowMessage, sendFlowMessageWithError, MessageData } from './api';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -168,7 +168,7 @@ const sendRegistrationFlow = async (pid: string, to: string, user?: Record<strin
       '⚠️ Registration flow is not configured. Please contact support.'
     );
   }
-  return sendFlowMessage(
+  const result = await sendFlowMessageWithError(
     pid,
     to,
     '⚖️ LLM Registration',
@@ -177,6 +177,14 @@ const sendRegistrationFlow = async (pid: string, to: string, user?: Record<strin
     REGISTRATION_FLOW_ID,
     { flowToken: (user?.id as string | undefined) || to, screen: REGISTRATION_FLOW_ROLE_SCREEN, action: 'data_exchange' }
   );
+  if (!result.ok) {
+    return sendTextMessage(
+      pid,
+      to,
+      `⚠️ Could not open the registration flow. ${result.error ? `Reason: ${result.error}` : 'Please try again.'}`
+    );
+  }
+  return true;
 };
 
 const showLawyerPortal = async (pid: string, to: string, user: Record<string, unknown>) => {
