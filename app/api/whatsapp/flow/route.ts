@@ -659,8 +659,14 @@ async function handleVerification(payload: any) {
       return buildResponse(SCREENS.VERIFY_AS_SCREEN, data, { message: "User not found." });
     }
 
-    if (from && student.referrer_phone && normalizePhone(student.referrer_phone) !== from) {
-      return buildResponse(SCREENS.VERIFY_AS_SCREEN, data, { message: "Unauthorized." });
+    if (from && student.referrer_phone) {
+      const fromDigits = normalizePhone(from);
+      const refDigits = normalizePhone(student.referrer_phone);
+      const fromLast10 = fromDigits.slice(-10);
+      const refLast10 = refDigits.slice(-10);
+      if (fromLast10 && refLast10 ? fromLast10 !== refLast10 : refDigits !== fromDigits) {
+        return buildResponse(SCREENS.VERIFY_AS_SCREEN, data, { message: "Unauthorized." });
+      }
     }
 
     const storedEnd = student.temp_data ? JSON.parse(student.temp_data as string).articling_end : null;
@@ -707,8 +713,14 @@ async function handleVerification(payload: any) {
       return buildResponse(screen, data, { message: "User not found." });
     }
 
-    if (from && staff.referrer_phone && normalizePhone(staff.referrer_phone) !== from) {
-      return buildResponse(screen, data, { message: "Unauthorized." });
+    if (from && staff.referrer_phone) {
+      const fromDigits = normalizePhone(from);
+      const refDigits = normalizePhone(staff.referrer_phone);
+      const fromLast10 = fromDigits.slice(-10);
+      const refLast10 = refDigits.slice(-10);
+      if (fromLast10 && refLast10 ? fromLast10 !== refLast10 : refDigits !== fromDigits) {
+        return buildResponse(screen, data, { message: "Unauthorized." });
+      }
     }
 
     const expiry = new Date();
