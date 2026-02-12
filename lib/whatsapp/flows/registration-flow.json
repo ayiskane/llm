@@ -2,13 +2,29 @@
   "version": "7.2",
   "data_api_version": "3.0",
   "routing_model": {
-    "ROLE_SELECT": ["LAWYER_INVITE_CODE", "AS_INFO", "STAFF_INFO"],
-    "LAWYER_INVITE_CODE": ["LAWYER_DETAILS"],
-    "LAWYER_DETAILS": ["SUCCESS"],
-    "AS_INFO": ["AS_REFERRER"],
-    "AS_REFERRER": ["SUCCESS"],
-    "STAFF_INFO": ["STAFF_REFERRER"],
-    "STAFF_REFERRER": ["SUCCESS"]
+    "ROLE_SELECT": [
+      "LAWYER_INVITE_CODE",
+      "AS_INFO",
+      "STAFF_INFO"
+    ],
+    "LAWYER_INVITE_CODE": [
+      "LAWYER_DETAILS"
+    ],
+    "LAWYER_DETAILS": [
+      "SUCCESS"
+    ],
+    "AS_INFO": [
+      "AS_REFERRER"
+    ],
+    "AS_REFERRER": [
+      "SUCCESS"
+    ],
+    "STAFF_INFO": [
+      "STAFF_REFERRER"
+    ],
+    "STAFF_REFERRER": [
+      "SUCCESS"
+    ]
   },
   "screens": [
     {
@@ -47,7 +63,9 @@
             "label": "Continue",
             "on-click-action": {
               "name": "data_exchange",
-              "payload": { "role": "${form.role}" }
+              "payload": {
+                "role": "${form.role}"
+              }
             }
           }
         ]
@@ -58,12 +76,23 @@
       "title": "LLM Registration",
       "terminal": false,
       "refresh_on_back": false,
-      "data": { "error_message": { "type": "string", "__example__": "" } },
+      "data": {
+        "error_message": {
+          "type": "string",
+          "__example__": ""
+        }
+      },
       "layout": {
         "type": "SingleColumnLayout",
         "children": [
-          { "type": "TextSubheading", "text": "Invite Code" },
-          { "type": "TextBody", "text": "Please enter the 6-character code." },
+          {
+            "type": "TextSubheading",
+            "text": "Invite Code"
+          },
+          {
+            "type": "TextBody",
+            "text": "Please enter the 6-character code."
+          },
           {
             "type": "TextInput",
             "name": "invite_code",
@@ -74,13 +103,18 @@
             "max-chars": 6,
             "helper-text": "Enter your 6-character invite code"
           },
-          { "type": "TextBody", "text": "${data.error_message}" },
+          {
+            "type": "TextBody",
+            "text": "${data.error_message}"
+          },
           {
             "type": "Footer",
             "label": "Verify Code",
             "on-click-action": {
               "name": "data_exchange",
-              "payload": { "invite_code": "${form.invite_code}" }
+              "payload": {
+                "invite_code": "${form.invite_code}"
+              }
             }
           }
         ]
@@ -92,17 +126,38 @@
       "terminal": false,
       "refresh_on_back": false,
       "data": {
-        "invite_code": { "type": "string", "__example__": "ABC123" },
-        "invite_code_id": { "type": "string", "__example__": "1" },
-        "inviter_name": { "type": "string", "__example__": "Michael Tran" },
-        "error_message": { "type": "string", "__example__": "" }
+        "invite_code": {
+          "type": "string",
+          "__example__": "ABC123"
+        },
+        "invite_code_id": {
+          "type": "string",
+          "__example__": "1"
+        },
+        "inviter_name": {
+          "type": "string",
+          "__example__": "Michael Tran"
+        },
+        "error_message": {
+          "type": "string",
+          "__example__": ""
+        }
       },
       "layout": {
         "type": "SingleColumnLayout",
         "children": [
-          { "type": "TextSubheading", "text": "Your Details" },
-          { "type": "TextBody", "text": "✅ Invited by: ${data.inviter_name}" },
-          { "type": "TextBody", "text": "${data.error_message}" },
+          {
+            "type": "TextSubheading",
+            "text": "Your Details"
+          },
+          {
+            "type": "TextBody",
+            "text": "\u2705 Invited by: ${data.inviter_name}"
+          },
+          {
+            "type": "TextBody",
+            "text": "${data.error_message}"
+          },
           {
             "type": "TextInput",
             "name": "full_name",
@@ -144,12 +199,31 @@
       "title": "LLM Registration",
       "terminal": false,
       "refresh_on_back": false,
-      "data": { "error_message": { "type": "string", "__example__": "" } },
+      "data": {
+        "error_message": {
+          "type": "string",
+          "__example__": ""
+        },
+        "min_date": {
+          "type": "string",
+          "__example__": "1751241600000"
+        },
+        "max_date": {
+          "type": "string",
+          "__example__": "1774915200000"
+        }
+      },
       "layout": {
         "type": "SingleColumnLayout",
         "children": [
-          { "type": "TextSubheading", "text": "Your Information" },
-          { "type": "TextBody", "text": "${data.error_message}" },
+          {
+            "type": "TextSubheading",
+            "text": "Your Information"
+          },
+          {
+            "type": "TextBody",
+            "text": "${data.error_message}"
+          },
           {
             "type": "TextInput",
             "name": "full_name",
@@ -176,7 +250,9 @@
             "name": "articling_end",
             "label": "Articling End Date",
             "required": true,
-            "helper-text": "Max 9 months access from today"
+            "min-date": "${data.min_date}",
+            "max-date": "${data.max_date}",
+            "helper-text": "Cannot exceed 9 months from today"
           },
           {
             "type": "Footer",
@@ -200,16 +276,38 @@
       "terminal": false,
       "refresh_on_back": false,
       "data": {
-        "full_name": { "type": "string", "__example__": "James Park" },
-        "firm_name": { "type": "string", "__example__": "Miller Thomson LLP" },
-        "principal_name": { "type": "string", "__example__": "David Wong" },
-        "error_message": { "type": "string", "__example__": "" }
+        "full_name": {
+          "type": "string",
+          "__example__": "James Park"
+        },
+        "firm_name": {
+          "type": "string",
+          "__example__": "Miller Thomson LLP"
+        },
+        "principal_name": {
+          "type": "string",
+          "__example__": "David Wong"
+        },
+        "error_message": {
+          "type": "string",
+          "__example__": ""
+        },
+        "articling_end": {
+          "type": "string",
+          "__example__": "2026-12-31"
+        }
       },
       "layout": {
         "type": "SingleColumnLayout",
         "children": [
-          { "type": "TextSubheading", "text": "Referrer Information" },
-          { "type": "TextBody", "text": "${data.error_message}" },
+          {
+            "type": "TextSubheading",
+            "text": "Referrer Information"
+          },
+          {
+            "type": "TextBody",
+            "text": "${data.error_message}"
+          },
           {
             "type": "TextInput",
             "name": "referrer_name",
@@ -235,7 +333,8 @@
                 "firm_name": "${data.firm_name}",
                 "principal_name": "${data.principal_name}",
                 "referrer_name": "${form.referrer_name}",
-                "referrer_phone": "${form.referrer_phone}"
+                "referrer_phone": "${form.referrer_phone}",
+                "articling_end": "${data.articling_end}"
               }
             }
           }
@@ -247,12 +346,23 @@
       "title": "LLM Registration",
       "terminal": false,
       "refresh_on_back": false,
-      "data": { "error_message": { "type": "string", "__example__": "" } },
+      "data": {
+        "error_message": {
+          "type": "string",
+          "__example__": ""
+        }
+      },
       "layout": {
         "type": "SingleColumnLayout",
         "children": [
-          { "type": "TextSubheading", "text": "Your Information" },
-          { "type": "TextBody", "text": "${data.error_message}" },
+          {
+            "type": "TextSubheading",
+            "text": "Your Information"
+          },
+          {
+            "type": "TextBody",
+            "text": "${data.error_message}"
+          },
           {
             "type": "TextInput",
             "name": "full_name",
@@ -273,9 +383,18 @@
             "label": "I am a...",
             "required": true,
             "data-source": [
-              { "id": "legal_assistant", "title": "Legal Assistant" },
-              { "id": "paralegal", "title": "Paralegal" },
-              { "id": "other", "title": "Other" }
+              {
+                "id": "legal_assistant",
+                "title": "Legal Assistant"
+              },
+              {
+                "id": "paralegal",
+                "title": "Paralegal"
+              },
+              {
+                "id": "other",
+                "title": "Other"
+              }
             ]
           },
           {
@@ -307,17 +426,38 @@
       "terminal": false,
       "refresh_on_back": false,
       "data": {
-        "full_name": { "type": "string", "__example__": "Maria Santos" },
-        "firm_name": { "type": "string", "__example__": "Lawson Lundell LLP" },
-        "staff_role": { "type": "string", "__example__": "paralegal" },
-        "staff_role_other": { "type": "string", "__example__": "" },
-        "error_message": { "type": "string", "__example__": "" }
+        "full_name": {
+          "type": "string",
+          "__example__": "Maria Santos"
+        },
+        "firm_name": {
+          "type": "string",
+          "__example__": "Lawson Lundell LLP"
+        },
+        "staff_role": {
+          "type": "string",
+          "__example__": "paralegal"
+        },
+        "staff_role_other": {
+          "type": "string",
+          "__example__": ""
+        },
+        "error_message": {
+          "type": "string",
+          "__example__": ""
+        }
       },
       "layout": {
         "type": "SingleColumnLayout",
         "children": [
-          { "type": "TextSubheading", "text": "Lawyer Referrer" },
-          { "type": "TextBody", "text": "${data.error_message}" },
+          {
+            "type": "TextSubheading",
+            "text": "Lawyer Referrer"
+          },
+          {
+            "type": "TextBody",
+            "text": "${data.error_message}"
+          },
           {
             "type": "TextInput",
             "name": "referrer_name",
@@ -359,14 +499,20 @@
         "extension_message_response": {
           "type": "object",
           "__example__": {
-            "params": { "flow_token": "token", "status": "active" }
+            "params": {
+              "flow_token": "token",
+              "status": "active"
+            }
           }
         }
       },
       "layout": {
         "type": "SingleColumnLayout",
         "children": [
-          { "type": "TextHeading", "text": "Registration Complete" },
+          {
+            "type": "TextHeading",
+            "text": "Registration Complete"
+          },
           {
             "type": "TextBody",
             "text": "Check your chat for your PIN and further instructions."

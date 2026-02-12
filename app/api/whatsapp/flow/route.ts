@@ -163,6 +163,9 @@ const handleBack = (payload: any) => {
   const screen = payload?.screen;
   const data = payload?.data || {};
   const prev = BACK_MAP[screen] || SCREENS.ROLE_SELECT;
+  if (prev === SCREENS.AS_INFO) {
+    return buildResponse(prev, { ...data, ...getASDateBounds() });
+  }
   return buildResponse(prev, data);
 };
 
@@ -196,6 +199,18 @@ const computeASExpiry = (endDate: Date) => {
   return finalExpiry;
 };
 
+const getASDateBounds = () => {
+  const now = new Date();
+  const minDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const maxDate = new Date(minDate);
+  maxDate.setMonth(maxDate.getMonth() + MAX_AS_ACCESS_MONTHS);
+  return {
+    min_date: String(minDate.getTime()),
+    max_date: String(maxDate.getTime()),
+  };
+};
+
+
 const sendVerificationFlow = async (pid: string, to: string, screen: string, title: string, body: string, data: Record<string, unknown>) => {
   if (!VERIFICATION_FLOW_ID) return;
   await sendFlowMessage(
@@ -227,7 +242,7 @@ async function handleRegistration(payload: any) {
       return buildResponse(SCREENS.ROLE_SELECT, data, { message: "Please select a role." });
     }
     if (role === "lawyer") return buildResponse(SCREENS.LAWYER_INVITE_CODE);
-    if (role === "articling_student") return buildResponse(SCREENS.AS_INFO);
+    if (role === "articling_student") return buildResponse(SCREENS.AS_INFO, getASDateBounds());
     if (role === "legal_staff") return buildResponse(SCREENS.STAFF_INFO);
     return buildResponse(SCREENS.ROLE_SELECT, data, { message: "Please select a valid role." });
   }
@@ -294,13 +309,15 @@ async function handleRegistration(payload: any) {
     const fullName = String(data.full_name || "").trim();
     const firmName = String(data.firm_name || "").trim();
     const principalName = String(data.principal_name || "").trim();
-    if (!fullName || !firmName || !principalName) {
-      return buildResponse(SCREENS.AS_INFO, data, { message: "All fields are required." });
+    const articlingEnd = String(data.articling_end || "").trim();
+    if (!fullName || !firmName || !principalName || !articlingEnd) {
+      return buildResponse(SCREENS.AS_INFO, { ...data, ...getASDateBounds() }, { message: "All fields are required." });
     }
     return buildResponse(SCREENS.AS_REFERRER, {
       full_name: fullName,
       firm_name: firmName,
       principal_name: principalName,
+      articling_end: articlingEnd,
     });
   }
 
@@ -319,6 +336,11 @@ async function handleRegistration(payload: any) {
     const endDate = parseDate(endDateRaw);
     if (!endDate || endDate <= new Date()) {
       return buildResponse(SCREENS.AS_REFERRER, data, { message: "Enter a valid future date." });
+    }
+    const maxEndDate = new Date();
+    maxEndDate.setMonth(maxEndDate.getMonth() + MAX_AS_ACCESS_MONTHS);
+    if (endDate > maxEndDate) {
+      return buildResponse(SCREENS.AS_REFERRER, data, { message: "Date cannot exceed 9 months from today." });
     }
 
     const referrer = await findVerifiedLawyerByPhone(supabase, referrerPhone);
