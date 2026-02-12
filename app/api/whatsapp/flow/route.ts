@@ -445,11 +445,11 @@ async function handleRegistration(payload: any) {
         "Verify Student",
         `${fullName} has listed you as their referrer.`,
         {
-          user_id: student?.id,
-          student_name: fullName,
-          student_phone: from,
-          firm: firmName || "",
-          articling_end: articlingEnd,
+          user_id: String(student?.id || ""),
+          student_name: String(fullName || ""),
+          student_phone: String(from || ""),
+          principal_name: String(principalName || ""),
+          articling_end: String(articlingEnd || ""),
           type: "articling_student",
         },
         referrer.id
@@ -552,11 +552,10 @@ async function handleRegistration(payload: any) {
         "Verify Staff",
         `${fullName} has listed you as their referrer.`,
         {
-          user_id: staff?.id,
-          staff_name: fullName,
-          staff_phone: from,
-          staff_role: roleDisplay,
-          firm: firmName || "",
+          user_id: String(staff?.id || ""),
+          staff_name: String(fullName || ""),
+          staff_phone: String(from || ""),
+          staff_role: String(roleDisplay || ""),
           type: "legal_staff",
         },
         referrer.id
@@ -622,7 +621,7 @@ async function handleVerification(payload: any) {
     await supabase.from("whatsapp_users").update({
       is_verified: true,
       pin_expires_at: finalExpiry.toISOString(),
-      articling_end: endDate.toISOString().slice(0, 10),
+      articling_end_date: endDate.toISOString().slice(0, 10),
       updated_at: new Date().toISOString(),
     }).eq("id", student.id);
 

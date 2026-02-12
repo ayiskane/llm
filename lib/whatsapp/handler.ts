@@ -234,7 +234,7 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
           temp = {};
         }
       }
-      await sendFlowMessage(
+      const result = await sendFlowMessageWithError(
         pid,
         to,
         '✅ Verify A/S',
@@ -246,16 +246,23 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
           action: 'data_exchange',
           flowToken: user.id as string,
           data: {
-            user_id: student.id,
-            student_name: student.full_name,
-            student_phone: student.phone_number,
-            principal_name: student.principal_name || student.firm_name || null,
-            firm: student.firm_name,
-            articling_end: temp.articling_end || null,
+            user_id: String(student.id || ''),
+            student_name: String(student.full_name || ''),
+            student_phone: String(student.phone_number || ''),
+            principal_name: String(student.principal_name || student.firm_name || ''),
+            articling_end: String(temp.articling_end || ''),
             type: 'articling_student',
           },
         }
       );
+      if (!result.ok) {
+        console.error('Verify A/S flow send failed:', result.error);
+        await sendTextMessage(
+          pid,
+          to,
+          `⚠️ Could not send verification flow for ${student.full_name || 'student'}. ${result.error ? `Reason: ${result.error}` : ''}`
+        );
+      }
     }
 
     for (const staff of pendingStaffRows) {
@@ -266,7 +273,7 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
           : staff.staff_role === 'paralegal'
             ? 'Paralegal'
             : staff.staff_role || 'Staff';
-      await sendFlowMessage(
+      const result = await sendFlowMessageWithError(
         pid,
         to,
         '✅ Verify Legal Staff',
@@ -278,15 +285,22 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
           action: 'data_exchange',
           flowToken: user.id as string,
           data: {
-            user_id: staff.id,
-            staff_name: staff.full_name,
-            staff_phone: staff.phone_number,
-            staff_role: roleName,
-            firm: staff.firm_name,
+            user_id: String(staff.id || ''),
+            staff_name: String(staff.full_name || ''),
+            staff_phone: String(staff.phone_number || ''),
+            staff_role: String(roleName || ''),
             type: 'legal_staff',
           },
         }
       );
+      if (!result.ok) {
+        console.error('Verify staff flow send failed:', result.error);
+        await sendTextMessage(
+          pid,
+          to,
+          `⚠️ Could not send verification flow for ${staff.full_name || 'staff'}. ${result.error ? `Reason: ${result.error}` : ''}`
+        );
+      }
     }
 
     for (const staff of expiringStaffRows) {
@@ -297,7 +311,7 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
           : staff.staff_role === 'paralegal'
             ? 'Paralegal'
             : staff.staff_role || 'Staff';
-      await sendFlowMessage(
+      const result = await sendFlowMessageWithError(
         pid,
         to,
         '🔁 Re-Verify Staff',
@@ -309,15 +323,22 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
           action: 'data_exchange',
           flowToken: user.id as string,
           data: {
-            user_id: staff.id,
-            staff_name: staff.full_name,
-            staff_phone: staff.phone_number,
-            staff_role: roleName,
-            firm: staff.firm_name,
+            user_id: String(staff.id || ''),
+            staff_name: String(staff.full_name || ''),
+            staff_phone: String(staff.phone_number || ''),
+            staff_role: String(roleName || ''),
             type: 'reverify',
           },
         }
       );
+      if (!result.ok) {
+        console.error('Reverify staff flow send failed:', result.error);
+        await sendTextMessage(
+          pid,
+          to,
+          `⚠️ Could not send re-verification flow for ${staff.full_name || 'staff'}. ${result.error ? `Reason: ${result.error}` : ''}`
+        );
+      }
     }
   }
 
@@ -1059,11 +1080,11 @@ async function handleRegistrationFlow(
           action: 'data_exchange',
           flowToken: referrer.id as string,
           data: {
-            user_id: student?.id,
-            student_name: fullName,
-            student_phone: from,
-            principal_name: principalName,
-            firm: firmName || principalName || null,
+            user_id: String(student?.id || ''),
+            student_name: String(fullName || ''),
+            student_phone: String(from || ''),
+            principal_name: String(principalName || ''),
+            articling_end: String(''),
             type: 'articling_student',
           },
         }
@@ -1130,11 +1151,10 @@ async function handleRegistrationFlow(
           action: 'data_exchange',
           flowToken: referrer.id as string,
           data: {
-            user_id: staffUser?.id,
-            staff_name: fullName,
-            staff_phone: from,
-            staff_role: roleName,
-            firm: firmName || null,
+            user_id: String(staffUser?.id || ''),
+            staff_name: String(fullName || ''),
+            staff_phone: String(from || ''),
+            staff_role: String(roleName || ''),
             type: 'legal_staff',
           },
         }
