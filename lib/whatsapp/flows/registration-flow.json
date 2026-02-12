@@ -176,6 +176,15 @@
             "text": "\u2714\ufe0f Invited by ${data.inviter_name}"
           },
           {
+            "type": "TextInput",
+            "name": "inviter_debug",
+            "label": "Inviter Debug",
+            "init-value": "${data.inviter_name}",
+            "enabled": false,
+            "required": false,
+            "input-type": "text"
+          },
+          {
             "type": "TextCaption",
             "text": "${data.error_message}",
             "visible": "${data.has_error}"
