@@ -1,5 +1,5 @@
 {
-"version": "7.2",
+  "version": "7.2",
   "data_api_version": "3.0",
   "routing_model": {
     "VERIFY_AS_SCREEN": ["SUCCESS"],
@@ -8,28 +8,74 @@
   },
   "screens": [
     {
-      "id": "VERIFY_AS_SCREEN", "title": "Verify Student", "terminal": false,
+      "id": "VERIFY_AS_SCREEN",
+      "title": "Verify Student",
+      "terminal": false,
       "data": {
         "user_id": { "type": "string", "__example__": "1" },
-        "student_name": { "type": "string", "__example__": "James Park" },
-        "student_phone": { "type": "string", "__example__": "16045551234" },
-        "firm": { "type": "string", "__example__": "Miller Thomson LLP" },
+        "student_name": { "type": "string", "__example__": "Matty Matlock" },
+        "student_phone": { "type": "string", "__example__": "16046664200" },
+        "firm": { "type": "string", "__example__": "Defence Bar BC" },
         "articling_end": { "type": "string", "__example__": "2025-12-31" },
         "type": { "type": "string", "__example__": "articling_student" },
         "error_message": { "type": "string", "__example__": "" }
       },
-      "layout": { "type": "SingleColumnLayout", "children": [
-        { "type": "TextSubheading", "text": "Student Verification" },
-        { "type": "TextBody", "text": "${data.error_message}" },
-        { "type": "TextInput", "name": "student_name_display", "label": "Student Name", "init-value": "${data.student_name}", "enabled": false, "required": false, "input-type": "text" },
-        { "type": "TextInput", "name": "firm_display", "label": "Firm", "init-value": "${data.firm}", "enabled": false, "required": false, "input-type": "text" },
-        { "type": "DatePicker", "name": "articling_end", "label": "Articling End Date", "required": true, "helper-text": "Confirm or adjust the end date" },
-        { "type": "OptIn", "name": "confirmed", "label": "I confirm this person is an articling student under my supervision.", "required": true },
-        { "type": "Footer", "label": "Verify Student", "on-click-action": { "name": "data_exchange", "payload": { "user_id": "${data.user_id}", "confirmed": "${form.confirmed}", "articling_end": "${form.articling_end}", "type": "${data.type}" } } }
-      ]}
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          { "type": "TextHeading", "text": "Student Verification" },
+          { "type": "TextBody", "text": "${data.error_message}" },
+          {
+            "type": "TextInput",
+            "name": "student_name_display",
+            "label": "Student Name",
+            "init-value": "${data.student_name}",
+            "enabled": false,
+            "required": true,
+            "input-type": "text"
+          },
+          {
+            "type": "TextInput",
+            "name": "Principal_display",
+            "label": "Principal",
+            "init-value": "${data.principal_name}",
+            "enabled": false,
+            "required": true,
+            "input-type": "text"
+          },
+          {
+            "type": "DatePicker",
+            "name": "articling_end",
+            "label": "Articling End Date",
+            "required": true,
+            "helper-text": "Confirm or adjust the end date"
+          },
+          {
+            "type": "OptIn",
+            "name": "confirmed",
+            "label": "I confirm this person is an articling student and vouch for their registration.",
+            "required": true
+          },
+          {
+            "type": "Footer",
+            "label": "Verify Student",
+            "on-click-action": {
+              "name": "data_exchange",
+              "payload": {
+                "user_id": "${data.user_id}",
+                "confirmed": "${form.confirmed}",
+                "articling_end": "${form.articling_end}",
+                "type": "${data.type}"
+              }
+            }
+          }
+        ]
+      }
     },
     {
-      "id": "VERIFY_STAFF_SCREEN", "title": "Verify Staff", "terminal": false,
+      "id": "VERIFY_STAFF_SCREEN",
+      "title": "Verify Staff",
+      "terminal": false,
       "data": {
         "user_id": { "type": "string", "__example__": "2" },
         "staff_name": { "type": "string", "__example__": "Maria Santos" },
@@ -39,45 +85,152 @@
         "type": { "type": "string", "__example__": "legal_staff" },
         "error_message": { "type": "string", "__example__": "" }
       },
-      "layout": { "type": "SingleColumnLayout", "children": [
-        { "type": "TextSubheading", "text": "Staff Verification" },
-        { "type": "TextBody", "text": "${data.error_message}" },
-        { "type": "TextInput", "name": "staff_name_display", "label": "Staff Name", "init-value": "${data.staff_name}", "enabled": false, "required": false, "input-type": "text" },
-        { "type": "TextInput", "name": "role_display", "label": "Role", "init-value": "${data.staff_role}", "enabled": false, "required": false, "input-type": "text" },
-        { "type": "TextInput", "name": "firm_display", "label": "Firm", "init-value": "${data.firm}", "enabled": false, "required": false, "input-type": "text" },
-        { "type": "OptIn", "name": "confirmed", "label": "I confirm this person works at my firm and I authorize 6 months of access.", "required": true },
-        { "type": "Footer", "label": "Verify Staff", "on-click-action": { "name": "data_exchange", "payload": { "user_id": "${data.user_id}", "confirmed": "${form.confirmed}", "type": "${data.type}" } } }
-      ]}
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          { "type": "TextSubheading", "text": "Staff Verification" },
+          { "type": "TextBody", "text": "${data.error_message}" },
+          {
+            "type": "TextInput",
+            "name": "staff_name_display",
+            "label": "Staff Name",
+            "init-value": "${data.staff_name}",
+            "enabled": false,
+            "required": false,
+            "input-type": "text"
+          },
+          {
+            "type": "TextInput",
+            "name": "role_display",
+            "label": "Role",
+            "init-value": "${data.staff_role}",
+            "enabled": false,
+            "required": false,
+            "input-type": "text"
+          },
+          {
+            "type": "TextInput",
+            "name": "firm_display",
+            "label": "Firm",
+            "init-value": "${data.firm}",
+            "enabled": false,
+            "required": false,
+            "input-type": "text"
+          },
+          {
+            "type": "OptIn",
+            "name": "confirmed",
+            "label": "I confirm this person works at my firm and I authorize 6 months of access.",
+            "required": true
+          },
+          {
+            "type": "Footer",
+            "label": "Verify Staff",
+            "on-click-action": {
+              "name": "data_exchange",
+              "payload": {
+                "user_id": "${data.user_id}",
+                "confirmed": "${form.confirmed}",
+                "type": "${data.type}"
+              }
+            }
+          }
+        ]
+      }
     },
     {
-      "id": "REVERIFY_STAFF_SCREEN", "title": "Re-Verify Staff", "terminal": false,
+      "id": "REVERIFY_STAFF_SCREEN",
+      "title": "Re-Verify Staff",
+      "terminal": false,
       "data": {
         "user_id": { "type": "string", "__example__": "2" },
         "staff_name": { "type": "string", "__example__": "Maria Santos" },
         "staff_phone": { "type": "string", "__example__": "16045559876" },
         "staff_role": { "type": "string", "__example__": "Paralegal" },
-        "firm": { "type": "string", "__example__": "Lawson Lundell LLP" },
+        "firm": { "type": "string", "__example__": "Defence Bar BC" },
         "type": { "type": "string", "__example__": "reverify" },
         "error_message": { "type": "string", "__example__": "" }
       },
-      "layout": { "type": "SingleColumnLayout", "children": [
-        { "type": "TextSubheading", "text": "Re-Verification" },
-        { "type": "TextBody", "text": "This staff member's access is expiring soon." },
-        { "type": "TextBody", "text": "${data.error_message}" },
-        { "type": "TextInput", "name": "staff_name_display", "label": "Staff Name", "init-value": "${data.staff_name}", "enabled": false, "required": false, "input-type": "text" },
-        { "type": "TextInput", "name": "role_display", "label": "Role", "init-value": "${data.staff_role}", "enabled": false, "required": false, "input-type": "text" },
-        { "type": "OptIn", "name": "confirmed", "label": "I confirm this person still works at my firm. Extend access by 6 months.", "required": true },
-        { "type": "Footer", "label": "Re-Verify", "on-click-action": { "name": "data_exchange", "payload": { "user_id": "${data.user_id}", "confirmed": "${form.confirmed}", "type": "${data.type}" } } }
-      ]}
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          { "type": "TextSubheading", "text": "Re-Verification" },
+          {
+            "type": "TextBody",
+            "text": "This staff member's access is expiring soon."
+          },
+          { "type": "TextBody", "text": "${data.error_message}" },
+          {
+            "type": "TextInput",
+            "name": "staff_name_display",
+            "label": "Staff Name",
+            "init-value": "${data.staff_name}",
+            "enabled": false,
+            "required": false,
+            "input-type": "text"
+          },
+          {
+            "type": "TextInput",
+            "name": "role_display",
+            "label": "Role",
+            "init-value": "${data.staff_role}",
+            "enabled": false,
+            "required": false,
+            "input-type": "text"
+          },
+          {
+            "type": "OptIn",
+            "name": "confirmed",
+            "label": "I confirm this person still works at my firm. Extend access by 6 months.",
+            "required": true
+          },
+          {
+            "type": "Footer",
+            "label": "Re-Verify",
+            "on-click-action": {
+              "name": "data_exchange",
+              "payload": {
+                "user_id": "${data.user_id}",
+                "confirmed": "${form.confirmed}",
+                "type": "${data.type}"
+              }
+            }
+          }
+        ]
+      }
     },
     {
-      "id": "SUCCESS", "title": "Complete", "terminal": true,
-      "data": { "extension_message_response": { "type": "object", "__example__": { "params": { "flow_token": "token", "status": "verified" } } } },
-      "layout": { "type": "SingleColumnLayout", "children": [
-        { "type": "TextHeading", "text": "Verification Complete" },
-        { "type": "TextBody", "text": "The user has been notified that their account is now active." },
-        { "type": "Footer", "label": "Done", "on-click-action": { "name": "complete", "payload": { "extension_message_response": "${data.extension_message_response}" } } }
-      ]}
+      "id": "SUCCESS",
+      "title": "Complete",
+      "terminal": true,
+      "data": {
+        "extension_message_response": {
+          "type": "object",
+          "__example__": {
+            "params": { "flow_token": "token", "status": "verified" }
+          }
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          { "type": "TextHeading", "text": "Verification Complete" },
+          {
+            "type": "TextBody",
+            "text": "The user has been notified that their account is now active."
+          },
+          {
+            "type": "Footer",
+            "label": "Done",
+            "on-click-action": {
+              "name": "complete",
+              "payload": {
+                "extension_message_response": "${data.extension_message_response}"
+              }
+            }
+          }
+        ]
+      }
     }
   ]
 }
