@@ -325,7 +325,7 @@ async function handleRegistration(payload: any) {
     const pin = existing.data?.pin || await generateUniquePin(supabase);
     const inviteCode = existing.data?.invitation_code || await generateUniqueInviteCode(supabase);
 
-    await supabase.from("whatsapp_users").upsert({
+    const { error: upsertError } = await supabase.from("whatsapp_users").upsert({
       phone_number: from,
       user_type: "lawyer",
       full_name: fullName,
@@ -337,6 +337,10 @@ async function handleRegistration(payload: any) {
       invited_by: inviterId,
       updated_at: new Date().toISOString(),
     }, { onConflict: "phone_number" });
+    if (upsertError) {
+      console.error("Flow registration upsert (lawyer) failed:", upsertError);
+      return buildResponse(SCREENS.LAWYER_DETAILS, data, { message: "Registration failed. Please try again." });
+    }
 
     if (phoneNumberId && from) {
       await sendTextMessage(phoneNumberId, from, "✓ Registration Complete\n\nYour account is active.");
@@ -403,7 +407,7 @@ async function handleRegistration(payload: any) {
 
     const expiry = computeASExpiry(endDate);
     const pin = await generateUniquePin(supabase);
-    await supabase.from("whatsapp_users").upsert({
+    const { error: upsertError } = await supabase.from("whatsapp_users").upsert({
       phone_number: from,
       user_type: "articling_student",
       full_name: fullName,
@@ -418,6 +422,10 @@ async function handleRegistration(payload: any) {
       temp_data: JSON.stringify({ articling_end: articlingEnd }),
       updated_at: new Date().toISOString(),
     }, { onConflict: "phone_number" });
+    if (upsertError) {
+      console.error("Flow registration upsert (articling student) failed:", upsertError);
+      return buildResponse(SCREENS.AS_INFO, { ...data, ...getASDateBounds() }, { message: "Registration failed. Please try again." });
+    }
 
     const { data: student } = await supabase.from("whatsapp_users").select("id").eq("phone_number", from).maybeSingle();
 
@@ -500,7 +508,7 @@ async function handleRegistration(payload: any) {
     }
 
     const pin = await generateUniquePin(supabase);
-    await supabase.from("whatsapp_users").upsert({
+    const { error: upsertError } = await supabase.from("whatsapp_users").upsert({
       phone_number: from,
       user_type: "legal_staff",
       full_name: fullName,
@@ -516,6 +524,10 @@ async function handleRegistration(payload: any) {
       staff_revoked_at: null,
       updated_at: new Date().toISOString(),
     }, { onConflict: "phone_number" });
+    if (upsertError) {
+      console.error("Flow registration upsert (legal staff) failed:", upsertError);
+      return buildResponse(SCREENS.STAFF_INFO, data, { message: "Registration failed. Please try again." });
+    }
 
     const { data: staff } = await supabase.from("whatsapp_users").select("id").eq("phone_number", from).maybeSingle();
     const roleDisplay = staffRole === "other"
