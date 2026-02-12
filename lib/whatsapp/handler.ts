@@ -224,6 +224,16 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
   const pendingStaffRows = pendingStaff.data || [];
   const expiringStaffRows = expiringStaff.data || [];
 
+  if (pendingCount || expiringCount) {
+    await sendTextMessage(
+      pid,
+      to,
+      `You have ${pendingCount} pending verification${pendingCount === 1 ? '' : 's'} and ${expiringCount} expiring staff member${expiringCount === 1 ? '' : 's'}.`
+    );
+  } else {
+    await sendTextMessage(pid, to, 'No pending verifications right now.');
+  }
+
   if (VERIFICATION_FLOW_ID) {
     for (const student of pendingStudentRows) {
       let temp: Record<string, unknown> = {};
@@ -344,16 +354,6 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
 
   const pendingCount = pendingStudentRows.length + pendingStaffRows.length;
   const expiringCount = expiringStaffRows.length;
-
-  if (pendingCount || expiringCount) {
-    await sendTextMessage(
-      pid,
-      to,
-      `You have ${pendingCount} pending verification${pendingCount === 1 ? '' : 's'} and ${expiringCount} expiring staff member${expiringCount === 1 ? '' : 's'}.`
-    );
-  } else {
-    await sendTextMessage(pid, to, 'No pending verifications right now.');
-  }
 
   const actionButtons = [
     { id: 'fetch_pin', title: 'Get Access PIN' },

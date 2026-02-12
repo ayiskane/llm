@@ -176,9 +176,28 @@ const BACK_MAP: Record<string, string> = {
   STAFF_INFO: SCREENS.STAFF_REFERRER,
 };
 
+const resolveVerificationScreen = (screen: string | undefined, data: any) => {
+  if (
+    screen === SCREENS.VERIFY_AS_SCREEN ||
+    screen === SCREENS.VERIFY_STAFF_SCREEN ||
+    screen === SCREENS.REVERIFY_STAFF_SCREEN
+  ) {
+    return screen;
+  }
+  const type = String(data?.type || "").toLowerCase();
+  if (type === "articling_student") return SCREENS.VERIFY_AS_SCREEN;
+  if (type === "legal_staff") return SCREENS.VERIFY_STAFF_SCREEN;
+  if (type === "reverify") return SCREENS.REVERIFY_STAFF_SCREEN;
+  return SCREENS.VERIFY_AS_SCREEN;
+};
+
 const handleInit = (payload: any) => {
   const screen = payload?.screen;
   const data = payload?.data || {};
+  const flowId = payload?.flow_id || payload?.flowId || "";
+  if (flowId === VERIFICATION_FLOW_ID) {
+    return buildResponse(resolveVerificationScreen(screen, data), data);
+  }
   if ([SCREENS.VERIFY_AS_SCREEN, SCREENS.VERIFY_STAFF_SCREEN, SCREENS.REVERIFY_STAFF_SCREEN].includes(screen)) {
     return buildResponse(screen, data);
   }
@@ -188,6 +207,10 @@ const handleInit = (payload: any) => {
 const handleBack = (payload: any) => {
   const screen = payload?.screen;
   const data = payload?.data || {};
+  const flowId = payload?.flow_id || payload?.flowId || "";
+  if (flowId === VERIFICATION_FLOW_ID) {
+    return buildResponse(resolveVerificationScreen(screen, data), data);
+  }
   const prev = BACK_MAP[screen] || SCREENS.ROLE_SELECT;
   if (prev === SCREENS.AS_INFO) {
     return buildResponse(prev, { ...data, ...getASDateBounds() });
