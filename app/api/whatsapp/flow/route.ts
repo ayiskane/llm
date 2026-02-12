@@ -182,9 +182,11 @@ const resolveVerificationScreen = (screen: string | undefined, data: any) => {
     screen === SCREENS.VERIFY_STAFF_SCREEN ||
     screen === SCREENS.REVERIFY_STAFF_SCREEN
   ) {
+    console.log("Flow verify resolve screen (explicit):", { screen });
     return screen;
   }
   const type = String(data?.type || "").toLowerCase();
+  console.log("Flow verify resolve screen (type):", { type, screen });
   if (type === "articling_student") return SCREENS.VERIFY_AS_SCREEN;
   if (type === "legal_staff") return SCREENS.VERIFY_STAFF_SCREEN;
   if (type === "reverify") return SCREENS.REVERIFY_STAFF_SCREEN;
@@ -196,11 +198,19 @@ const handleInit = (payload: any) => {
   const data = payload?.data || {};
   const flowId = payload?.flow_id || payload?.flowId || "";
   if (flowId === VERIFICATION_FLOW_ID) {
+    console.log("Flow INIT (verification)", {
+      flowId,
+      screen,
+      type: data?.type,
+      user_id: data?.user_id,
+    });
     return buildResponse(resolveVerificationScreen(screen, data), data);
   }
   if ([SCREENS.VERIFY_AS_SCREEN, SCREENS.VERIFY_STAFF_SCREEN, SCREENS.REVERIFY_STAFF_SCREEN].includes(screen)) {
+    console.log("Flow INIT (verify screen direct)", { screen });
     return buildResponse(screen, data);
   }
+  console.log("Flow INIT (registration)", { screen });
   return buildResponse(SCREENS.ROLE_SELECT, {});
 };
 
@@ -209,6 +219,12 @@ const handleBack = (payload: any) => {
   const data = payload?.data || {};
   const flowId = payload?.flow_id || payload?.flowId || "";
   if (flowId === VERIFICATION_FLOW_ID) {
+    console.log("Flow BACK (verification)", {
+      flowId,
+      screen,
+      type: data?.type,
+      user_id: data?.user_id,
+    });
     return buildResponse(resolveVerificationScreen(screen, data), data);
   }
   const prev = BACK_MAP[screen] || SCREENS.ROLE_SELECT;
@@ -608,6 +624,13 @@ async function handleVerification(payload: any) {
     from = await resolvePhoneFromToken(supabase, flowToken);
   }
 
+  console.log("Flow VERIFY action", {
+    screen,
+    type: data?.type,
+    user_id: data?.user_id,
+    from_present: Boolean(from),
+  });
+
   if (!screen) return buildResponse(SCREENS.SUCCESS, {}, { message: "Missing screen." });
 
   if (screen === SCREENS.VERIFY_AS_SCREEN) {
@@ -723,6 +746,12 @@ export async function POST(request: NextRequest) {
 
     const flowId = payload.flow_id || payload.flowId || "";
     const action = payload.action || payload.type || "data_exchange";
+    console.log("Flow request", {
+      flowId,
+      action,
+      screen: payload?.screen,
+      data_keys: payload?.data ? Object.keys(payload.data) : [],
+    });
 
     if (action === "ping") {
       const response = { data: { status: "active" } };
