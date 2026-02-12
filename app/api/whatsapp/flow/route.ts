@@ -78,14 +78,23 @@ const getSenderPhone = (payload: any) => {
     payload?.from,
     payload?.phone_number,
     payload?.wa_id,
-    payload?.flow_token,
-    payload?.flowToken,
   ];
   for (const candidate of candidates) {
     if (!candidate) continue;
     const digits = normalizePhone(String(candidate));
-    if (digits.length >= 10) return digits;
+    if (digits.length >= 10 && digits.length <= 15) return digits;
   }
+  return "";
+};
+
+const isUuid = (value: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+
+const resolvePhoneFromToken = async (supabase: ReturnType<typeof getSupabase>, token: string) => {
+  if (!token || !isUuid(token)) return "";
+  const { data } = await supabase.from("whatsapp_users").select("phone_number").eq("id", token).maybeSingle();
+  const digits = normalizePhone(String(data?.phone_number || ""));
+  if (digits.length >= 10 && digits.length <= 15) return digits;
   return "";
 };
 
@@ -255,12 +264,12 @@ async function handleRegistration(payload: any) {
   const supabase = getSupabase();
   const data = payload.data || {};
   const screen = payload.screen || SCREENS.ROLE_SELECT;
-  const from = getSenderPhone(payload);
+  let from = getSenderPhone(payload);
   const phoneNumberId = getPhoneNumberId(payload);
   const flowToken = String(payload.flow_token || payload.flowToken || from || "");
 
-  if (!from) {
-    return buildResponse(screen, data, { message: "Unable to identify sender." });
+  if (!from && flowToken) {
+    from = await resolvePhoneFromToken(supabase, flowToken);
   }
 
   if (screen === SCREENS.ROLE_SELECT) {
@@ -294,6 +303,9 @@ async function handleRegistration(payload: any) {
   }
 
   if (screen === SCREENS.LAWYER_DETAILS) {
+    if (!from) {
+      return buildResponse(SCREENS.LAWYER_DETAILS, data, { message: "Unable to identify sender." });
+    }
     const fullName = String(data.full_name || "").trim();
     const lsbcConfirmed = data.lsbc_confirmed === true || data.lsbc_confirmed === "true" || data.lsbc_confirmed === "on";
     const inviterId = data.invite_code_id || null;
@@ -356,6 +368,9 @@ async function handleRegistration(payload: any) {
   }
 
   if (screen === SCREENS.AS_INFO) {
+    if (!from) {
+      return buildResponse(SCREENS.AS_INFO, { ...data, ...getASDateBounds() }, { message: "Unable to identify sender." });
+    }
     const fullName = String(data.full_name || "").trim();
     const firmName = String(data.firm_name || "").trim();
     const principalName = String(data.principal_name || "").trim();
@@ -461,6 +476,9 @@ async function handleRegistration(payload: any) {
   }
 
   if (screen === SCREENS.STAFF_INFO) {
+    if (!from) {
+      return buildResponse(SCREENS.STAFF_INFO, data, { message: "Unable to identify sender." });
+    }
     const fullName = String(data.full_name || "").trim();
     const firmName = String(data.firm_name || "").trim();
     const staffRole = String(data.staff_role || "").trim();
@@ -549,13 +567,20 @@ async function handleVerification(payload: any) {
   const supabase = getSupabase();
   const data = payload.data || {};
   const screen = payload.screen;
-  const from = getSenderPhone(payload);
+  let from = getSenderPhone(payload);
   const phoneNumberId = getPhoneNumberId(payload);
   const flowToken = String(payload.flow_token || payload.flowToken || from || "");
+
+  if (!from && flowToken) {
+    from = await resolvePhoneFromToken(supabase, flowToken);
+  }
 
   if (!screen) return buildResponse(SCREENS.SUCCESS, {}, { message: "Missing screen." });
 
   if (screen === SCREENS.VERIFY_AS_SCREEN) {
+    if (!from) {
+      return buildResponse(SCREENS.VERIFY_AS_SCREEN, data, { message: "Unable to identify sender." });
+    }
     const userId = data.user_id;
     const endDateRaw = String(data.articling_end || "").trim();
     const confirmed = data.confirmed === true || data.confirmed === "true" || data.confirmed === "on";
@@ -602,6 +627,9 @@ async function handleVerification(payload: any) {
   }
 
   if (screen === SCREENS.VERIFY_STAFF_SCREEN || screen === SCREENS.REVERIFY_STAFF_SCREEN) {
+    if (!from) {
+      return buildResponse(screen, data, { message: "Unable to identify sender." });
+    }
     const userId = data.user_id;
     const confirmed = data.confirmed === true || data.confirmed === "true" || data.confirmed === "on";
     if (!confirmed) {
