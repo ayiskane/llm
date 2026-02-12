@@ -224,6 +224,9 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
   const pendingStaffRows = pendingStaff.data || [];
   const expiringStaffRows = expiringStaff.data || [];
 
+  const pendingCount = pendingStudentRows.length + pendingStaffRows.length;
+  const expiringCount = expiringStaffRows.length;
+
   if (pendingCount || expiringCount) {
     await sendTextMessage(
       pid,
@@ -351,9 +354,6 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
       }
     }
   }
-
-  const pendingCount = pendingStudentRows.length + pendingStaffRows.length;
-  const expiringCount = expiringStaffRows.length;
 
   const actionButtons = [
     { id: 'fetch_pin', title: 'Get Access PIN' },
