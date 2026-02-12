@@ -548,7 +548,7 @@
         "children": [
           {
             "type": "TextHeading",
-            "text": "\ud83c\udf89 Legendary! \ud83c\udf89"
+            "text": "\ud83c\udf89 Legendary!"
           },
           {
             "type": "TextBody",
@@ -573,7 +573,7 @@
     },
     {
       "id": "SUCCESS_PENDING",
-      "title": "All Done!",
+      "title": "Registration Submitted",
       "terminal": true,
       "data": {
         "extension_message_response": {
@@ -591,11 +591,11 @@
         "children": [
           {
             "type": "TextHeading",
-            "text": "Pending Verification"
+            "text": "⏳ Now Verifying..."
           },
           {
             "type": "TextBody",
-            "text": "Your registration has been submitted and requires lawyer verification."
+            "text": "Your registration has been submitted and is awaiting verification."
           },
           {
             "type": "TextBody",
