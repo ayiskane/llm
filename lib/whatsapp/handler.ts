@@ -138,43 +138,45 @@ const prompt = (pid: string, to: string, header: string, body: string) =>
 
 const showAccountDetails = async (pid: string, to: string, user?: Record<string, unknown> | null) => {
   const type = user?.user_type as string | undefined;
-  const buttons = [{ id: 'fetch_pin', title: 'Get Access PIN' }];
-  if (type === 'lawyer') {
-    buttons.push({ id: 'fetch_invite', title: 'Get Invite Code' });
+  const buttons: Array<{ id: string; title: string }> = [];
+  if (!type) {
+    buttons.push({ id: 'register_flow', title: 'Register' });
+  } else {
+    buttons.push({ id: 'fetch_pin', title: 'Get Access PIN' });
+    if (type === 'lawyer') {
+      buttons.push({ id: 'fetch_invite', title: 'Get Invite Code' });
+    }
   }
   return sendButtonMessage(
     pid,
     to,
-    'Account Details',
-    'Already registered?',
+    type ? 'Account Details' : 'Welcome to LLM',
+    type ? 'Already registered?' : "Tap Register to get started.",
     buttons
   );
 };
 
 const showMainMenu = async (pid: string, to: string, user?: Record<string, unknown> | null) => {
-  await sendTextMessage(
-    pid,
-    to,
-    "👋 Welcome to LLM!\n\nTap Register to get started. If you're already registered, use the button below to get your PIN."
-  );
-  if (REGISTRATION_FLOW_ID) {
-    await sendFlowMessage(
-      pid,
-      to,
-      '⚖️ LLM Registration',
-      'Register with LLM to receive your access PIN.',
-      'Register',
-      REGISTRATION_FLOW_ID,
-      { flowToken: (user?.id as string | undefined) || to, screen: REGISTRATION_FLOW_ROLE_SCREEN, action: 'data_exchange' }
-    );
-  } else {
-    await sendTextMessage(
+  return showAccountDetails(pid, to, user);
+};
+
+const sendRegistrationFlow = async (pid: string, to: string, user?: Record<string, unknown> | null) => {
+  if (!REGISTRATION_FLOW_ID) {
+    return sendTextMessage(
       pid,
       to,
       '⚠️ Registration flow is not configured. Please contact support.'
     );
   }
-  return showAccountDetails(pid, to, user);
+  return sendFlowMessage(
+    pid,
+    to,
+    '⚖️ LLM Registration',
+    'Register with LLM to receive your access PIN.',
+    'Register',
+    REGISTRATION_FLOW_ID,
+    { flowToken: (user?.id as string | undefined) || to, screen: REGISTRATION_FLOW_ROLE_SCREEN, action: 'data_exchange' }
+  );
 };
 
 const showLawyerPortal = async (pid: string, to: string, user: Record<string, unknown>) => {
@@ -488,12 +490,15 @@ export async function handleMessage(msg: MessageData) {
         await upsertUser(from, { registration_step: 'revoke_staff_phone', temp_data: '{}' });
         return prompt(pid, from, '🧾 Revoke Staff Access', 'Enter the *staff member\'s phone number*.\n\nFormat: 6041234567');
 
+      case 'register_flow':
+        return sendRegistrationFlow(pid, from, user);
+
       case 'register_lawyer':
       case 'register_as':
       case 'register_ls':
         if (REGISTRATION_FLOW_ID) {
           await resetUser(from);
-          return showMainMenu(pid, from, user);
+          return sendRegistrationFlow(pid, from, user);
         }
         if (text === 'register_lawyer') {
           await upsertUser(from, { registration_step: 'lawyer_invite_code', user_type: 'lawyer' });
