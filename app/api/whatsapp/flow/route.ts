@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { sendFlowMessage, sendTextMessage } from "@/lib/whatsapp/api";
+import { sendButtonMessage, sendFlowMessage, sendTextMessage } from "@/lib/whatsapp/api";
 
 const REGISTRATION_FLOW_ID = process.env.WHATSAPP_REGISTRATION_FLOW_ID || "";
 const VERIFICATION_FLOW_ID = process.env.WHATSAPP_VERIFICATION_FLOW_ID || "";
@@ -690,6 +690,16 @@ async function handleVerification(payload: any) {
         `🎉 Your account has been verified.\n\nYour PIN is now active: ${student.pin}\nExpires: ${finalExpiry.toISOString().slice(0, 10)}`
       );
     }
+    if (phoneNumberId && from) {
+      await sendTextMessage(phoneNumberId, from, "✅ Verification Success");
+      await sendButtonMessage(
+        phoneNumberId,
+        from,
+        "Menu",
+        "Tap to return to your portal.",
+        [{ id: "menu", title: "Menu" }]
+      );
+    }
 
     return buildSuccessResponse(flowToken, { verified_name: student.full_name, status: "verified" });
   }
@@ -739,6 +749,16 @@ async function handleVerification(payload: any) {
         phoneNumberId,
         staff.phone_number,
         `🎉 Your account has been verified.\n\nYour PIN is now active: ${staff.pin}\nExpires: ${expiry.toISOString().slice(0, 10)}`
+      );
+    }
+    if (phoneNumberId && from) {
+      await sendTextMessage(phoneNumberId, from, "✅ Verification Success");
+      await sendButtonMessage(
+        phoneNumberId,
+        from,
+        "Menu",
+        "Tap to return to your portal.",
+        [{ id: "menu", title: "Menu" }]
       );
     }
 
