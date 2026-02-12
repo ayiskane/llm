@@ -243,7 +243,7 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
         VERIFICATION_FLOW_ID,
         {
           screen: 'VERIFY_AS_SCREEN',
-          action: 'data_exchange',
+          action: 'navigate',
           flowToken: user.id as string,
           data: {
             user_id: String(student.id || ''),
@@ -282,7 +282,7 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
         VERIFICATION_FLOW_ID,
         {
           screen: 'VERIFY_STAFF_SCREEN',
-          action: 'data_exchange',
+          action: 'navigate',
           flowToken: user.id as string,
           data: {
             user_id: String(staff.id || ''),
@@ -320,7 +320,7 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
         VERIFICATION_FLOW_ID,
         {
           screen: 'REVERIFY_STAFF_SCREEN',
-          action: 'data_exchange',
+          action: 'navigate',
           flowToken: user.id as string,
           data: {
             user_id: String(staff.id || ''),
@@ -1077,7 +1077,7 @@ async function handleRegistrationFlow(
         VERIFICATION_FLOW_ID,
         {
           screen: 'VERIFY_AS_SCREEN',
-          action: 'data_exchange',
+          action: 'navigate',
           flowToken: referrer.id as string,
           data: {
             user_id: String(student?.id || ''),
@@ -1148,7 +1148,7 @@ async function handleRegistrationFlow(
         VERIFICATION_FLOW_ID,
         {
           screen: 'VERIFY_STAFF_SCREEN',
-          action: 'data_exchange',
+          action: 'navigate',
           flowToken: referrer.id as string,
           data: {
             user_id: String(staffUser?.id || ''),

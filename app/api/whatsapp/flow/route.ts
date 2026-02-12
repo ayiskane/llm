@@ -256,7 +256,7 @@ const sendVerificationFlow = async (
     body,
     title,
     VERIFICATION_FLOW_ID,
-    { screen, data, action: "data_exchange", flowToken: flowToken || to }
+    { screen, data, action: "navigate", flowToken: flowToken || to }
   );
 };
 
