@@ -189,7 +189,7 @@ const BACK_MAP: Record<string, string> = {
 const resolveVerificationScreen = (screen: string | undefined, data: any): string => {
   if (isVerificationScreen(screen)) {
     console.log("Flow verify resolve screen (explicit):", { screen });
-    return screen;
+    return screen || SCREENS.VERIFY_AS_SCREEN;
   }
   const type = String(data?.type || "").toLowerCase();
   console.log("Flow verify resolve screen (type):", { type, screen });
