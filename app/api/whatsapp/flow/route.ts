@@ -46,6 +46,7 @@ const getSupabase = () => {
 };
 
 const normalizePhone = (phone: string) => phone.replace(/\D/g, "");
+const isValidPhoneDigits = (digits: string) => digits.length >= 10 && digits.length <= 15;
 
 const parseDate = (s: string): Date | null => {
   const m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
@@ -91,7 +92,7 @@ const getSenderPhone = (payload: any) => {
   for (const candidate of candidates) {
     if (!candidate) continue;
     const digits = normalizePhone(String(candidate));
-    if (digits.length >= 10 && digits.length <= 15) return digits;
+    if (isValidPhoneDigits(digits)) return digits;
   }
   return "";
 };
@@ -102,12 +103,21 @@ const isUuid = (value: string) =>
 const resolvePhoneFromToken = async (supabase: ReturnType<typeof getSupabase>, token: string) => {
   if (!token) return "";
   const tokenDigits = normalizePhone(token);
-  if (tokenDigits.length >= 10 && tokenDigits.length <= 15) return tokenDigits;
+  if (isValidPhoneDigits(tokenDigits)) return tokenDigits;
   if (!isUuid(token)) return "";
   const { data } = await supabase.from("whatsapp_users").select("phone_number").eq("id", token).maybeSingle();
   const digits = normalizePhone(String(data?.phone_number || ""));
-  if (digits.length >= 10 && digits.length <= 15) return digits;
+  if (isValidPhoneDigits(digits)) return digits;
   return "";
+};
+
+const resolveSender = async (supabase: ReturnType<typeof getSupabase>, payload: any) => {
+  let from = getSenderPhone(payload);
+  const flowToken = String(payload?.flow_token || payload?.flowToken || from || "");
+  if (!from && flowToken) {
+    from = await resolvePhoneFromToken(supabase, flowToken);
+  }
+  return { from, flowToken };
 };
 
 const decryptFlowPayload = (body: any) => {
@@ -124,7 +134,9 @@ const decryptFlowPayload = (body: any) => {
   }
 
   const key = FLOW_PRIVATE_KEY.replace(/\\n/g, "\n");
-  const privateKey = crypto.createPrivateKey({ key, passphrase: FLOW_PASSPHRASE });
+  const privateKey = crypto.createPrivateKey(
+    FLOW_PASSPHRASE ? { key, passphrase: FLOW_PASSPHRASE } : { key }
+  );
   const aesKey = crypto.privateDecrypt(
     { key: privateKey, padding: crypto.constants.RSA_PKCS1_OAEP_PADDING, oaepHash: "sha256" },
     Buffer.from(encryptedKey, "base64")
@@ -292,13 +304,8 @@ async function handleRegistration(payload: any) {
   const supabase = getSupabase();
   const data = payload.data || {};
   const screen = payload.screen || SCREENS.ROLE_SELECT;
-  let from = getSenderPhone(payload);
   const phoneNumberId = getPhoneNumberId(payload);
-  const flowToken = String(payload.flow_token || payload.flowToken || from || "");
-
-  if (!from && flowToken) {
-    from = await resolvePhoneFromToken(supabase, flowToken);
-  }
+  const { from, flowToken } = await resolveSender(supabase, payload);
   if (!from) {
     console.warn("Flow registration missing sender", {
       screen,
@@ -613,13 +620,8 @@ async function handleVerification(payload: any) {
   const supabase = getSupabase();
   const data = payload.data || {};
   const screen = payload.screen;
-  let from = getSenderPhone(payload);
   const phoneNumberId = getPhoneNumberId(payload);
-  const flowToken = String(payload.flow_token || payload.flowToken || from || "");
-
-  if (!from && flowToken) {
-    from = await resolvePhoneFromToken(supabase, flowToken);
-  }
+  const { from, flowToken } = await resolveSender(supabase, payload);
 
   if (!screen) return buildResponse(SCREENS.SUCCESS, {}, { message: "Missing screen." });
 
