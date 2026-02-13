@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendButtonMessage, sendFlowMessage, sendTextMessage } from "@/lib/whatsapp/api";
 
+const REGISTRATION_FLOW_ID = process.env.WHATSAPP_REGISTRATION_FLOW_ID || "";
 const VERIFICATION_FLOW_ID = process.env.WHATSAPP_VERIFICATION_FLOW_ID || "";
 const FLOW_PRIVATE_KEY = process.env.WHATSAPP_FLOW_PRIVATE_KEY || "";
 const FLOW_PASSPHRASE = process.env.WHATSAPP_FLOW_PASSPHRASE;
@@ -798,6 +799,8 @@ export async function POST(request: NextRequest) {
       isVerificationType(payload?.data?.type)
     ) {
       response = await handleVerification(payload);
+    } else if (REGISTRATION_FLOW_ID && flowId && flowId !== REGISTRATION_FLOW_ID) {
+      response = buildResponse(payload?.screen || SCREENS.ROLE_SELECT, payload?.data || {}, { message: "Unsupported flow." });
     } else {
       response = await handleRegistration(payload);
     }
