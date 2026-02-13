@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendButtonMessage, sendFlowMessage, sendTextMessage } from "@/lib/whatsapp/api";
 
-const REGISTRATION_FLOW_ID = process.env.WHATSAPP_REGISTRATION_FLOW_ID || "";
 const VERIFICATION_FLOW_ID = process.env.WHATSAPP_VERIFICATION_FLOW_ID || "";
 const FLOW_PRIVATE_KEY = process.env.WHATSAPP_FLOW_PRIVATE_KEY || "";
 const FLOW_PASSPHRASE = process.env.WHATSAPP_FLOW_PASSPHRASE;
@@ -108,10 +107,6 @@ const resolvePhoneFromToken = async (supabase: ReturnType<typeof getSupabase>, t
   const { data } = await supabase.from("whatsapp_users").select("phone_number").eq("id", token).maybeSingle();
   const digits = normalizePhone(String(data?.phone_number || ""));
   if (digits.length >= 10 && digits.length <= 15) return digits;
-  console.warn("Flow token did not resolve to a valid phone", {
-    token,
-    phone_number: data?.phone_number || null,
-  });
   return "";
 };
 
@@ -194,12 +189,8 @@ const BACK_MAP: Record<string, string> = {
 };
 
 const resolveVerificationScreen = (screen: string | undefined, data: any): string => {
-  if (isVerificationScreen(screen)) {
-    console.log("Flow verify resolve screen (explicit):", { screen });
-    return screen || SCREENS.VERIFY_AS_SCREEN;
-  }
+  if (isVerificationScreen(screen)) return screen || SCREENS.VERIFY_AS_SCREEN;
   const type = String(data?.type || "").toLowerCase();
-  console.log("Flow verify resolve screen (type):", { type, screen });
   if (type === "articling_student") return SCREENS.VERIFY_AS_SCREEN;
   if (type === "legal_staff") return SCREENS.VERIFY_STAFF_SCREEN;
   if (type === "reverify") return SCREENS.REVERIFY_STAFF_SCREEN;
@@ -211,19 +202,11 @@ const handleInit = (payload: any) => {
   const data = payload?.data || {};
   const flowId = payload?.flow_id || payload?.flowId || "";
   if (flowId === VERIFICATION_FLOW_ID) {
-    console.log("Flow INIT (verification)", {
-      flowId,
-      screen,
-      type: data?.type,
-      user_id: data?.user_id,
-    });
     return buildResponse(resolveVerificationScreen(screen, data), data);
   }
   if ([SCREENS.VERIFY_AS_SCREEN, SCREENS.VERIFY_STAFF_SCREEN, SCREENS.REVERIFY_STAFF_SCREEN].includes(screen)) {
-    console.log("Flow INIT (verify screen direct)", { screen });
     return buildResponse(screen, data);
   }
-  console.log("Flow INIT (registration)", { screen });
   return buildResponse(SCREENS.ROLE_SELECT, {});
 };
 
@@ -232,12 +215,6 @@ const handleBack = (payload: any) => {
   const data = payload?.data || {};
   const flowId = payload?.flow_id || payload?.flowId || "";
   if (flowId === VERIFICATION_FLOW_ID) {
-    console.log("Flow BACK (verification)", {
-      flowId,
-      screen,
-      type: data?.type,
-      user_id: data?.user_id,
-    });
     return buildResponse(resolveVerificationScreen(screen, data), data);
   }
   const prev = BACK_MAP[screen] || SCREENS.ROLE_SELECT;
@@ -290,7 +267,6 @@ const getASDateBounds = () => {
   };
 };
 
-
 const sendVerificationFlow = async (
   pid: string,
   to: string,
@@ -321,13 +297,7 @@ async function handleRegistration(payload: any) {
   const flowToken = String(payload.flow_token || payload.flowToken || from || "");
 
   if (!from && flowToken) {
-    const tokenDigits = normalizePhone(flowToken);
-    if (tokenDigits.length >= 10 && tokenDigits.length <= 15) {
-      from = tokenDigits;
-      console.log("Flow registration using numeric flow_token as sender", { flow_token: flowToken, from });
-    } else {
-      from = await resolvePhoneFromToken(supabase, flowToken);
-    }
+    from = await resolvePhoneFromToken(supabase, flowToken);
   }
   if (!from) {
     console.warn("Flow registration missing sender", {
@@ -361,7 +331,6 @@ async function handleRegistration(payload: any) {
     }
     const inviterName = String(inviter.full_name || inviter.phone_number || "LLM member");
     const inviterId = String(inviter.id ?? "");
-    console.log("Flow LAWYER_INVITE_CODE resolved inviter", { code, inviterId, inviterName });
     return buildResponse(SCREENS.LAWYER_DETAILS, {
       invite_code: code,
       invite_code_id: inviterId,
@@ -649,21 +618,8 @@ async function handleVerification(payload: any) {
   const flowToken = String(payload.flow_token || payload.flowToken || from || "");
 
   if (!from && flowToken) {
-    const tokenDigits = normalizePhone(flowToken);
-    if (tokenDigits.length >= 10 && tokenDigits.length <= 15) {
-      from = tokenDigits;
-      console.log("Flow verification using numeric flow_token as sender", { flow_token: flowToken, from });
-    } else {
-      from = await resolvePhoneFromToken(supabase, flowToken);
-    }
+    from = await resolvePhoneFromToken(supabase, flowToken);
   }
-
-  console.log("Flow VERIFY action", {
-    screen,
-    type: data?.type,
-    user_id: data?.user_id,
-    from_present: Boolean(from),
-  });
 
   if (!screen) return buildResponse(SCREENS.SUCCESS, {}, { message: "Missing screen." });
 
@@ -812,16 +768,6 @@ export async function POST(request: NextRequest) {
 
     const flowId = payload.flow_id || payload.flowId || "";
     const action = payload.action || payload.type || "data_exchange";
-    console.log("Flow request", {
-      flowId,
-      action,
-      screen: payload?.screen,
-      data_keys: payload?.data ? Object.keys(payload.data) : [],
-      flow_token: payload?.flow_token || payload?.flowToken || null,
-      from: payload?.from || payload?.phone_number || payload?.wa_id || null,
-      user_wa_id: payload?.user?.wa_id || null,
-      user_phone: payload?.user?.phone_number || null,
-    });
 
     if (action === "ping") {
       const response = { data: { status: "active" } };
