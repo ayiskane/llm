@@ -101,7 +101,10 @@ const isUuid = (value: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
 const resolvePhoneFromToken = async (supabase: ReturnType<typeof getSupabase>, token: string) => {
-  if (!token || !isUuid(token)) return "";
+  if (!token) return "";
+  const tokenDigits = normalizePhone(token);
+  if (tokenDigits.length >= 10 && tokenDigits.length <= 15) return tokenDigits;
+  if (!isUuid(token)) return "";
   const { data } = await supabase.from("whatsapp_users").select("phone_number").eq("id", token).maybeSingle();
   const digits = normalizePhone(String(data?.phone_number || ""));
   if (digits.length >= 10 && digits.length <= 15) return digits;
