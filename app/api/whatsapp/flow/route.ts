@@ -321,7 +321,13 @@ async function handleRegistration(payload: any) {
   const flowToken = String(payload.flow_token || payload.flowToken || from || "");
 
   if (!from && flowToken) {
-    from = await resolvePhoneFromToken(supabase, flowToken);
+    const tokenDigits = normalizePhone(flowToken);
+    if (tokenDigits.length >= 10 && tokenDigits.length <= 15) {
+      from = tokenDigits;
+      console.log("Flow registration using numeric flow_token as sender", { flow_token: flowToken, from });
+    } else {
+      from = await resolvePhoneFromToken(supabase, flowToken);
+    }
   }
   if (!from) {
     console.warn("Flow registration missing sender", {
@@ -643,7 +649,13 @@ async function handleVerification(payload: any) {
   const flowToken = String(payload.flow_token || payload.flowToken || from || "");
 
   if (!from && flowToken) {
-    from = await resolvePhoneFromToken(supabase, flowToken);
+    const tokenDigits = normalizePhone(flowToken);
+    if (tokenDigits.length >= 10 && tokenDigits.length <= 15) {
+      from = tokenDigits;
+      console.log("Flow verification using numeric flow_token as sender", { flow_token: flowToken, from });
+    } else {
+      from = await resolvePhoneFromToken(supabase, flowToken);
+    }
   }
 
   console.log("Flow VERIFY action", {
