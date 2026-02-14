@@ -130,7 +130,7 @@ export function CourtDetailPage({
     const next =
       preferred && allowedCourtSections.includes(preferred)
         ? preferred
-        : allowedCourtSections[0] ?? null;
+        : (allowedCourtSections[0] ?? null);
     if (next !== courtActiveSection) {
       setCourtActiveSection(next);
     }
