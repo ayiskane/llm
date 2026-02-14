@@ -11,43 +11,19 @@ import {
   FaXmark,
   FaCopy,
   FaFax,
-  FaPenLine,
+  FaAt,
 } from "@/lib/icons";
 import { cn } from "@/lib/utils";
-import { sectionColorMap, type SectionColor } from "@/lib/config/theme";
+import { iconSize, sectionColorMap, text, type SectionColor } from "@/lib/config/theme";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardListRow } from "@/components/ui/card";
 import { StickyHeader } from "../layouts/StickyHeader";
 import { Section, PillButton } from "../ui";
 import { CorrectionHeader } from "./CorrectionHeader";
 import type { CorrectionalCentre } from "@/types";
 
 type AccordionSection = "contact" | "callback" | "visits" | null;
-
-function TagBadge({
-  children,
-  color,
-  size = "sm",
-}: {
-  children: React.ReactNode;
-  color: SectionColor;
-  size?: "sm" | "md";
-}) {
-  const sizeClasses =
-    size === "sm" ? "px-2 py-1.5 text-[9px]" : "px-2.5 py-1.5 text-[10px]";
-
-  return (
-    <Badge
-      className={cn(
-        sizeClasses,
-        "rounded font-mono inline-flex items-center justify-center leading-none tracking-widest",
-        sectionColorMap[color].badge,
-      )}
-    >
-      {children}
-    </Badge>
-  );
-}
 
 // =============================================================================
 // COPY BUTTON COMPONENT
@@ -116,85 +92,188 @@ function ContactSection({ centre }: { centre: CorrectionalCentre }) {
   const phoneDisplay = centre.general_phone_option
     ? `${phone} (${centre.general_phone_option})`
     : phone;
+  const showCdnBadge = !centre.cdn_fax && centre.accepts_cdn_by_fax;
+  const normalizePhone = (value: string | null | undefined) =>
+    (value ?? "").replace(/\D/g, "");
+  const normalizeEmail = (value: string | null | undefined) =>
+    (value ?? "").trim().toLowerCase();
+  const hasContacts = Boolean(
+    phone ||
+      centre.cdn_fax ||
+      centre.general_fax ||
+      centre.visit_request_phone ||
+      centre.visit_request_email ||
+      centre.virtual_visit_email ||
+      centre.lawyer_callback_email,
+  );
+  const visitPhone =
+    centre.visit_request_phone &&
+    normalizePhone(centre.visit_request_phone) !== normalizePhone(phone)
+      ? centre.visit_request_phone
+      : null;
+  const visitEmail =
+    centre.visit_request_email &&
+    normalizeEmail(centre.visit_request_email) !== ""
+      ? centre.visit_request_email
+      : null;
+  const virtualEmail =
+    centre.virtual_visit_email &&
+    normalizeEmail(centre.virtual_visit_email) !== normalizeEmail(visitEmail)
+      ? centre.virtual_visit_email
+      : null;
+  const lawyerEmail =
+    centre.lawyer_callback_email &&
+    normalizeEmail(centre.lawyer_callback_email) !== normalizeEmail(visitEmail) &&
+    normalizeEmail(centre.lawyer_callback_email) !== normalizeEmail(virtualEmail)
+      ? centre.lawyer_callback_email
+      : null;
+
+  if (!hasContacts) {
+    return (
+      <div className="bg-slate-900/20 px-4 py-4">
+        <p className="text-sm text-slate-500">No contact information available</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-slate-900/20">
+    <Card
+      variant="list"
+      className="rounded-lg border border-border/60 overflow-hidden"
+    >
+      <div className="flex min-h-12 items-center bg-linear-to-r from-semantic-blue-bg via-card to-card px-3 py-2.5 border-b border-border/50">
+        <h4 className={text.sectionHeader}>Centre Contacts</h4>
+      </div>
+
       {phone && (
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
-          <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-            <FaPhone className="w-5 h-5 text-blue-400" />
+        <CardListRow className="flex items-center gap-3 px-4 py-2.5">
+          <div className="w-8 h-8 rounded-lg bg-semantic-blue-bg flex items-center justify-center">
+            <FaPhone className={cn(iconSize.md, "text-semantic-blue-text")} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-slate-200">Phone</div>
-            <div className="text-xs text-blue-400 font-mono">
+            <div className={text.roleLabel}>Phone</div>
+            <div className={cn(text.monoValue, "text-semantic-blue-text")}>
               {phoneDisplay}
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            <CopyButton text={phone} className="w-9 h-9 rounded-lg" />
-            <CallButton phone={phone} className="w-9 h-9 rounded-lg" />
+            <CopyButton text={phone} className="w-8 h-8 rounded-lg" />
+            <CallButton phone={phone} className="w-8 h-8 rounded-lg" />
           </div>
-        </div>
+        </CardListRow>
       )}
 
-      {centre.cdn_fax && (
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
-          <div className="w-10 h-10 rounded-lg bg-slate-500/20 flex items-center justify-center">
-            <FaPenLine className="w-5 h-5 text-slate-400" />
+      {visitPhone && (
+        <CardListRow className="flex items-center gap-3 px-4 py-2.5">
+          <div className="w-8 h-8 rounded-lg bg-semantic-blue-bg flex items-center justify-center">
+            <FaPhone className={cn(iconSize.md, "text-semantic-blue-text")} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-slate-200">
-              <Link
-                href="/faq"
-                className="text-slate-400 hover:text-slate-300 hover:underline"
-              >
-                Fax
-              </Link>
-              <span className="text-slate-400"> (CDN)</span>
-            </div>
-            <div className="text-xs text-slate-300 font-mono">
-              {centre.cdn_fax}
+            <div className={text.roleLabel}>Visit Request</div>
+            <div className={cn(text.monoValue, "text-semantic-blue-text")}>
+              {visitPhone}
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            <CopyButton text={centre.cdn_fax} className="w-9 h-9 rounded-lg" />
+            <CopyButton text={visitPhone} className="w-8 h-8 rounded-lg" />
+            <CallButton phone={visitPhone} className="w-8 h-8 rounded-lg" />
           </div>
-        </div>
+        </CardListRow>
+      )}
+
+      {centre.cdn_fax && (
+        <CardListRow className="flex items-center gap-3 px-4 py-2.5">
+          <div className="w-8 h-8 rounded-lg bg-semantic-cyan-bg flex items-center justify-center">
+            <FaFax className={cn(iconSize.md, "text-semantic-cyan-text")} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className={cn(text.roleLabel, "flex items-center gap-1.5")}>
+              <Link href="/faq" className="hover:text-foreground">
+                Fax
+              </Link>
+              <span>(CDN)</span>
+            </div>
+            <div className={text.monoValue}>{centre.cdn_fax}</div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CopyButton text={centre.cdn_fax} className="w-8 h-8 rounded-lg" />
+          </div>
+        </CardListRow>
       )}
 
       {centre.general_fax && (
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
-          <div className="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center">
-            <FaFax className="w-5 h-5 text-slate-400" />
+        <CardListRow className="flex items-center gap-3 px-4 py-2.5">
+          <div className="w-8 h-8 rounded-lg bg-semantic-cyan-bg flex items-center justify-center">
+            <FaFax className={cn(iconSize.md, "text-semantic-cyan-text")} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-slate-200 flex items-center gap-2">
+            <div className={cn(text.roleLabel, "flex items-center gap-2")}>
               <span>
-                <Link
-                  href="/faq"
-                  className="text-slate-400 hover:text-slate-300 hover:underline"
-                >
+                <Link href="/faq" className="hover:text-foreground">
                   Fax
                 </Link>
-                <span className="text-slate-500"> (General)</span>
+                <span> (General)</span>
               </span>
-              {!centre.cdn_fax && centre.accepts_cdn_by_fax && (
+              {showCdnBadge && (
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/15 text-emerald-400 inline-flex items-center gap-1">
                   CDN
                   <FaCheck className="w-2.5 h-2.5" />
                 </span>
               )}
             </div>
-            <div className="text-xs text-slate-300 font-mono">
-              {centre.general_fax}
-            </div>
+            <div className={text.monoValue}>{centre.general_fax}</div>
           </div>
           <div className="flex items-center gap-1.5">
-            <CopyButton text={centre.general_fax} className="w-9 h-9 rounded-lg" />
+            <CopyButton text={centre.general_fax} className="w-8 h-8 rounded-lg" />
           </div>
-        </div>
+        </CardListRow>
       )}
-    </div>
+
+      {visitEmail && (
+        <CardListRow className="flex items-center gap-3 px-4 py-2.5">
+          <div className="w-8 h-8 rounded-lg bg-semantic-blue-bg flex items-center justify-center">
+            <FaAt className={cn(iconSize.md, "text-semantic-blue-text")} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className={text.roleLabel}>Visit Email</div>
+            <div className={text.monoValue}>{visitEmail}</div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CopyButton text={visitEmail} className="w-8 h-8 rounded-lg" />
+          </div>
+        </CardListRow>
+      )}
+
+      {virtualEmail && (
+        <CardListRow className="flex items-center gap-3 px-4 py-2.5">
+          <div className="w-8 h-8 rounded-lg bg-semantic-blue-bg flex items-center justify-center">
+            <FaAt className={cn(iconSize.md, "text-semantic-blue-text")} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className={text.roleLabel}>Virtual Visit Email</div>
+            <div className={text.monoValue}>{virtualEmail}</div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CopyButton text={virtualEmail} className="w-8 h-8 rounded-lg" />
+          </div>
+        </CardListRow>
+      )}
+
+      {lawyerEmail && (
+        <CardListRow className="flex items-center gap-3 px-4 py-2.5">
+          <div className="w-8 h-8 rounded-lg bg-semantic-blue-bg flex items-center justify-center">
+            <FaAt className={cn(iconSize.md, "text-semantic-blue-text")} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className={text.roleLabel}>Lawyer Callback Email</div>
+            <div className={text.monoValue}>{lawyerEmail}</div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CopyButton text={lawyerEmail} className="w-8 h-8 rounded-lg" />
+          </div>
+        </CardListRow>
+      )}
+    </Card>
   );
 }
 
@@ -341,11 +420,7 @@ function EDisclosureSection({ centre }: { centre: CorrectionalCentre }) {
         <span className="flex-1 text-left text-[13px] uppercase tracking-wider text-slate-200 font-medium">
           e-Disclosure
         </span>
-        {centre.require_padlock && (
-          <TagBadge color="amber" size="sm">
-            PADLOCK REQ
-          </TagBadge>
-        )}
+
       </div>
 
       <div className="bg-slate-900/20 p-4">
@@ -551,15 +626,9 @@ export function CorrectionDetailPage({
         onScroll={handleScroll}
       >
         <div className="p-3 space-y-2.5 pb-20">
-          <Section
-            ref={contactRef}
-            title="Contact"
-            color="blue"
-            isExpanded={expandedSections.has("contact")}
-            onToggle={() => toggleSection("contact")}
-          >
+          <div ref={contactRef}>
             <ContactSection centre={centre} />
-          </Section>
+          </div>
 
           <Section
             ref={callbackRef}
