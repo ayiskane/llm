@@ -10,7 +10,6 @@ const badgeVariants = cva(
       variant: {
         default:
           "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80 px-2.5 py-0.5 text-xs",
-        // Court-specific variants using CSS variables from globals.css
         provincial: "border-transparent bg-semantic-emerald-bg text-semantic-emerald-text",
         supreme: "border-transparent bg-semantic-purple-bg text-semantic-purple-text",
         circuit: "border-transparent bg-semantic-amber-bg text-semantic-amber-text",
