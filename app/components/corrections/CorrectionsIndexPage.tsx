@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback } from "react";
+import { memo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { FaBuildingShield } from "@/lib/icons";
 import { AlphabetIndexPage } from "@/app/components/ui";
 import {
   CardListItem,
@@ -52,17 +51,21 @@ function getTypeInfo(centre: CorrectionalCentre) {
   } as const;
 }
 
-function CentreListItem({
+const CentreListItem = memo(function CentreListItem({
   centre,
-  onClick,
+  onSelect,
 }: {
   centre: CorrectionalCentre;
-  onClick: () => void;
+  onSelect: (centreId: number) => void;
 }) {
   const region = getRegionInfo(centre);
   const typeInfo = getTypeInfo(centre);
+  const handleClick = useCallback(
+    () => onSelect(centre.id),
+    [centre.id, onSelect],
+  );
   return (
-    <CardListItem onClick={onClick}>
+    <CardListItem onClick={handleClick}>
       <CardListItemTitle>{centre.name}</CardListItemTitle>
       <CardListItemDescription>
         <Badge variant="region" className="gap-1">
@@ -77,7 +80,7 @@ function CentreListItem({
       </CardListItemDescription>
     </CardListItem>
   );
-}
+});
 
 // =============================================================================
 // MAIN COMPONENT
@@ -91,6 +94,12 @@ export function CorrectionsIndexPage() {
     (centreId: number) => router.push(`/corrections/${centreId}`),
     [router],
   );
+  const renderCentreItem = useCallback(
+    (centre: CorrectionalCentre) => (
+      <CentreListItem centre={centre} onSelect={handleCentreClick} />
+    ),
+    [handleCentreClick],
+  );
 
   return (
     <AlphabetIndexPage
@@ -98,12 +107,7 @@ export function CorrectionsIndexPage() {
       items={centres}
       getItemKey={(centre) => centre.id}
       getItemLabel={(centre) => centre.name}
-      renderItem={(centre) => (
-        <CentreListItem
-          centre={centre}
-          onClick={() => handleCentreClick(centre.id)}
-        />
-      )}
+      renderItem={renderCentreItem}
       isLoading={isLoading}
       error={error}
       errorTitle="Failed to load centres"
