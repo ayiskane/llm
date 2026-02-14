@@ -17,19 +17,10 @@ import {
 import { cn, openInMaps } from "@/lib/utils";
 import { sectionColorMap, type SectionColor } from "@/lib/config/theme";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { StickyHeader } from "../layouts/StickyHeader";
 import { Section, PillButton } from "../ui";
 import type { CorrectionalCentre } from "@/types";
-
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
-const CENTRE_TYPE = {
-  PROVINCIAL: 1,
-  FEDERAL: 2,
-  YOUTH: 3,
-} as const;
 
 type AccordionSection = "contact" | "callback" | "visits" | null;
 
@@ -127,16 +118,12 @@ function CentreHeader({
   centre: CorrectionalCentre;
   collapsed: boolean;
 }) {
-  const isFederal = centre.type_id === CENTRE_TYPE.FEDERAL;
-  const isYouth = centre.type_id === CENTRE_TYPE.YOUTH;
-  const regionCode = centre.region_code ?? undefined;
-
   return (
     <div className="px-4 py-2">
       <div className="flex items-center gap-2">
         <h1
           className={cn(
-            "font-semibold text-white uppercase tracking-wide flex-1 truncate text-left",
+            "font-semibold text-white uppercase tracking-wide flex-1 text-left overflow-x-auto whitespace-nowrap",
             "transition-all duration-300 ease-out",
             collapsed ? "text-sm" : "text-lg",
           )}
@@ -144,34 +131,24 @@ function CentreHeader({
           {centre.name}
         </h1>
 
-        <div
-          className={cn(
-            "flex items-center gap-1 shrink-0 transition-opacity duration-300",
-            collapsed ? "opacity-100" : "opacity-0 hidden",
-          )}
-        >
-          {centre.short_name && (
-            <TagBadge color="slate" size="sm">
-              {centre.short_name}
-            </TagBadge>
-          )}
-          {isYouth && (
-            <TagBadge color="slate" size="sm">
-              YOUTH
-            </TagBadge>
-          )}
-          <TagBadge color={isFederal ? "purple" : "emerald"} size="sm">
-            {isFederal ? "FED" : "PROV"}
-          </TagBadge>
-        </div>
+        {!collapsed && centre.short_name && (
+          <Badge variant="courtroomType">{centre.short_name}</Badge>
+        )}
 
         {collapsed && centre.address && (
-          <button
+          <>
+            {centre.short_name && (
+              <Badge variant="courtroomType">{centre.short_name}</Badge>
+            )}
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => openInMaps(centre.address!)}
-            className="p-1.5 rounded-md bg-slate-800/50 hover:bg-slate-700/50 transition-colors shrink-0"
+            className="h-8 w-8 bg-secondary/50 hover:bg-secondary/70 shrink-0"
           >
-            <FaLocationDot className="w-4 h-4 text-blue-400" />
-          </button>
+            <FaLocationDot className="w-4 h-4 text-primary" />
+          </Button>
+          </>
         )}
       </div>
 
@@ -183,34 +160,16 @@ function CentreHeader({
       >
         <div className="overflow-hidden text-left">
           {centre.address && (
-            <button
+            <Button
+              variant="link"
               onClick={() => openInMaps(centre.address!)}
-              className="flex items-center justify-start gap-1 text-xs mt-1 text-slate-500 hover:text-blue-400 transition-colors text-left"
+              className="h-auto p-0 justify-start gap-1 text-xs mt-1 text-muted-foreground hover:text-primary"
             >
               <FaLocationDot className="w-3 h-3 shrink-0" />
               <span className="text-left">{centre.address}</span>
-            </button>
+            </Button>
           )}
 
-          <div className="flex flex-wrap items-center justify-start gap-1.5 mt-2 pb-1">
-            {centre.short_name && (
-              <TagBadge color="slate">{centre.short_name}</TagBadge>
-            )}
-            {isYouth && <TagBadge color="slate">YOUTH</TagBadge>}
-            <span className="text-slate-600">|</span>
-            {(regionCode || centre.region_name) && (
-              <span className="px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
-                {regionCode && <span>{regionCode}</span>}
-                {regionCode && centre.region_name && (
-                  <span className="text-slate-600">|</span>
-                )}
-                {centre.region_name && <span>{centre.region_name}</span>}
-              </span>
-            )}
-            <TagBadge color={isFederal ? "purple" : "emerald"}>
-              {isFederal ? "FEDERAL" : "PROVINCIAL"}
-            </TagBadge>
-          </div>
         </div>
       </div>
     </div>
@@ -615,12 +574,14 @@ export function CorrectionDetailPage({
     <div className="h-full flex flex-col">
       <StickyHeader>
         <div className="flex items-center gap-2 px-3 py-2">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onBack}
-            className="p-2 -ml-1 text-slate-400 hover:text-white transition-colors shrink-0"
+            className="-ml-1 text-muted-foreground hover:text-foreground shrink-0"
           >
             <FaArrowLeft className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         <CentreHeader centre={centre} collapsed={isHeaderCollapsed} />
