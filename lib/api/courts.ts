@@ -355,27 +355,42 @@ export async function fetchBailSchedules(
     )
     .eq('bail_hub_id', bailHubId);
 
-    const [
-      { data: crownRows, error: crownError },
-      { data: judgeRows, error: judgeError },
-      { data: dutyCounselRows, error: dutyCounselError },
-      { data: badgeRows, error: badgeError },
-    ] = await Promise.all([
-      crownPromise,
-      judgePromise,
-      dutyCounselPromise,
-      badgePromise,
-    ]);
+  const [
+    crownResult,
+    judgeResult,
+    dutyCounselResult,
+    badgeResult,
+  ] = await Promise.allSettled([
+    crownPromise,
+    judgePromise,
+    dutyCounselPromise,
+    badgePromise,
+  ]);
 
-    if (crownError) throw new Error(crownError.message);
-    if (badgeError) throw new Error(badgeError.message);
-  if (judgeError) throw new Error(judgeError.message);
-  if (dutyCounselError) throw new Error(dutyCounselError.message);
+  if (crownResult.status === 'rejected') {
+    throw new Error(String(crownResult.reason));
+  }
+  const { data: crownRows, error: crownError } = crownResult.value;
+  if (crownError) throw new Error(crownError.message);
 
-    const badgeMap = new Map<number, string | null>();
-    (badgeRows || []).forEach((row: any) => {
-      badgeMap.set(row.id, row.badge_label ?? null);
-    });
+  const judgeRows =
+    judgeResult.status === 'fulfilled' && !judgeResult.value.error
+      ? judgeResult.value.data
+      : [];
+  const dutyCounselRows =
+    dutyCounselResult.status === 'fulfilled' && !dutyCounselResult.value.error
+      ? dutyCounselResult.value.data
+      : [];
+
+  const badgeRows =
+    badgeResult.status === 'fulfilled' && !badgeResult.value.error
+      ? badgeResult.value.data
+      : [];
+
+  const badgeMap = new Map<number, string | null>();
+  (badgeRows || []).forEach((row: any) => {
+    badgeMap.set(row.id, row.badge_label ?? null);
+  });
 
     const crownSchedules: BailCrownScheduleItem[] = (crownRows || []).map(
       (row: any) => ({
