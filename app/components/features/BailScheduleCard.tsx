@@ -154,6 +154,8 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const BAIL_COURTROOM_TYPE_ID = 6;
+const ABBOTSFORD_COURT_ID = 2;
+const CHILLIWACK_COURT_ID = 15;
 
 interface BailScheduleCardProps {
   crownSchedules: BailCrownScheduleItem[];
@@ -274,6 +276,15 @@ export function BailScheduleCard({
       items: groups.get(key) ?? [],
     }));
   }, [filteredCrowns]);
+
+  const bailHubLabel = (bailHubName ?? "").toLowerCase();
+  const isAbbotsfordHub = bailHubLabel.includes("abbotsford");
+  const getCourtSuffix = (courtId?: number | null) => {
+    if (!isAbbotsfordHub || !courtId) return "";
+    if (courtId === ABBOTSFORD_COURT_ID) return " (ABBY)";
+    if (courtId === CHILLIWACK_COURT_ID) return " (CWK)";
+    return "";
+  };
 
   const bailCourtroomLabel = useMemo(() => {
     if (!bailTeams || bailTeams.length === 0) return null;
@@ -533,9 +544,10 @@ export function BailScheduleCard({
                               entry.crown_role_label ?? group.label,
                             );
                             const badgeLabel = entry.badge_label?.trim();
+                            const courtSuffix = getCourtSuffix(entry.court_id);
                             return badgeLabel
-                              ? `${baseLabel} (${badgeLabel})`
-                              : baseLabel;
+                              ? `${baseLabel} (${badgeLabel})${courtSuffix}`
+                              : `${baseLabel}${courtSuffix}`;
                           })()}
                         </div>
                         <div className="text-sm font-medium text-foreground truncate">
