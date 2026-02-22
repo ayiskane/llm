@@ -453,7 +453,10 @@ export function BailScheduleCard({
 
       <div className="border-b border-border/50">
         {selectedDateKey && filteredJudges.length > 0 ? (
-          <CardListRow className="flex items-start gap-3 px-3 py-2.5">
+          <CardListRow
+            interactive={false}
+            className="flex items-start gap-3 px-3 py-2.5"
+          >
             <div
               className={cn(
                 text.sectionHeader,
@@ -472,7 +475,10 @@ export function BailScheduleCard({
             </div>
           </CardListRow>
         ) : (
-          <CardListRow className="flex items-start gap-3 px-3 py-2.5">
+          <CardListRow
+            interactive={false}
+            className="flex items-start gap-3 px-3 py-2.5"
+          >
             <div
               className={cn(
                 text.sectionHeader,
