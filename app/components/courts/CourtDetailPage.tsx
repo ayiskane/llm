@@ -82,8 +82,7 @@ export function CourtDetailPage({
   const showCourtScheduleDates = court.is_circuit || viewMode === "fnc";
   const showScheduleTab = showCourtScheduleDates || showProvincialSchedule;
   const showBailSchedule = true;
-  const bailScheduleEnabled =
-    isBailMode && bailExpandedSection === "schedule";
+  const bailScheduleEnabled = isBailMode;
   const scheduleDatesEnabled =
     courtActiveSection === "schedule" && showCourtScheduleDates;
   const provincialScheduleEnabled =
