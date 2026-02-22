@@ -369,10 +369,6 @@ export function BailScheduleCard({
         )}
       </CardHeaderRow>
 
-      <div className="px-3 py-2 text-xs text-muted-foreground border-b border-border/50">
-        Schedule is subject to change and may not be accurate.
-      </div>
-
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-border/50">
         <div className={cn(text.sectionHeader, "text-muted-foreground")}>
           Date
@@ -712,6 +708,10 @@ export function BailScheduleCard({
             </div>
           </CardListRow>
         )}
+      </div>
+
+      <div className="px-3 py-2 text-xs text-muted-foreground border-t border-border/50">
+        Schedule is subject to change and may not be accurate.
       </div>
     </Card>
   );

@@ -435,9 +435,6 @@ export function ScheduleCard({
           }
           className="p-3 pt-2"
         >
-          <div className="mb-2 text-xs text-muted-foreground">
-            Schedule is subject to change and may not be accurate.
-          </div>
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <Button
               type="button"
@@ -690,6 +687,10 @@ export function ScheduleCard({
           {emptyLabel}
         </div>
       )}
+
+      <div className="px-3 py-2 text-xs text-muted-foreground border-t border-border/50">
+        Schedule is subject to change and may not be accurate.
+      </div>
     </Card>
   );
 }
