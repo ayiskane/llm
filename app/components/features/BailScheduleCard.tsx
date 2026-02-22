@@ -190,9 +190,7 @@ export function BailScheduleCard({
   const hasJudges = judgeSchedules.length > 0;
   const hasDutyCounsel = dutyCounselSchedules.length > 0;
   const hasData = hasCrown || hasJudges || hasDutyCounsel;
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    undefined,
-  );
+  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
   const [isCrownOpen, setIsCrownOpen] = useState(true);
   const [weekStart, setWeekStart] = useState<Date>(() =>
     startOfWeek(new Date()),
@@ -210,20 +208,10 @@ export function BailScheduleCard({
   );
 
   useEffect(() => {
-    if (selectedDate && availableDateKeySet.has(toDateKey(selectedDate))) {
-      return;
+    if (!selectedDate) {
+      setSelectedDate(new Date());
     }
-    if (availableDateKeys.length === 0) {
-      setSelectedDate(undefined);
-      return;
-    }
-    const todayKey = toDateKey(new Date());
-    const nextKey = availableDateKeySet.has(todayKey)
-      ? todayKey
-      : availableDateKeys[0];
-    const nextDate = parseDateKey(nextKey);
-    setSelectedDate(nextDate);
-  }, [availableDateKeys, availableDateKeySet, selectedDate]);
+  }, [selectedDate]);
 
   useEffect(() => {
     if (!selectedDate) return;
