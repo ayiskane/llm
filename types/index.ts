@@ -170,6 +170,7 @@ export interface ProvincialSchedules {
 export interface BailCrownScheduleItem {
   id: number;
   schedule_date: string;
+  court_id?: number | null;
   crown_name: string;
   crown_email?: string | null;
   crown_phone?: string | null;

@@ -317,6 +317,7 @@ export async function fetchBailSchedules(
       `
           id,
           schedule_date,
+          court_id,
           bail_hub_id,
           bail_crown_role_code,
           crown_contact:crown_contacts(id, full_name, email, phone),
@@ -396,6 +397,7 @@ export async function fetchBailSchedules(
       (row: any) => ({
         id: row.id,
         schedule_date: row.schedule_date,
+        court_id: row.court_id ?? null,
         crown_name: row.crown_contact?.full_name ?? 'Unknown',
         crown_email: row.crown_contact?.email ?? null,
         crown_phone: row.crown_contact?.phone ?? null,
