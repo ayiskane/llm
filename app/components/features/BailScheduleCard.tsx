@@ -315,7 +315,7 @@ export function BailScheduleCard({
     const isWeekend = day === 0 || day === 6;
     if (isWeekend) {
       return (
-        formatWeekendHubLabel(regionJusticeCentreName) ??
+        formatWeekendHubLabel(regionJusticeCentreName ?? null) ??
         formatWeekendHubLabel(bailHubName ?? null)
       );
     }

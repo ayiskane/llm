@@ -3,8 +3,13 @@ import type {
   BailHub,
   BailDetails,
   BailSchedules,
+  BailCrownScheduleItem,
+  BailJudgeScheduleItem,
   CourtScheduleDate,
   CourtroomSchedule,
+  CrownScheduleItem,
+  DutyCounselScheduleItem,
+  JudgeScheduleItem,
   ProvincialSchedules,
   SheriffCell,
   TeamsLink,
@@ -263,15 +268,16 @@ export async function fetchProvincialSchedules(
   if (crownError) throw new Error(crownError.message);
   if (judgeError) throw new Error(judgeError.message);
 
-  const crownSchedules =
-    (crownRows || []).map((row: any) => ({
+  const crownSchedules: CrownScheduleItem[] = (crownRows || []).map(
+    (row: any) => ({
       id: row.id,
       schedule_date: row.schedule_date,
       courtroom: row.courtroom ?? null,
       crown_name: row.crown_contact?.full_name ?? 'Unknown',
       crown_role_code: row.crown_role_code ?? row.crown_role?.code ?? null,
       crown_role_label: row.crown_role?.full_name ?? null,
-    })) ?? [];
+    })
+  );
 
   crownSchedules.sort((a, b) => {
     const aDate = new Date(a.schedule_date).getTime();
@@ -283,13 +289,14 @@ export async function fetchProvincialSchedules(
     return a.crown_name.localeCompare(b.crown_name);
   });
 
-  const judgeSchedules =
-    (judgeRows || []).map((row: any) => ({
+  const judgeSchedules: JudgeScheduleItem[] = (judgeRows || []).map(
+    (row: any) => ({
       id: row.id,
       schedule_date: row.schedule_date,
       judge_name: row.judge?.full_name ?? 'Unknown',
       bail_hub_name: row.bail_hub?.name ?? null,
-    })) ?? [];
+    })
+  );
 
   judgeSchedules.sort((a, b) => {
     const aDate = new Date(a.schedule_date).getTime();
@@ -370,8 +377,8 @@ export async function fetchBailSchedules(
       badgeMap.set(row.id, row.badge_label ?? null);
     });
 
-    const crownSchedules =
-      (crownRows || []).map((row: any) => ({
+    const crownSchedules: BailCrownScheduleItem[] = (crownRows || []).map(
+      (row: any) => ({
         id: row.id,
         schedule_date: row.schedule_date,
         crown_name: row.crown_contact?.full_name ?? 'Unknown',
@@ -380,7 +387,8 @@ export async function fetchBailSchedules(
         crown_role_code: row.bail_crown_role_code ?? row.crown_role?.code ?? null,
         crown_role_label: row.crown_role?.full_name ?? null,
         badge_label: badgeMap.get(row.id) ?? null,
-      })) ?? [];
+      })
+    );
 
   crownSchedules.sort((a, b) => {
     const aDate = new Date(a.schedule_date).getTime();
@@ -389,13 +397,14 @@ export async function fetchBailSchedules(
     return a.crown_name.localeCompare(b.crown_name);
   });
 
-  const judgeSchedules =
-    (judgeRows || []).map((row: any) => ({
+  const judgeSchedules: BailJudgeScheduleItem[] = (judgeRows || []).map(
+    (row: any) => ({
       id: row.id,
       schedule_date: row.schedule_date,
       judge_name: row.judge?.full_name ?? 'Unknown',
       bail_hub_name: row.bail_hub?.name ?? null,
-    })) ?? [];
+    })
+  );
 
   judgeSchedules.sort((a, b) => {
     const aDate = new Date(a.schedule_date).getTime();
@@ -404,8 +413,9 @@ export async function fetchBailSchedules(
     return a.judge_name.localeCompare(b.judge_name);
   });
 
-  const dutyCounselSchedules =
-    (dutyCounselRows || []).map((row: any) => ({
+  const dutyCounselSchedules: DutyCounselScheduleItem[] = (
+    dutyCounselRows || []
+  ).map((row: any) => ({
       id: row.id,
       schedule_date: row.schedule_date,
       duty_counsel_name: row.dc_contact?.full_name ?? 'Unknown',
@@ -414,7 +424,7 @@ export async function fetchBailSchedules(
       role: row.role ?? null,
       is_am: row.is_am ?? null,
       is_pm: row.is_pm ?? null,
-    })) ?? [];
+    }));
 
   dutyCounselSchedules.sort((a, b) => {
     const aDate = new Date(a.schedule_date).getTime();
