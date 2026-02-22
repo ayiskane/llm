@@ -10,53 +10,20 @@ import {
   FaCheck,
   FaXmark,
   FaCopy,
-  FaLocationDot,
   FaFax,
-  FaPenLine,
+  FaAt,
 } from "@/lib/icons";
-import { cn, openInMaps } from "@/lib/utils";
-import { sectionColorMap, type SectionColor } from "@/lib/config/theme";
+import { cn } from "@/lib/utils";
+import { iconSize, sectionColorMap, text, type SectionColor } from "@/lib/config/theme";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeaderRow, CardListRow } from "@/components/ui/card";
 import { StickyHeader } from "../layouts/StickyHeader";
 import { Section, PillButton } from "../ui";
+import { CorrectionHeader } from "./CorrectionHeader";
 import type { CorrectionalCentre } from "@/types";
 
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
-const CENTRE_TYPE = {
-  PROVINCIAL: 1,
-  FEDERAL: 2,
-  YOUTH: 3,
-} as const;
-
 type AccordionSection = "contact" | "callback" | "visits" | null;
-
-function TagBadge({
-  children,
-  color,
-  size = "sm",
-}: {
-  children: React.ReactNode;
-  color: SectionColor;
-  size?: "sm" | "md";
-}) {
-  const sizeClasses =
-    size === "sm" ? "px-2 py-1.5 text-[9px]" : "px-2.5 py-1.5 text-[10px]";
-
-  return (
-    <Badge
-      className={cn(
-        sizeClasses,
-        "rounded font-mono inline-flex items-center justify-center leading-none tracking-widest",
-        sectionColorMap[color].badge,
-      )}
-    >
-      {children}
-    </Badge>
-  );
-}
 
 // =============================================================================
 // COPY BUTTON COMPONENT
@@ -117,107 +84,6 @@ function CallButton({ phone, className }: { phone: string; className?: string })
 }
 
 // =============================================================================
-// CENTRE HEADER
-// =============================================================================
-
-function CentreHeader({
-  centre,
-  collapsed,
-}: {
-  centre: CorrectionalCentre;
-  collapsed: boolean;
-}) {
-  const isFederal = centre.type_id === CENTRE_TYPE.FEDERAL;
-  const isYouth = centre.type_id === CENTRE_TYPE.YOUTH;
-  const regionCode = centre.region_code ?? undefined;
-
-  return (
-    <div className="px-4 py-2">
-      <div className="flex items-center gap-2">
-        <h1
-          className={cn(
-            "font-semibold text-white uppercase tracking-wide flex-1 truncate text-left",
-            "transition-all duration-300 ease-out",
-            collapsed ? "text-sm" : "text-lg",
-          )}
-        >
-          {centre.name}
-        </h1>
-
-        <div
-          className={cn(
-            "flex items-center gap-1 shrink-0 transition-opacity duration-300",
-            collapsed ? "opacity-100" : "opacity-0 hidden",
-          )}
-        >
-          {centre.short_name && (
-            <TagBadge color="slate" size="sm">
-              {centre.short_name}
-            </TagBadge>
-          )}
-          {isYouth && (
-            <TagBadge color="slate" size="sm">
-              YOUTH
-            </TagBadge>
-          )}
-          <TagBadge color={isFederal ? "purple" : "emerald"} size="sm">
-            {isFederal ? "FED" : "PROV"}
-          </TagBadge>
-        </div>
-
-        {collapsed && centre.address && (
-          <button
-            onClick={() => openInMaps(centre.address!)}
-            className="p-1.5 rounded-md bg-slate-800/50 hover:bg-slate-700/50 transition-colors shrink-0"
-          >
-            <FaLocationDot className="w-4 h-4 text-blue-400" />
-          </button>
-        )}
-      </div>
-
-      <div
-        className={cn(
-          "grid transition-all duration-300 ease-out",
-          collapsed ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr] opacity-100",
-        )}
-      >
-        <div className="overflow-hidden text-left">
-          {centre.address && (
-            <button
-              onClick={() => openInMaps(centre.address!)}
-              className="flex items-center justify-start gap-1 text-xs mt-1 text-slate-500 hover:text-blue-400 transition-colors text-left"
-            >
-              <FaLocationDot className="w-3 h-3 shrink-0" />
-              <span className="text-left">{centre.address}</span>
-            </button>
-          )}
-
-          <div className="flex flex-wrap items-center justify-start gap-1.5 mt-2 pb-1">
-            {centre.short_name && (
-              <TagBadge color="slate">{centre.short_name}</TagBadge>
-            )}
-            {isYouth && <TagBadge color="slate">YOUTH</TagBadge>}
-            <span className="text-slate-600">|</span>
-            {(regionCode || centre.region_name) && (
-              <span className="px-2 py-1.5 rounded text-[9px] font-mono leading-none inline-flex items-center gap-1 uppercase bg-white/5 border border-slate-700/50 text-slate-400 tracking-widest">
-                {regionCode && <span>{regionCode}</span>}
-                {regionCode && centre.region_name && (
-                  <span className="text-slate-600">|</span>
-                )}
-                {centre.region_name && <span>{centre.region_name}</span>}
-              </span>
-            )}
-            <TagBadge color={isFederal ? "purple" : "emerald"}>
-              {isFederal ? "FEDERAL" : "PROVINCIAL"}
-            </TagBadge>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// =============================================================================
 // CONTACT SECTION
 // =============================================================================
 
@@ -226,85 +92,188 @@ function ContactSection({ centre }: { centre: CorrectionalCentre }) {
   const phoneDisplay = centre.general_phone_option
     ? `${phone} (${centre.general_phone_option})`
     : phone;
+  const showCdnBadge = !centre.cdn_fax && centre.accepts_cdn_by_fax;
+  const normalizePhone = (value: string | null | undefined) =>
+    (value ?? "").replace(/\D/g, "");
+  const normalizeEmail = (value: string | null | undefined) =>
+    (value ?? "").trim().toLowerCase();
+  const hasContacts = Boolean(
+    phone ||
+      centre.cdn_fax ||
+      centre.general_fax ||
+      centre.visit_request_phone ||
+      centre.visit_request_email ||
+      centre.virtual_visit_email ||
+      centre.lawyer_callback_email,
+  );
+  const visitPhone =
+    centre.visit_request_phone &&
+    normalizePhone(centre.visit_request_phone) !== normalizePhone(phone)
+      ? centre.visit_request_phone
+      : null;
+  const visitEmail =
+    centre.visit_request_email &&
+    normalizeEmail(centre.visit_request_email) !== ""
+      ? centre.visit_request_email
+      : null;
+  const virtualEmail =
+    centre.virtual_visit_email &&
+    normalizeEmail(centre.virtual_visit_email) !== normalizeEmail(visitEmail)
+      ? centre.virtual_visit_email
+      : null;
+  const lawyerEmail =
+    centre.lawyer_callback_email &&
+    normalizeEmail(centre.lawyer_callback_email) !== normalizeEmail(visitEmail) &&
+    normalizeEmail(centre.lawyer_callback_email) !== normalizeEmail(virtualEmail)
+      ? centre.lawyer_callback_email
+      : null;
+
+  if (!hasContacts) {
+    return (
+      <div className="bg-slate-900/20 px-4 py-4">
+        <p className="text-sm text-slate-500">No contact information available</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-slate-900/20">
+    <Card
+      variant="list"
+      className="rounded-lg border border-border/60 overflow-hidden"
+    >
+      <CardHeaderRow className="border-b border-border/50">
+        <h4 className={text.sectionHeader}>Centre Contacts</h4>
+      </CardHeaderRow>
+
       {phone && (
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
-          <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-            <FaPhone className="w-5 h-5 text-blue-400" />
+        <CardListRow className="flex items-center gap-3 px-4 py-2.5">
+          <div className="w-8 h-8 rounded-lg bg-semantic-blue-bg flex items-center justify-center">
+            <FaPhone className={cn(iconSize.md, "text-semantic-blue-text")} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-slate-200">Phone</div>
-            <div className="text-xs text-blue-400 font-mono">
+            <div className={text.roleLabel}>Phone</div>
+            <div className={cn(text.monoValue, "text-semantic-blue-text")}>
               {phoneDisplay}
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            <CopyButton text={phone} className="w-9 h-9 rounded-lg" />
-            <CallButton phone={phone} className="w-9 h-9 rounded-lg" />
+            <CopyButton text={phone} className="w-8 h-8 rounded-lg" />
+            <CallButton phone={phone} className="w-8 h-8 rounded-lg" />
           </div>
-        </div>
+        </CardListRow>
       )}
 
-      {centre.cdn_fax && (
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
-          <div className="w-10 h-10 rounded-lg bg-slate-500/20 flex items-center justify-center">
-            <FaPenLine className="w-5 h-5 text-slate-400" />
+      {visitPhone && (
+        <CardListRow className="flex items-center gap-3 px-4 py-2.5">
+          <div className="w-8 h-8 rounded-lg bg-semantic-blue-bg flex items-center justify-center">
+            <FaPhone className={cn(iconSize.md, "text-semantic-blue-text")} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-slate-200">
-              <Link
-                href="/faq"
-                className="text-slate-400 hover:text-slate-300 hover:underline"
-              >
-                Fax
-              </Link>
-              <span className="text-slate-400"> (CDN)</span>
-            </div>
-            <div className="text-xs text-slate-300 font-mono">
-              {centre.cdn_fax}
+            <div className={text.roleLabel}>Visit Request</div>
+            <div className={cn(text.monoValue, "text-semantic-blue-text")}>
+              {visitPhone}
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            <CopyButton text={centre.cdn_fax} className="w-9 h-9 rounded-lg" />
+            <CopyButton text={visitPhone} className="w-8 h-8 rounded-lg" />
+            <CallButton phone={visitPhone} className="w-8 h-8 rounded-lg" />
           </div>
-        </div>
+        </CardListRow>
+      )}
+
+      {centre.cdn_fax && (
+        <CardListRow className="flex items-center gap-3 px-4 py-2.5">
+          <div className="w-8 h-8 rounded-lg bg-semantic-cyan-bg flex items-center justify-center">
+            <FaFax className={cn(iconSize.md, "text-semantic-cyan-text")} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className={cn(text.roleLabel, "flex items-center gap-1.5")}>
+              <Link href="/faq" className="hover:text-foreground">
+                Fax
+              </Link>
+              <span>(CDN)</span>
+            </div>
+            <div className={text.monoValue}>{centre.cdn_fax}</div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CopyButton text={centre.cdn_fax} className="w-8 h-8 rounded-lg" />
+          </div>
+        </CardListRow>
       )}
 
       {centre.general_fax && (
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-700/30">
-          <div className="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center">
-            <FaFax className="w-5 h-5 text-slate-400" />
+        <CardListRow className="flex items-center gap-3 px-4 py-2.5">
+          <div className="w-8 h-8 rounded-lg bg-semantic-cyan-bg flex items-center justify-center">
+            <FaFax className={cn(iconSize.md, "text-semantic-cyan-text")} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-slate-200 flex items-center gap-2">
+            <div className={cn(text.roleLabel, "flex items-center gap-2")}>
               <span>
-                <Link
-                  href="/faq"
-                  className="text-slate-400 hover:text-slate-300 hover:underline"
-                >
+                <Link href="/faq" className="hover:text-foreground">
                   Fax
                 </Link>
-                <span className="text-slate-500"> (General)</span>
+                <span> (General)</span>
               </span>
-              {!centre.cdn_fax && centre.accepts_cdn_by_fax && (
+              {showCdnBadge && (
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/15 text-emerald-400 inline-flex items-center gap-1">
                   CDN
                   <FaCheck className="w-2.5 h-2.5" />
                 </span>
               )}
             </div>
-            <div className="text-xs text-slate-300 font-mono">
-              {centre.general_fax}
-            </div>
+            <div className={text.monoValue}>{centre.general_fax}</div>
           </div>
           <div className="flex items-center gap-1.5">
-            <CopyButton text={centre.general_fax} className="w-9 h-9 rounded-lg" />
+            <CopyButton text={centre.general_fax} className="w-8 h-8 rounded-lg" />
           </div>
-        </div>
+        </CardListRow>
       )}
-    </div>
+
+      {visitEmail && (
+        <CardListRow className="flex items-center gap-3 px-4 py-2.5">
+          <div className="w-8 h-8 rounded-lg bg-semantic-blue-bg flex items-center justify-center">
+            <FaAt className={cn(iconSize.md, "text-semantic-blue-text")} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className={text.roleLabel}>Visit Email</div>
+            <div className={text.monoValue}>{visitEmail}</div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CopyButton text={visitEmail} className="w-8 h-8 rounded-lg" />
+          </div>
+        </CardListRow>
+      )}
+
+      {virtualEmail && (
+        <CardListRow className="flex items-center gap-3 px-4 py-2.5">
+          <div className="w-8 h-8 rounded-lg bg-semantic-blue-bg flex items-center justify-center">
+            <FaAt className={cn(iconSize.md, "text-semantic-blue-text")} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className={text.roleLabel}>Virtual Visit Email</div>
+            <div className={text.monoValue}>{virtualEmail}</div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CopyButton text={virtualEmail} className="w-8 h-8 rounded-lg" />
+          </div>
+        </CardListRow>
+      )}
+
+      {lawyerEmail && (
+        <CardListRow className="flex items-center gap-3 px-4 py-2.5">
+          <div className="w-8 h-8 rounded-lg bg-semantic-blue-bg flex items-center justify-center">
+            <FaAt className={cn(iconSize.md, "text-semantic-blue-text")} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className={text.roleLabel}>Lawyer Callback Email</div>
+            <div className={text.monoValue}>{lawyerEmail}</div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CopyButton text={lawyerEmail} className="w-8 h-8 rounded-lg" />
+          </div>
+        </CardListRow>
+      )}
+    </Card>
   );
 }
 
@@ -451,11 +420,7 @@ function EDisclosureSection({ centre }: { centre: CorrectionalCentre }) {
         <span className="flex-1 text-left text-[13px] uppercase tracking-wider text-slate-200 font-medium">
           e-Disclosure
         </span>
-        {centre.require_padlock && (
-          <TagBadge color="amber" size="sm">
-            PADLOCK REQ
-          </TagBadge>
-        )}
+
       </div>
 
       <div className="bg-slate-900/20 p-4">
@@ -615,15 +580,17 @@ export function CorrectionDetailPage({
     <div className="h-full flex flex-col">
       <StickyHeader>
         <div className="flex items-center gap-2 px-3 py-2">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onBack}
-            className="p-2 -ml-1 text-slate-400 hover:text-white transition-colors shrink-0"
+            className="-ml-1 text-muted-foreground hover:text-foreground shrink-0"
           >
             <FaArrowLeft className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
-        <CentreHeader centre={centre} collapsed={isHeaderCollapsed} />
+        <CorrectionHeader centre={centre} collapsed={isHeaderCollapsed} />
 
         <div className="flex gap-1.5 px-3 py-2 border-t border-slate-700/30">
           {navButtons
@@ -659,15 +626,9 @@ export function CorrectionDetailPage({
         onScroll={handleScroll}
       >
         <div className="p-3 space-y-2.5 pb-20">
-          <Section
-            ref={contactRef}
-            title="Contact"
-            color="blue"
-            isExpanded={expandedSections.has("contact")}
-            onToggle={() => toggleSection("contact")}
-          >
+          <div ref={contactRef}>
             <ContactSection centre={centre} />
-          </Section>
+          </div>
 
           <Section
             ref={callbackRef}

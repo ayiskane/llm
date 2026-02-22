@@ -23,6 +23,21 @@ const cardVariants = cva(
   }
 )
 
+const cardHeaderRowVariants = cva(
+  "flex min-h-12 items-center px-3 py-2.5",
+  {
+    variants: {
+      variant: {
+        default: "bg-linear-to-r from-semantic-blue-bg via-card to-card",
+        bail: "bg-linear-to-r from-semantic-amber-bg via-card to-card",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
 // =============================================================================
 // CARD
 // =============================================================================
@@ -38,6 +53,18 @@ const Card = React.forwardRef<
   />
 ))
 Card.displayName = "Card"
+
+const CardHeaderRow = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof cardHeaderRowVariants>
+>(({ className, variant, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(cardHeaderRowVariants({ variant }), className)}
+    {...props}
+  />
+))
+CardHeaderRow.displayName = "CardHeaderRow"
 
 // =============================================================================
 // CARD LIST ITEM - Clickable row for list variant cards
@@ -224,6 +251,7 @@ CardFooter.displayName = "CardFooter"
 
 export {
   Card,
+  CardHeaderRow,
   CardHeader,
   CardFooter,
   CardTitle,

@@ -3,6 +3,8 @@
 // Court details hook (React Query with caching)
 export { useCourtDetails } from './useCourtDetails';
 export { useCourtScheduleDates } from './useCourtScheduleDates';
+export { useBailSchedules } from './useBailSchedules';
+export { useProvincialSchedules } from './useProvincialSchedules';
 export { useBailDetails } from './useBailDetails';
 export { useBailHubDetails } from './useBailHubDetails';
 export { useAdminStatus } from './useAdminStatus';

@@ -2,8 +2,10 @@ import { createClient } from './supabase';
 import type {
   BailHub,
   BailDetails,
+  BailSchedules,
   CourtScheduleDate,
   CourtroomSchedule,
+  ProvincialSchedules,
   SheriffCell,
   TeamsLink,
 } from '@/types';
@@ -52,6 +54,21 @@ async function withTriageAmName(hub: BailHub | null): Promise<BailHub | null> {
   if (!hub) return hub;
   const [updated] = await attachTriageAmNames([hub]);
   return updated ?? hub;
+}
+
+async function withRegionJusticeCentreName(
+  hub: BailHub | null
+): Promise<BailHub | null> {
+  if (!hub?.region_id) return hub;
+  const { data, error } = await supabase
+    .from('bail_hubs')
+    .select('name')
+    .eq('region_id', hub.region_id)
+    .ilike('name', '%Region Justice Centre%')
+    .limit(1);
+  if (error) throw new Error(error.message);
+  const regionName = data?.[0]?.name ?? null;
+  return { ...hub, region_justice_centre_name: regionName };
 }
 
 async function attachTriageAmNames(hubs: BailHub[]): Promise<BailHub[]> {
@@ -123,7 +140,10 @@ async function resolveBailHubForCourt(
       .eq('id', mappedHubId)
       .limit(1);
     if (hubError) throw new Error(hubError.message);
-    return withTriageAmName((hubRows?.[0] as BailHub) ?? null);
+    const enriched = await withTriageAmName(
+      (hubRows?.[0] as BailHub) ?? null
+    );
+    return withRegionJusticeCentreName(enriched);
   }
 
   const { data: directHubRows, error: directHubError } = await supabase
@@ -134,7 +154,10 @@ async function resolveBailHubForCourt(
 
   if (directHubError) throw new Error(directHubError.message);
   const directHub = directHubRows?.[0] as BailHub | undefined;
-  if (directHub) return withTriageAmName(directHub);
+  if (directHub) {
+    const enriched = await withTriageAmName(directHub);
+    return withRegionJusticeCentreName(enriched);
+  }
 
   if (!regionId) return null;
 
@@ -152,7 +175,8 @@ async function resolveBailHubForCourt(
     hubs[0] ??
     null
   ;
-  return withTriageAmName(selected);
+  const enriched = await withTriageAmName(selected);
+  return withRegionJusticeCentreName(enriched);
 }
 
 export async function fetchCourtScheduleDates(courtId: number): Promise<CourtScheduleDate[]> {
@@ -200,6 +224,206 @@ export async function fetchCourtScheduleDates(courtId: number): Promise<CourtSch
     const bDate = new Date(b.date_start).getTime();
     return aDate - bDate;
   });
+}
+
+export async function fetchProvincialSchedules(
+  courtId: number
+): Promise<ProvincialSchedules> {
+  const crownPromise = supabase
+    .from('courtroom_crown_schedules')
+    .select(
+      `
+        id,
+        schedule_date,
+        courtroom,
+        crown_role_code,
+        crown_contact:crown_contacts(id, full_name, email, phone),
+        crown_role:crown_roles(id, code, full_name)
+      `
+    )
+    .eq('court_id', courtId);
+
+  const judgePromise = supabase
+    .from('bail_judge_schedules')
+    .select(
+      `
+        id,
+        schedule_date,
+        judge:judge_contacts(id, full_name),
+        bail_hub:bail_hubs(id, name)
+      `
+    )
+    .eq('court_id', courtId);
+
+  const [
+    { data: crownRows, error: crownError },
+    { data: judgeRows, error: judgeError },
+  ] = await Promise.all([crownPromise, judgePromise]);
+
+  if (crownError) throw new Error(crownError.message);
+  if (judgeError) throw new Error(judgeError.message);
+
+  const crownSchedules =
+    (crownRows || []).map((row: any) => ({
+      id: row.id,
+      schedule_date: row.schedule_date,
+      courtroom: row.courtroom ?? null,
+      crown_name: row.crown_contact?.full_name ?? 'Unknown',
+      crown_role_code: row.crown_role_code ?? row.crown_role?.code ?? null,
+      crown_role_label: row.crown_role?.full_name ?? null,
+    })) ?? [];
+
+  crownSchedules.sort((a, b) => {
+    const aDate = new Date(a.schedule_date).getTime();
+    const bDate = new Date(b.schedule_date).getTime();
+    if (aDate !== bDate) return aDate - bDate;
+    const aRoom = a.courtroom ?? 0;
+    const bRoom = b.courtroom ?? 0;
+    if (aRoom !== bRoom) return aRoom - bRoom;
+    return a.crown_name.localeCompare(b.crown_name);
+  });
+
+  const judgeSchedules =
+    (judgeRows || []).map((row: any) => ({
+      id: row.id,
+      schedule_date: row.schedule_date,
+      judge_name: row.judge?.full_name ?? 'Unknown',
+      bail_hub_name: row.bail_hub?.name ?? null,
+    })) ?? [];
+
+  judgeSchedules.sort((a, b) => {
+    const aDate = new Date(a.schedule_date).getTime();
+    const bDate = new Date(b.schedule_date).getTime();
+    if (aDate !== bDate) return aDate - bDate;
+    return a.judge_name.localeCompare(b.judge_name);
+  });
+
+  return { crownSchedules, judgeSchedules };
+}
+
+export async function fetchBailSchedules(
+  bailHubId: number
+): Promise<BailSchedules> {
+  const crownPromise = supabase
+    .from('bail_crown_schedules')
+    .select(
+      `
+          id,
+          schedule_date,
+          bail_hub_id,
+          bail_crown_role_code,
+          crown_contact:crown_contacts(id, full_name, email, phone),
+          crown_role:crown_roles(code, full_name)
+        `
+    )
+    .eq('bail_hub_id', bailHubId);
+  const badgePromise = supabase
+    .from('bail_crown_schedule_view')
+    .select('id, badge_label')
+    .eq('bail_hub_id', bailHubId);
+
+  const judgePromise = supabase
+    .from('bail_judge_schedules')
+    .select(
+      `
+        id,
+        schedule_date,
+        judge:judge_contacts(id, full_name),
+        bail_hub:bail_hubs(id, name)
+      `
+    )
+    .eq('bail_hub_id', bailHubId);
+
+  const dutyCounselPromise = supabase
+    .from('dc_schedules')
+    .select(
+      `
+        id,
+        schedule_date,
+        role,
+        is_am,
+        is_pm,
+        dc_contact:dc_contacts(id, full_name, email, phone)
+      `
+    )
+    .eq('bail_hub_id', bailHubId);
+
+    const [
+      { data: crownRows, error: crownError },
+      { data: judgeRows, error: judgeError },
+      { data: dutyCounselRows, error: dutyCounselError },
+      { data: badgeRows, error: badgeError },
+    ] = await Promise.all([
+      crownPromise,
+      judgePromise,
+      dutyCounselPromise,
+      badgePromise,
+    ]);
+
+    if (crownError) throw new Error(crownError.message);
+    if (badgeError) throw new Error(badgeError.message);
+  if (judgeError) throw new Error(judgeError.message);
+  if (dutyCounselError) throw new Error(dutyCounselError.message);
+
+    const badgeMap = new Map<number, string | null>();
+    (badgeRows || []).forEach((row: any) => {
+      badgeMap.set(row.id, row.badge_label ?? null);
+    });
+
+    const crownSchedules =
+      (crownRows || []).map((row: any) => ({
+        id: row.id,
+        schedule_date: row.schedule_date,
+        crown_name: row.crown_contact?.full_name ?? 'Unknown',
+        crown_email: row.crown_contact?.email ?? null,
+        crown_phone: row.crown_contact?.phone ?? null,
+        crown_role_code: row.bail_crown_role_code ?? row.crown_role?.code ?? null,
+        crown_role_label: row.crown_role?.full_name ?? null,
+        badge_label: badgeMap.get(row.id) ?? null,
+      })) ?? [];
+
+  crownSchedules.sort((a, b) => {
+    const aDate = new Date(a.schedule_date).getTime();
+    const bDate = new Date(b.schedule_date).getTime();
+    if (aDate !== bDate) return aDate - bDate;
+    return a.crown_name.localeCompare(b.crown_name);
+  });
+
+  const judgeSchedules =
+    (judgeRows || []).map((row: any) => ({
+      id: row.id,
+      schedule_date: row.schedule_date,
+      judge_name: row.judge?.full_name ?? 'Unknown',
+      bail_hub_name: row.bail_hub?.name ?? null,
+    })) ?? [];
+
+  judgeSchedules.sort((a, b) => {
+    const aDate = new Date(a.schedule_date).getTime();
+    const bDate = new Date(b.schedule_date).getTime();
+    if (aDate !== bDate) return aDate - bDate;
+    return a.judge_name.localeCompare(b.judge_name);
+  });
+
+  const dutyCounselSchedules =
+    (dutyCounselRows || []).map((row: any) => ({
+      id: row.id,
+      schedule_date: row.schedule_date,
+      duty_counsel_name: row.dc_contact?.full_name ?? 'Unknown',
+      duty_counsel_email: row.dc_contact?.email ?? null,
+      duty_counsel_phone: row.dc_contact?.phone ?? null,
+      role: row.role ?? null,
+      is_am: row.is_am ?? null,
+      is_pm: row.is_pm ?? null,
+    })) ?? [];
+
+  dutyCounselSchedules.sort((a, b) => {
+    const aDate = new Date(a.schedule_date).getTime();
+    const bDate = new Date(b.schedule_date).getTime();
+    if (aDate !== bDate) return aDate - bDate;
+    return a.duty_counsel_name.localeCompare(b.duty_counsel_name);
+  });
+
+  return { crownSchedules, judgeSchedules, dutyCounselSchedules };
 }
 
 export async function fetchCourtsIndexStamp(): Promise<string | null> {
@@ -331,7 +555,7 @@ export async function fetchCourtDetails(courtId: number) {
   const courtroomSchedulePromise = supabase
     .from('courtroom_schedules')
     .select(
-      `id, court_id, courtroom, weekdays, times_text, is_youth, courtroom_type, days_text`
+      `id, court_id, courtroom, weekdays, times_text, is_youth, courtroom_type, days_text, courtroom_type_ref:courtroom_types(id, name, full_name)`
     )
     .eq('court_id', publicCourt.id);
 
@@ -468,17 +692,21 @@ export async function fetchCourtDetails(courtId: number) {
 
   teamsLinks = await attachTriageAmNamesToTeams(teamsLinks);
 
-  const courtroomSchedules =
-    (courtroomScheduleRows || []).map((row: any) => ({
-      id: row.id,
-      court_id: row.court_id ?? null,
-      courtroom: row.courtroom ?? null,
-      weekdays: row.weekdays ?? null,
-      times_text: row.times_text ?? null,
-      is_youth: row.is_youth ?? null,
-      courtroom_type: row.courtroom_type ?? null,
-      days_text: row.days_text ?? null,
-    })) ?? [];
+    const courtroomSchedules =
+      (courtroomScheduleRows || []).map((row: any) => ({
+        id: row.id,
+        court_id: row.court_id ?? null,
+        courtroom: row.courtroom ?? null,
+        weekdays: row.weekdays ?? null,
+        times_text: row.times_text ?? null,
+        is_youth: row.is_youth ?? null,
+        courtroom_type: row.courtroom_type ?? null,
+        courtroom_type_name:
+          row.courtroom_type_ref?.name ??
+          row.courtroom_type_ref?.full_name ??
+          null,
+        days_text: row.days_text ?? null,
+      })) ?? [];
 
   return {
     court,
@@ -610,6 +838,7 @@ export async function fetchBailHubDetails(
   if (hubError) throw new Error(hubError.message);
   let bailHub: BailHub | null = (hubRows?.[0] as BailHub) ?? null;
   bailHub = await withTriageAmName(bailHub);
+  bailHub = await withRegionJusticeCentreName(bailHub);
   if (!bailHub) {
     return {
       bailHub: null,
@@ -751,7 +980,7 @@ export async function fetchBailHubDetails(
     const { data: scheduleRows, error: scheduleError } = await supabase
       .from('courtroom_schedules')
       .select(
-        `id, court_id, courtroom, weekdays, times_text, is_youth, courtroom_type, days_text`
+        `id, court_id, courtroom, weekdays, times_text, is_youth, courtroom_type, days_text, courtroom_type_ref:courtroom_types(id, name, full_name)`
       )
       .eq('court_id', bailHub.court_id);
 
@@ -765,6 +994,10 @@ export async function fetchBailHubDetails(
         times_text: row.times_text ?? null,
         is_youth: row.is_youth ?? null,
         courtroom_type: row.courtroom_type ?? null,
+        courtroom_type_name:
+          row.courtroom_type_ref?.name ??
+          row.courtroom_type_ref?.full_name ??
+          null,
         days_text: row.days_text ?? null,
       })) ?? [];
   }

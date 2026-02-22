@@ -216,4 +216,32 @@ export function getCourtDisplayName(court: {
   return name;
 }
 
+/**
+ * Get display name for a bail hub
+ * Handles special cases like Downtown Community Court (DCC)
+ */
+export function getBailHubDisplayName(
+  name: string | null | undefined
+): string {
+  if (!name) return "";
+  if (name === "Downtown Community Court") return "DCC";
+  return name;
+}
+
+/**
+ * Format judge display name with honorific
+ */
+export function formatJudgeDisplayName(
+  name: string | null | undefined
+): string {
+  if (!name) return "";
+  const trimmed = name.trim();
+  if (!trimmed) return "";
+  if (/^(tbd|tba)$/i.test(trimmed)) return trimmed.toUpperCase();
+  if (/^(hon\.?|the honourable|the honorable)\b/i.test(trimmed)) {
+    return trimmed;
+  }
+  return `Hon. ${trimmed}`;
+}
+
 

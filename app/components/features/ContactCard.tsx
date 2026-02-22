@@ -10,7 +10,7 @@ import {
   FaCheck,
   FaFax,
 } from "@/lib/icons";
-import { Card, CardListItem, CardListRow } from "@/components/ui/card";
+import { Card, CardHeaderRow, CardListItem, CardListRow } from "@/components/ui/card";
 import { cn, formatEmailsForCopy, formatPhone, makeCall } from "@/lib/utils";
 import {
   text,
@@ -252,9 +252,9 @@ function SectionHeader({
   inCard?: boolean;
 }) {
   return (
-    <div
+    <CardHeaderRow
       className={cn(
-        "flex min-h-12 items-center justify-between bg-linear-to-r from-semantic-blue-bg via-card to-card px-3 py-2.5",
+        "justify-between",
         inCard
           ? "border-b border-border/50"
           : "mb-2 rounded-lg border border-border/60 shadow-[0_10px_22px_rgba(2,6,23,0.45)]",
@@ -284,7 +284,7 @@ function SectionHeader({
           <span>{showFull ? "Truncate" : "Show full"}</span>
         </Button>
       )}
-    </div>
+    </CardHeaderRow>
   );
 }
 
@@ -300,16 +300,15 @@ function SimpleSectionHeader({
   inCard?: boolean;
 }) {
   return (
-    <div
+    <CardHeaderRow
       className={cn(
-        "flex min-h-12 items-center bg-linear-to-r from-semantic-blue-bg via-card to-card px-3 py-2.5",
         inCard
           ? "border-b border-border/50"
           : "mb-2 rounded-lg border border-border/60 shadow-[0_10px_22px_rgba(2,6,23,0.45)]",
       )}
     >
       <h4 className={text.sectionHeader}>{title}</h4>
-    </div>
+    </CardHeaderRow>
   );
 }
 

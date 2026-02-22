@@ -8,7 +8,7 @@ import {
   FaChevronDown,
   FaSliders,
 } from "@/lib/icons";
-import { Card, CardListRow } from "@/components/ui/card";
+import { Card, CardHeaderRow, CardListRow } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -100,6 +100,7 @@ interface TeamsCardProps {
   prioritizeJcm?: boolean;
   onCopy?: (text: string, id: string) => void;
   isCopied?: (id: string) => boolean;
+  headerVariant?: "default" | "bail";
 }
 
 export function TeamsCard({
@@ -111,6 +112,7 @@ export function TeamsCard({
   prioritizeJcm = false,
   onCopy,
   isCopied,
+  headerVariant = "default",
 }: TeamsCardProps) {
   const [searchValue, setSearchValue] = useState("");
   const [selectedType, setSelectedType] = useState("all");
@@ -272,7 +274,10 @@ export function TeamsCard({
       variant="list"
       className="rounded-lg border border-border/60 overflow-hidden"
     >
-      <div className="flex min-h-12 items-center justify-between gap-3 bg-linear-to-r from-semantic-blue-bg via-card to-card px-3 py-2.5 border-b border-border/50">
+      <CardHeaderRow
+        variant={headerVariant}
+        className="justify-between gap-3 border-b border-border/50"
+      >
         <div className={text.sectionHeader}>MS Teams Links</div>
         <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
           <DialogTrigger asChild>
@@ -344,7 +349,7 @@ export function TeamsCard({
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
+      </CardHeaderRow>
 
       {displayLinks.length === 0 ? (
         <div className="px-3 py-3 text-xs text-muted-foreground">
@@ -396,9 +401,15 @@ export function TeamsCard({
           const linkTypeId = link.courtroom_type_id ?? null;
           const filterByType = (entries: CourtroomSchedule[]) => {
             if (!linkTypeId) return entries;
+            const distinctTypes = new Set(
+              entries
+                .map((schedule) => schedule.courtroom_type)
+                .filter((value): value is number => value != null),
+            );
             const matches = entries.filter(
               (schedule) => schedule.courtroom_type === linkTypeId,
             );
+            if (distinctTypes.size > 1) return entries;
             return matches.length > 0 ? matches : entries;
           };
           const linkHub = isVrLink ? link.bail_hub : link.bail_hub ?? bailHub;
@@ -418,6 +429,18 @@ export function TeamsCard({
           const youthSchedules = useTriageSchedule
             ? []
             : filterByType(scheduleBucket.youth);
+          const scheduleTypeLabels = Array.from(
+            new Set(
+              scheduleEntries
+                .map((schedule) => schedule.courtroom_type_name?.trim())
+                .filter(Boolean) as string[],
+            ),
+          );
+          const multiTypeLabels =
+            scheduleTypeLabels.length > 1 ? scheduleTypeLabels : [];
+          const primaryTypeLabel =
+            scheduleTypeLabels[0] ?? typeLabel ?? "";
+          const hasMultipleSchedules = scheduleEntries.length > 1;
           const hasSchedule = scheduleEntries.length > 0;
           const scheduleCount = scheduleEntries.length;
           const hasDialIn =
@@ -468,7 +491,13 @@ export function TeamsCard({
                         {courtroomLabel}
                       </span>
                     )}
-                    {typeLabel && showTypePopover ? (
+                    {multiTypeLabels.length > 0 ? (
+                      multiTypeLabels.map((label) => (
+                        <Badge key={`${rowId}-${label}`} variant="courtroomType">
+                          {label}
+                        </Badge>
+                      ))
+                    ) : primaryTypeLabel && showTypePopover ? (
                       <Popover
                         open={isTypePopoverOpen}
                         onOpenChange={(open) =>
@@ -495,7 +524,7 @@ export function TeamsCard({
                               variant="courtroomType"
                               className="cursor-pointer"
                             >
-                              {typeLabel}
+                              {primaryTypeLabel}
                             </Badge>
                           </button>
                         </PopoverTrigger>
@@ -510,8 +539,8 @@ export function TeamsCard({
                           </span>
                         </PopoverContent>
                       </Popover>
-                    ) : typeLabel ? (
-                      <Badge variant="courtroomType">{typeLabel}</Badge>
+                    ) : primaryTypeLabel ? (
+                      <Badge variant="courtroomType">{primaryTypeLabel}</Badge>
                     ) : null}
                     {hasSchedule && (
                       <span className="text-[10px] text-muted-foreground/60 whitespace-nowrap truncate max-w-27.5">
@@ -590,12 +619,16 @@ export function TeamsCard({
                           {[...regularSchedules, ...youthSchedules].map(
                             (schedule, scheduleIndex) => {
                               const isYouth = schedule.is_youth;
+                              const typeLabel =
+                                schedule.courtroom_type_name?.trim() || null;
                               const scheduleLabel =
                                 useTriageSchedule && isVrLink
                                   ? "Triage"
                                   : isYouth
                                     ? "Youth"
-                                    : "Schedule";
+                                    : hasMultipleSchedules
+                                      ? typeLabel || "Schedule"
+                                      : "Schedule";
                               const timeLines = splitTimesText(
                                 schedule.times_text,
                               );

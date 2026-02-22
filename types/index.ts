@@ -88,6 +88,7 @@ export interface BailHub {
   name: string;
   region_id?: number | null;
   court_id?: number | null;
+  region_justice_centre_name?: string | null;
   sheriff_coordinator_email?: string | null;
   sheriff_coordinator_phone?: string | null;
   sheriff_coordinator_teams_chat?: string | null;
@@ -140,8 +141,65 @@ export interface CourtroomSchedule {
   times_text?: string | null;
   is_youth?: boolean | null;
   courtroom_type?: number | null;
+  courtroom_type_name?: string | null;
   days_text?: string | null;
   notes?: string | null;
+}
+
+export interface CrownScheduleItem {
+  id: number;
+  schedule_date: string;
+  courtroom?: number | null;
+  crown_name: string;
+  crown_role_code?: string | null;
+  crown_role_label?: string | null;
+}
+
+export interface JudgeScheduleItem {
+  id: number;
+  schedule_date: string;
+  judge_name: string;
+  bail_hub_name?: string | null;
+}
+
+export interface ProvincialSchedules {
+  crownSchedules: CrownScheduleItem[];
+  judgeSchedules: JudgeScheduleItem[];
+}
+
+export interface BailCrownScheduleItem {
+  id: number;
+  schedule_date: string;
+  crown_name: string;
+  crown_email?: string | null;
+  crown_phone?: string | null;
+  crown_role_code?: string | null;
+  crown_role_label?: string | null;
+  badge_label?: string | null;
+}
+
+export interface BailJudgeScheduleItem {
+  id: number;
+  schedule_date: string;
+  judge_name: string;
+  bail_hub_name?: string | null;
+}
+
+export interface DutyCounselScheduleItem {
+  id: number;
+  schedule_date: string;
+  duty_counsel_name: string;
+  duty_counsel_email?: string | null;
+  duty_counsel_phone?: string | null;
+  role?: string | null;
+  is_am?: boolean | null;
+  is_pm?: boolean | null;
+}
+
+export interface BailSchedules {
+  crownSchedules: BailCrownScheduleItem[];
+  judgeSchedules: BailJudgeScheduleItem[];
+  dutyCounselSchedules: DutyCounselScheduleItem[];
 }
 
 export interface BugReport {
