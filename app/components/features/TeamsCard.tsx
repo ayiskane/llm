@@ -258,7 +258,7 @@ export function TeamsCard({
         times_text: triageTime,
         is_youth: false,
         courtroom_type: null,
-        days_text: triageAmName ? `Triage in ${triageAmName}` : null,
+        label_text: triageAmName ? `Triage in ${triageAmName}` : null,
         notes: null,
       });
     });
@@ -363,7 +363,7 @@ export function TeamsCard({
               ? link.courtroom_type_name.trim()
               : "";
           const typeDescription = link.courtroom_type_full_name?.trim() || "";
-          // Tag source: courtroom_type_name (e.g., ASC/FXD) comes from teams_links.courtroom_type_id -> courtroom_types.name.
+          // Tag source: courtroom_type_name (e.g., ASC/FXD) comes from teams_links.courtroom_type_id -> courtroom_types.label.
           const courtroomLabel = formatCourtroom(link.courtroom);
           const isTriageLink = isVBTriageLink(
             link.courtroom || link.type_name || "",
@@ -632,7 +632,7 @@ export function TeamsCard({
                               const timeLines = splitTimesText(
                                 schedule.times_text,
                               );
-                              const daysText = schedule.days_text?.trim();
+                              const labelText = schedule.label_text?.trim();
                               const weekdaySet = new Set(
                                 (schedule.weekdays ?? []).map((day) =>
                                   day.toLowerCase(),
@@ -678,9 +678,9 @@ export function TeamsCard({
                                           );
                                         })}
                                       </div>
-                                      {daysText && (
+                                      {labelText && (
                                         <span className="col-start-2 text-[10px] text-foreground/70">
-                                          {daysText}
+                                          {labelText}
                                         </span>
                                       )}
                                     </div>

@@ -142,7 +142,7 @@ export interface CourtroomSchedule {
   is_youth?: boolean | null;
   courtroom_type?: number | null;
   courtroom_type_name?: string | null;
-  days_text?: string | null;
+  label_text?: string | null;
   notes?: string | null;
 }
 

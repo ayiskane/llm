@@ -625,14 +625,14 @@ export async function fetchCourtDetails(courtId: number) {
   const teamsPromise = supabase
     .from('teams_links')
     .select(
-      `*, type:teams_link_types(name), courtroom_type:courtroom_types(name, full_name), bail_hub:bail_hubs(id, name, triage_time, triage_am)`
+      `*, type:teams_link_types(name), courtroom_type:courtroom_types(label, full_name), bail_hub:bail_hubs(id, name, triage_time, triage_am)`
     )
     .eq('court_id', publicCourt.id);
 
   const courtroomSchedulePromise = supabase
     .from('courtroom_schedules')
     .select(
-      `id, court_id, courtroom, weekdays, times_text, is_youth, courtroom_type, days_text, courtroom_type_ref:courtroom_types(id, name, full_name)`
+      `id, court_id, courtroom, weekdays, times_text, is_youth, label_text, courtroom_type, courtroom_type_ref:courtroom_types(id, label, full_name)`
     )
     .eq('court_id', publicCourt.id);
 
@@ -749,7 +749,8 @@ export async function fetchCourtDetails(courtId: number) {
       type_id: row.type_id ?? null,
       type_name: row.type?.name ?? row.type_name ?? null,
       courtroom_type_id: row.courtroom_type_id ?? null,
-      courtroom_type_name: row.courtroom_type?.name ?? null,
+      courtroom_type_name:
+        row.courtroom_type?.label ?? row.courtroom_type?.full_name ?? null,
       courtroom_type_full_name: row.courtroom_type?.full_name ?? null,
       courtroom: row.courtroom ?? null,
       display_order: row.display_order ?? null,
@@ -779,10 +780,10 @@ export async function fetchCourtDetails(courtId: number) {
         is_youth: row.is_youth ?? null,
         courtroom_type: row.courtroom_type ?? null,
         courtroom_type_name:
-          row.courtroom_type_ref?.name ??
+          row.courtroom_type_ref?.label ??
           row.courtroom_type_ref?.full_name ??
           null,
-        days_text: row.days_text ?? null,
+        label_text: row.label_text ?? null,
       })) ?? [];
 
   return {
@@ -806,7 +807,7 @@ export async function fetchBailDetails(
     const { data: bailTeamRows, error: bailTeamError } = await supabase
       .from('teams_links')
       .select(
-        `*, type:teams_link_types(name), courtroom_type:courtroom_types(name, full_name), bail_hub:bail_hubs(id, name, triage_time, triage_am)`
+        `*, type:teams_link_types(name), courtroom_type:courtroom_types(label, full_name), bail_hub:bail_hubs(id, name, triage_time, triage_am)`
       )
       .eq('bail_hub_id', bailHub.id);
 
@@ -822,7 +823,8 @@ export async function fetchBailDetails(
         type_id: row.type_id ?? null,
         type_name: row.type?.name ?? row.type_name ?? null,
         courtroom_type_id: row.courtroom_type_id ?? null,
-        courtroom_type_name: row.courtroom_type?.name ?? null,
+        courtroom_type_name:
+          row.courtroom_type?.label ?? row.courtroom_type?.full_name ?? null,
         courtroom_type_full_name: row.courtroom_type?.full_name ?? null,
         courtroom: row.courtroom ?? null,
         display_order: row.display_order ?? null,
@@ -929,7 +931,7 @@ export async function fetchBailHubDetails(
   const { data: bailTeamRows, error: bailTeamError } = await supabase
     .from('teams_links')
     .select(
-      `*, type:teams_link_types(name), courtroom_type:courtroom_types(name, full_name), bail_hub:bail_hubs(id, name, triage_time, triage_am)`
+      `*, type:teams_link_types(name), courtroom_type:courtroom_types(label, full_name), bail_hub:bail_hubs(id, name, triage_time, triage_am)`
     )
     .eq('bail_hub_id', bailHub.id);
 
@@ -945,7 +947,8 @@ export async function fetchBailHubDetails(
       type_id: row.type_id ?? null,
       type_name: row.type?.name ?? row.type_name ?? null,
       courtroom_type_id: row.courtroom_type_id ?? null,
-      courtroom_type_name: row.courtroom_type?.name ?? null,
+      courtroom_type_name:
+        row.courtroom_type?.label ?? row.courtroom_type?.full_name ?? null,
       courtroom_type_full_name: row.courtroom_type?.full_name ?? null,
       courtroom: row.courtroom ?? null,
       display_order: row.display_order ?? null,
@@ -1057,7 +1060,7 @@ export async function fetchBailHubDetails(
     const { data: scheduleRows, error: scheduleError } = await supabase
       .from('courtroom_schedules')
       .select(
-        `id, court_id, courtroom, weekdays, times_text, is_youth, courtroom_type, days_text, courtroom_type_ref:courtroom_types(id, name, full_name)`
+        `id, court_id, courtroom, weekdays, times_text, is_youth, label_text, courtroom_type, courtroom_type_ref:courtroom_types(id, label, full_name)`
       )
       .eq('court_id', bailHub.court_id);
 
@@ -1072,10 +1075,10 @@ export async function fetchBailHubDetails(
         is_youth: row.is_youth ?? null,
         courtroom_type: row.courtroom_type ?? null,
         courtroom_type_name:
-          row.courtroom_type_ref?.name ??
+          row.courtroom_type_ref?.label ??
           row.courtroom_type_ref?.full_name ??
           null,
-        days_text: row.days_text ?? null,
+        label_text: row.label_text ?? null,
       })) ?? [];
   }
 
