@@ -319,7 +319,7 @@ export async function fetchBailSchedules(
           schedule_date,
           court_id,
           bail_hub_id,
-          bail_crown_role_code,
+          crown_role_code,
           crown_contact:crown_contacts(id, full_name, email, phone),
           crown_role:crown_roles(code, full_name)
         `
@@ -401,7 +401,7 @@ export async function fetchBailSchedules(
         crown_name: row.crown_contact?.full_name ?? 'Unknown',
         crown_email: row.crown_contact?.email ?? null,
         crown_phone: row.crown_contact?.phone ?? null,
-        crown_role_code: row.bail_crown_role_code ?? row.crown_role?.code ?? null,
+        crown_role_code: row.crown_role_code ?? row.crown_role?.code ?? null,
         crown_role_label: row.crown_role?.full_name ?? null,
         badge_label: badgeMap.get(row.id) ?? null,
       })
