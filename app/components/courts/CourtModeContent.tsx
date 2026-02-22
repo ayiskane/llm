@@ -159,7 +159,12 @@ export function CourtModeContent({
           <ProvincialScheduleCard
             crownSchedules={provincialSchedules?.crownSchedules ?? []}
             judgeSchedules={provincialSchedules?.judgeSchedules ?? []}
+            dutyCounselSchedules={
+              provincialSchedules?.dutyCounselSchedules ?? []
+            }
             isLoading={provincialScheduleLoading}
+            onCopy={onCopy}
+            isCopied={isCopied}
           />
         </div>
       )}

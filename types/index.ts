@@ -165,6 +165,7 @@ export interface JudgeScheduleItem {
 export interface ProvincialSchedules {
   crownSchedules: CrownScheduleItem[];
   judgeSchedules: JudgeScheduleItem[];
+  dutyCounselSchedules?: DutyCounselScheduleItem[];
 }
 
 export interface BailCrownScheduleItem {

@@ -241,9 +241,7 @@ export async function fetchProvincialSchedules(
         id,
         schedule_date,
         courtroom,
-        crown_role_code,
-        crown_contact:crown_contacts(id, full_name, email, phone),
-        crown_role:crown_roles(id, code, full_name)
+        crown_contact:crown_contacts(id, full_name, email, phone)
       `
     )
     .eq('court_id', courtId);
@@ -252,21 +250,35 @@ export async function fetchProvincialSchedules(
     .from('bail_judge_schedules')
     .select(
       `
-        id,
-        schedule_date,
-        judge:judge_contacts(id, full_name),
-        bail_hub:bail_hubs(id, name)
-      `
+          id,
+          schedule_date,
+          judge:judge_contacts(id, full_name),
+          bail_hub:bail_hubs(id, name)
+        `
     )
     .eq('court_id', courtId);
+  const dutyCounselPromise = supabase
+    .from('dc_schedules')
+    .select(
+      `
+          id,
+          schedule_date,
+          dc_contact:dc_contacts(id, full_name, email, phone)
+        `
+    )
+    .eq('court_id', courtId)
+    .eq('is_oc', true)
+    .is('bail_hub_id', null);
 
   const [
     { data: crownRows, error: crownError },
     { data: judgeRows, error: judgeError },
-  ] = await Promise.all([crownPromise, judgePromise]);
+    { data: dutyCounselRows, error: dutyCounselError },
+  ] = await Promise.all([crownPromise, judgePromise, dutyCounselPromise]);
 
   if (crownError) throw new Error(crownError.message);
   if (judgeError) throw new Error(judgeError.message);
+  if (dutyCounselError) throw new Error(dutyCounselError.message);
 
   const crownSchedules: CrownScheduleItem[] = (crownRows || []).map(
     (row: any) => ({
@@ -274,8 +286,8 @@ export async function fetchProvincialSchedules(
       schedule_date: row.schedule_date,
       courtroom: row.courtroom ?? null,
       crown_name: row.crown_contact?.full_name ?? 'Unknown',
-      crown_role_code: row.crown_role_code ?? row.crown_role?.code ?? null,
-      crown_role_label: row.crown_role?.full_name ?? null,
+      crown_role_code: null,
+      crown_role_label: null,
     })
   );
 
@@ -305,7 +317,27 @@ export async function fetchProvincialSchedules(
     return a.judge_name.localeCompare(b.judge_name);
   });
 
-  return { crownSchedules, judgeSchedules };
+  const dutyCounselSchedules: DutyCounselScheduleItem[] = (
+    dutyCounselRows || []
+  ).map((row: any) => ({
+      id: row.id,
+      schedule_date: row.schedule_date,
+      duty_counsel_name: row.dc_contact?.full_name ?? 'Unknown',
+      duty_counsel_email: row.dc_contact?.email ?? null,
+      duty_counsel_phone: row.dc_contact?.phone ?? null,
+      role: 'OC',
+      is_am: null,
+      is_pm: null,
+    }));
+
+  dutyCounselSchedules.sort((a, b) => {
+    const aDate = new Date(a.schedule_date).getTime();
+    const bDate = new Date(b.schedule_date).getTime();
+    if (aDate !== bDate) return aDate - bDate;
+    return a.duty_counsel_name.localeCompare(b.duty_counsel_name);
+  });
+
+  return { crownSchedules, judgeSchedules, dutyCounselSchedules };
 }
 
 export async function fetchBailSchedules(

@@ -741,40 +741,52 @@ export function BailScheduleCard({
                               )}
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0 px-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  if (email) window.open(`mailto:${email}`, "_self");
-                                }}
-                                disabled={!email}
-                                className={cn(
-                                  "h-8 w-8 rounded-lg transition-colors",
-                                  email
-                                    ? "bg-secondary/60 active:bg-secondary/80"
-                                    : "bg-secondary/30 text-muted-foreground/60",
-                                )}
-                                title="Email"
-                              >
-                                <FaAt className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  if (phone) makeCall(phone);
-                                }}
-                                disabled={!phone}
-                                className={cn(
-                                  "h-8 w-8 rounded-lg transition-colors",
-                                  phone
-                                    ? "bg-secondary/60 active:bg-secondary/80"
-                                    : "bg-secondary/30 text-muted-foreground/60",
-                                )}
-                                title="Call"
-                              >
-                                <FaPhoneSolid className="w-4 h-4" />
-                              </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            if (email && onCopy) {
+                              onCopy(email, `bail-dc-email-${entry.id}`);
+                            }
+                          }}
+                          disabled={!email || !onCopy}
+                          className={cn(
+                            "h-8 w-8 rounded-lg transition-colors",
+                            email && onCopy
+                              ? "bg-secondary/60 active:bg-secondary/80"
+                              : "bg-secondary/30 text-muted-foreground/60",
+                          )}
+                          title="Copy email"
+                        >
+                          {isCopied?.(`bail-dc-email-${entry.id}`) ? (
+                            <FaClipboardCheck className="w-4 h-4 text-semantic-green-text" />
+                          ) : (
+                            <FaAt className="w-4 h-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            if (phone && onCopy) {
+                              onCopy(phone, `bail-dc-phone-${entry.id}`);
+                            }
+                          }}
+                          disabled={!phone || !onCopy}
+                          className={cn(
+                            "h-8 w-8 rounded-lg transition-colors",
+                            phone && onCopy
+                              ? "bg-secondary/60 active:bg-secondary/80"
+                              : "bg-secondary/30 text-muted-foreground/60",
+                          )}
+                          title="Copy phone"
+                        >
+                          {isCopied?.(`bail-dc-phone-${entry.id}`) ? (
+                            <FaClipboardCheck className="w-4 h-4 text-semantic-green-text" />
+                          ) : (
+                            <FaPhoneSolid className="w-4 h-4" />
+                          )}
+                        </Button>
                             </div>
                           </CardListRow>
                         );
