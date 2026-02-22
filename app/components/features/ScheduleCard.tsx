@@ -435,6 +435,9 @@ export function ScheduleCard({
           }
           className="p-3 pt-2"
         >
+          <div className="mb-2 text-xs text-muted-foreground">
+            Schedule is subject to change and may not be accurate.
+          </div>
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <Button
               type="button"
