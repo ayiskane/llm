@@ -273,7 +273,7 @@ export function BailScheduleCard({
 
   const isAbbotsfordHub = bailHubId === ABBOTSFORD_BAIL_HUB_ID;
   const isPocoNwHub = bailHubId === POCO_NW_BAIL_HUB_ID;
-  const getCourtBadge = (courtId?: number | null) => {
+  const getCourtBadge = (courtId?: number | null, roleCode?: string | null) => {
     if (!courtId) return null;
     if (isAbbotsfordHub) {
       if (courtId === ABBOTSFORD_COURT_ID) return "ABBY";
@@ -281,6 +281,7 @@ export function BailScheduleCard({
       return null;
     }
     if (isPocoNwHub) {
+      if (roleCode !== "ic") return null;
       if (courtId === POCO_COURT_ID) return "POCO";
       if (courtId === NEW_WESTMINSTER_COURT_ID) return "NW";
     }
@@ -555,7 +556,10 @@ export function BailScheduleCard({
                               })()}
                             </span>
                             {(() => {
-                              const courtBadge = getCourtBadge(entry.court_id);
+                                const courtBadge = getCourtBadge(
+                                  entry.court_id,
+                                  entry.crown_role_code,
+                                );
                               return courtBadge ? (
                                 <Badge variant="bailCourtScheduleBadge">
                                   {courtBadge}
