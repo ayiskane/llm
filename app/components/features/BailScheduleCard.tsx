@@ -281,11 +281,11 @@ export function BailScheduleCard({
   }, [filteredCrowns]);
 
   const isAbbotsfordHub = bailHubId === ABBOTSFORD_BAIL_HUB_ID;
-  const getCourtSuffix = (courtId?: number | null) => {
-    if (!isAbbotsfordHub || !courtId) return "";
-    if (courtId === ABBOTSFORD_COURT_ID) return " (ABBY)";
-    if (courtId === CHILLIWACK_COURT_ID) return " (CWK)";
-    return "";
+  const getCourtBadge = (courtId?: number | null) => {
+    if (!isAbbotsfordHub || !courtId) return null;
+    if (courtId === ABBOTSFORD_COURT_ID) return "ABBY";
+    if (courtId === CHILLIWACK_COURT_ID) return "CWK";
+    return null;
   };
 
   const bailCourtroomLabel = useMemo(() => {
@@ -540,16 +540,23 @@ export function BailScheduleCard({
                       className="flex items-stretch gap-0 p-0 bg-slate-950/70"
                     >
                       <div className="flex-1 py-2 px-4 min-w-0">
-                        <div className={text.roleLabel}>
+                        <div className={cn(text.roleLabel, "flex items-center gap-1.5")}>
+                          <span>
+                            {(() => {
+                              const baseLabel = formatCrownRoleLabel(
+                                entry.crown_role_label ?? group.label,
+                              );
+                              const badgeLabel = entry.badge_label?.trim();
+                              return badgeLabel
+                                ? `${baseLabel} (${badgeLabel})`
+                                : baseLabel;
+                            })()}
+                          </span>
                           {(() => {
-                            const baseLabel = formatCrownRoleLabel(
-                              entry.crown_role_label ?? group.label,
-                            );
-                            const badgeLabel = entry.badge_label?.trim();
-                            const courtSuffix = getCourtSuffix(entry.court_id);
-                            return badgeLabel
-                              ? `${baseLabel} (${badgeLabel})${courtSuffix}`
-                              : `${baseLabel}${courtSuffix}`;
+                            const courtBadge = getCourtBadge(entry.court_id);
+                            return courtBadge ? (
+                              <Badge variant="courtroomType">{courtBadge}</Badge>
+                            ) : null;
                           })()}
                         </div>
                         <div className="text-sm font-medium text-foreground truncate">
