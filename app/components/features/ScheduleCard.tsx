@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeaderRow } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
@@ -240,6 +240,7 @@ interface ScheduleCardProps {
   dates: CourtScheduleDate[];
   emptyLabel?: string;
   isLoading?: boolean;
+  headerVariant?: "default" | "bail";
 }
 
 export function ScheduleCard({
@@ -247,6 +248,7 @@ export function ScheduleCard({
   dates,
   emptyLabel = "No sitting dates published yet.",
   isLoading = false,
+  headerVariant = "default",
 }: ScheduleCardProps) {
   const today = useMemo(() => {
     const current = new Date();
@@ -401,11 +403,14 @@ export function ScheduleCard({
       variant="list"
       className="rounded-lg border border-border/60 overflow-hidden"
     >
-      <div className="flex min-h-12 items-center gap-3 bg-linear-to-r from-semantic-blue-bg via-card to-card px-3 py-2.5 border-b border-border/50">
+      <CardHeaderRow
+        variant={headerVariant}
+        className="gap-3 border-b border-border/50"
+      >
         <div>
           <div className={text.sectionHeader}>{title}</div>
         </div>
-      </div>
+      </CardHeaderRow>
 
       {showLoading ? (
         <div className="px-3 py-3">

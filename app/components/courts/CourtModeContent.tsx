@@ -7,12 +7,14 @@ import { CircuitCourtAlert } from "./CircuitCourtAlert";
 import { TeamsCard } from "../features/TeamsCard";
 import { CourtFieldContacts } from "../features/ContactCard";
 import { ScheduleCard } from "../features/ScheduleCard";
+import { ProvincialScheduleCard } from "../features/ProvincialScheduleCard";
 import type { ContactEmailGroup, ContactPhoneItem } from "@/lib/hooks";
 import type {
   BailHub,
   CourtWithRegion,
   CourtScheduleDate,
   CourtroomSchedule,
+  ProvincialSchedules,
   TeamsLink,
 } from "@/types";
 
@@ -90,6 +92,8 @@ interface CourtModeContentProps {
   contactCount: number;
   scheduleDates: CourtScheduleDate[];
   scheduleLoading?: boolean;
+  provincialSchedules?: ProvincialSchedules;
+  provincialScheduleLoading?: boolean;
   activeSection: CourtSection;
   onCopy: (text: string, id: string) => void;
   isCopied: (id: string) => boolean;
@@ -107,6 +111,8 @@ export function CourtModeContent({
   contactCount,
   scheduleDates,
   scheduleLoading,
+  provincialSchedules,
+  provincialScheduleLoading,
   activeSection,
   onCopy,
   isCopied,
@@ -115,6 +121,7 @@ export function CourtModeContent({
   const showContacts = activeSection === "contacts";
   const showSchedule = activeSection === "schedule";
   const showTeams = activeSection === "teams";
+  const showCourtScheduleDates = court.is_circuit || viewMode === "fnc";
   const scheduleDatesForMode = useMemo(() => {
     if (court.is_circuit) return scheduleDates;
     if (viewMode !== "fnc") return [];
@@ -147,7 +154,17 @@ export function CourtModeContent({
       )}
 
       {/* Schedule section */}
-      {showSchedule && (court.is_circuit || viewMode === "fnc") && (
+      {showSchedule && viewMode === "provincial" && (
+        <div className="p-3">
+          <ProvincialScheduleCard
+            crownSchedules={provincialSchedules?.crownSchedules ?? []}
+            judgeSchedules={provincialSchedules?.judgeSchedules ?? []}
+            isLoading={provincialScheduleLoading}
+          />
+        </div>
+      )}
+
+      {showSchedule && showCourtScheduleDates && (
         <div className="p-3">
           <ScheduleCard
             dates={scheduleDatesForMode}

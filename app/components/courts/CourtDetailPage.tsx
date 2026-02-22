@@ -17,8 +17,10 @@ import {
 import {
   useBailDetails,
   useBailHubDetails,
+  useBailSchedules,
   useCourtScheduleDates,
   useCourtSections,
+  useProvincialSchedules,
 } from "@/lib/hooks";
 import { useCopyToClipboard } from "@/lib/hooks/useCopyToClipboard";
 import { Button } from "@/components/ui/button";
@@ -74,12 +76,24 @@ export function CourtDetailPage({
   const [courtSectionsByMode, setCourtSectionsByMode] = useState<
     Partial<Record<CourtViewMode, CourtSection>>
   >({});
-  const showSchedule = court.is_circuit || viewMode === "fnc";
-  const scheduleEnabled = courtActiveSection === "schedule" && showSchedule;
-  const { data: scheduleDates, isLoading: scheduleLoading } =
-    useCourtScheduleDates(court.id, scheduleEnabled);
   const [bailExpandedSection, setBailExpandedSection] =
     useState<BailAccordionSection>("contacts");
+  const showProvincialSchedule = viewMode === "provincial";
+  const showCourtScheduleDates = court.is_circuit || viewMode === "fnc";
+  const showScheduleTab = showCourtScheduleDates || showProvincialSchedule;
+  const showBailSchedule = true;
+  const bailScheduleEnabled =
+    isBailMode && bailExpandedSection === "schedule";
+  const scheduleDatesEnabled =
+    courtActiveSection === "schedule" && showCourtScheduleDates;
+  const provincialScheduleEnabled =
+    showProvincialSchedule && courtActiveSection === "schedule";
+  const { data: scheduleDates, isLoading: scheduleLoading } =
+    useCourtScheduleDates(court.id, scheduleDatesEnabled);
+  const {
+    data: provincialSchedules,
+    isLoading: provincialScheduleLoading,
+  } = useProvincialSchedules(court.id, provincialScheduleEnabled);
   const isBailHubLocation = bailHubSummary?.court_id === court.id;
   const hasBailData = Boolean(bailHubSummary);
   const effectiveBailDetails = isVr9Hub ? vr9Details : bailDetails;
@@ -92,6 +106,10 @@ export function CourtDetailPage({
   const courtroomSchedulesForBail = isVr9Hub
     ? (vr9Details?.courtroomSchedules ?? [])
     : courtroomSchedules;
+  const {
+    data: bailSchedules,
+    isLoading: bailScheduleLoading,
+  } = useBailSchedules(bailHub?.id ?? null, bailScheduleEnabled);
   const allowedModes = useMemo(() => {
     const modes: CourtViewMode[] = [];
     if (court.has_provincial) modes.push("provincial");
@@ -117,10 +135,10 @@ export function CourtDetailPage({
   const allowedCourtSections = useMemo(() => {
     const sections: CourtSection[] = [];
     if (contacts.count > 0) sections.push("contacts");
-    if (showSchedule) sections.push("schedule");
+    if (showScheduleTab) sections.push("schedule");
     if (teamsLinks.length > 0 && viewMode !== "fnc") sections.push("teams");
     return sections;
-  }, [contacts.count, showSchedule, teamsLinks.length, viewMode]);
+  }, [contacts.count, showScheduleTab, teamsLinks.length, viewMode]);
 
   useEffect(() => {
     if (isBailMode) return;
@@ -203,6 +221,7 @@ export function CourtDetailPage({
                 bailTeams={bailTeams}
                 expandedSection={bailExpandedSection}
                 onNavigateToSection={setBailExpandedSection}
+                showSchedule={showBailSchedule}
               />
             ) : null
           ) : null
@@ -210,7 +229,7 @@ export function CourtDetailPage({
           <CourtModeNav
             contactCount={contacts.count}
             teamsLinks={teamsLinks}
-            showSchedule={showSchedule}
+            showSchedule={showScheduleTab}
             viewMode={viewMode}
             activeSection={courtActiveSection}
             onNavigateToSection={handleCourtSectionChange}
@@ -242,6 +261,8 @@ export function CourtDetailPage({
               bailContacts={bailContacts}
               bailTeams={bailTeams}
               courtroomSchedules={courtroomSchedulesForBail}
+              bailSchedules={bailSchedules}
+              bailScheduleLoading={bailScheduleLoading}
               cells={cells}
               expandedSection={bailExpandedSection}
               onCopy={copyToClipboard}
@@ -261,6 +282,8 @@ export function CourtDetailPage({
             contactCount={contacts.count}
             scheduleDates={scheduleDates}
             scheduleLoading={scheduleLoading}
+            provincialSchedules={provincialSchedules}
+            provincialScheduleLoading={provincialScheduleLoading}
             activeSection={courtActiveSection}
             onCopy={copyToClipboard}
             isCopied={isCopied}

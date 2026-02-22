@@ -10,12 +10,14 @@ import {
   FaEyeSlash,
   FaPhoneSolid,
   FaVideo,
+  FaCalendar,
 } from "@/lib/icons";
-import { cn, formatPhone, makeCall } from "@/lib/utils";
-import { Card, CardListItem, CardListRow } from "@/components/ui/card";
+import { cn, formatPhone, makeCall, getBailHubDisplayName } from "@/lib/utils";
+import { Card, CardHeaderRow, CardListItem, CardListRow } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PillButton } from "../ui";
 import { TeamsCard } from "../features/TeamsCard";
+import { BailScheduleCard } from "../features/BailScheduleCard";
 import { CellList } from "../features/CellCard";
 import { iconSize, text, toggle } from "@/lib/config/theme";
 import { BailHubAlert } from "./BailHubAlert";
@@ -23,11 +25,12 @@ import type {
   BailContact,
   BailHub,
   CourtroomSchedule,
+  BailSchedules,
   SheriffCell,
   TeamsLink,
 } from "@/types";
 
-export type BailAccordionSection = "contacts" | "teams" | null;
+export type BailAccordionSection = "contacts" | "teams" | "schedule" | null;
 
 // =============================================================================
 // BAIL CONTACTS
@@ -134,7 +137,7 @@ function BailContactsStack({
           variant="list"
           className="rounded-lg border border-border/60 overflow-hidden"
         >
-          <div className="flex min-h-12 items-center justify-between bg-linear-to-r from-semantic-amber-bg via-card to-card px-3 py-2.5 border-b border-border/50">
+          <CardHeaderRow variant="bail" className="justify-between border-b border-border/50">
             <div className={text.sectionHeader}>Bail Contacts</div>
             {showToggle && (
               <Button
@@ -159,7 +162,7 @@ function BailContactsStack({
                 <span>{showFull ? "Truncate" : "Show full"}</span>
               </Button>
             )}
-          </div>
+          </CardHeaderRow>
 
           {contactEmails.map((contact) => {
             const isFieldCopied = isCopied(contact.id);
@@ -301,12 +304,14 @@ interface BailModeNavProps {
   bailTeams: TeamsLink[];
   expandedSection: BailAccordionSection;
   onNavigateToSection: (section: BailAccordionSection) => void;
+  showSchedule?: boolean;
 }
 
 export function BailModeNav({
   bailTeams,
   expandedSection,
   onNavigateToSection,
+  showSchedule = false,
 }: BailModeNavProps) {
   const hasTeams = bailTeams.length > 0;
 
@@ -319,13 +324,19 @@ export function BailModeNav({
         show: true,
       },
       {
+        key: "schedule",
+        label: "Schedule",
+        icon: <FaCalendar className="w-4 h-4" />,
+        show: showSchedule,
+      },
+      {
         key: "teams",
         label: "Teams",
         icon: <FaVideo className="w-4 h-4" />,
         show: hasTeams,
       },
     ],
-    [hasTeams],
+    [hasTeams, showSchedule],
   );
 
   return (
@@ -357,6 +368,8 @@ interface BailModeContentProps {
   bailContacts: BailContact[];
   bailTeams: TeamsLink[];
   courtroomSchedules: CourtroomSchedule[];
+  bailSchedules?: BailSchedules;
+  bailScheduleLoading?: boolean;
   cells: SheriffCell[];
   expandedSection: BailAccordionSection;
   onCopy: (text: string, id: string) => void;
@@ -370,6 +383,8 @@ export function BailModeContent({
   bailContacts,
   bailTeams,
   courtroomSchedules,
+  bailSchedules,
+  bailScheduleLoading,
   cells,
   expandedSection,
   onCopy,
@@ -382,13 +397,15 @@ export function BailModeContent({
   const isHubCourt = bailHub?.court_id === courtId || isVr9Hub;
   const showCombined = !isHubCourt;
   const showContacts = showCombined || expandedSection === "contacts";
+  const showSchedule = !showCombined && expandedSection === "schedule";
   const showTeams = showCombined || expandedSection === "teams";
+  const bailHubDisplayName = getBailHubDisplayName(bailHub?.name ?? null);
 
   return (
     <div className="p-3 space-y-2.5 pb-20">
       {showBailHubAlert && (
         <BailHubAlert
-          hubCourtName={bailHub.name}
+          hubCourtName={bailHubDisplayName || bailHub.name}
           hubCourtId={isVr9Hub ? null : bailHub.court_id}
           hubPath={isVr9Hub ? "/bail-hub/vr9" : null}
           onNavigateToHub={onNavigateToCourt}
@@ -409,13 +426,29 @@ export function BailModeContent({
                 variant="list"
                 className="mt-4 rounded-lg border border-border/60 overflow-hidden"
               >
-                <div className="flex min-h-12 items-center bg-linear-to-r from-semantic-amber-bg via-card to-card px-3 py-2.5 border-b border-border/50">
+                <CardHeaderRow variant="bail" className="border-b border-border/50">
                   <div className={text.sectionHeader}>SHERIFF CELLS</div>
-                </div>
+                </CardHeaderRow>
                 <CellList cells={cells} variant="list" />
               </Card>
             )}
           </div>
+        </div>
+      )}
+
+      {showSchedule && (
+        <div className="p-3">
+          <BailScheduleCard
+            crownSchedules={bailSchedules?.crownSchedules ?? []}
+            judgeSchedules={bailSchedules?.judgeSchedules ?? []}
+            dutyCounselSchedules={bailSchedules?.dutyCounselSchedules ?? []}
+            isLoading={bailScheduleLoading}
+            onCopy={onCopy}
+            isCopied={isCopied}
+            bailHubName={bailHubDisplayName || (bailHub?.name ?? null)}
+            regionJusticeCentreName={bailHub?.region_justice_centre_name ?? null}
+            bailTeams={bailTeams}
+          />
         </div>
       )}
 
@@ -432,6 +465,7 @@ export function BailModeContent({
             pinVBTriage
             onCopy={onCopy}
             isCopied={isCopied}
+            headerVariant="bail"
           />
         </div>
       )}

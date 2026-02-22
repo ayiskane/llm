@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { iconSize, sectionColorMap, text, type SectionColor } from "@/lib/config/theme";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardListRow } from "@/components/ui/card";
+import { Card, CardHeaderRow, CardListRow } from "@/components/ui/card";
 import { StickyHeader } from "../layouts/StickyHeader";
 import { Section, PillButton } from "../ui";
 import { CorrectionHeader } from "./CorrectionHeader";
@@ -141,9 +141,9 @@ function ContactSection({ centre }: { centre: CorrectionalCentre }) {
       variant="list"
       className="rounded-lg border border-border/60 overflow-hidden"
     >
-      <div className="flex min-h-12 items-center bg-linear-to-r from-semantic-blue-bg via-card to-card px-3 py-2.5 border-b border-border/50">
+      <CardHeaderRow className="border-b border-border/50">
         <h4 className={text.sectionHeader}>Centre Contacts</h4>
-      </div>
+      </CardHeaderRow>
 
       {phone && (
         <CardListRow className="flex items-center gap-3 px-4 py-2.5">
