@@ -31,13 +31,13 @@ export function CorrectionHeader({
         </h1>
 
         {!collapsed && centre.short_name && (
-          <Badge variant="short_name">{centre.short_name}</Badge>
+          <Badge variant="courtroomType">{centre.short_name}</Badge>
         )}
 
         {collapsed && centre.address && (
           <>
             {centre.short_name && (
-              <Badge variant="short_name">{centre.short_name}</Badge>
+              <Badge variant="courtroomType">{centre.short_name}</Badge>
             )}
             <Button
               variant="ghost"
