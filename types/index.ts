@@ -189,6 +189,7 @@ export interface BailJudgeScheduleItem {
 export interface DutyCounselScheduleItem {
   id: number;
   schedule_date: string;
+  court_id?: number | null;
   duty_counsel_name: string;
   duty_counsel_email?: string | null;
   duty_counsel_phone?: string | null;

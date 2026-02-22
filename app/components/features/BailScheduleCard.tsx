@@ -47,8 +47,8 @@ function normalizeRoleLabel(code?: string | null, label?: string | null) {
 function formatDutyCounselRole(role?: string | null) {
   if (!role) return null;
   const normalized = role.trim().toUpperCase();
-  if (normalized === "IC" || normalized === "IN CUSTODY") return "IC";
-  if (normalized === "OC" || normalized === "OUT OF CUSTODY") return "OC";
+  if (normalized === "IC" || normalized === "IN CUSTODY") return "I/C";
+  if (normalized === "OC" || normalized === "OUT OF CUSTODY") return "O/C";
   return normalized;
 }
 
@@ -192,6 +192,7 @@ export function BailScheduleCard({
   const hasData = hasCrown || hasJudges || hasDutyCounsel;
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
   const [isCrownOpen, setIsCrownOpen] = useState(true);
+  const [isDutyCounselOpen, setIsDutyCounselOpen] = useState(true);
   const [weekStart, setWeekStart] = useState<Date>(() =>
     startOfWeek(new Date()),
   );
@@ -516,7 +517,7 @@ export function BailScheduleCard({
               className="w-full flex items-center justify-between px-3 py-2.5 text-left"
             >
               <span className={cn(text.sectionHeader, "text-muted-foreground")}>
-                Bail Crowns
+                Bail Crown
               </span>
               <FaChevronDown
                 className={cn(
@@ -654,88 +655,218 @@ export function BailScheduleCard({
 
       <div>
         {selectedDateKey && filteredDutyCounsel.length > 0 ? (
-          <CardListRow className="flex items-start gap-3 px-3 py-2.5">
-            <div
-              className={cn(
-                text.sectionHeader,
-                "w-24 shrink-0 text-muted-foreground",
-              )}
-            >
-              Duty Counsel
-            </div>
-            <div className="flex-1 min-w-0 space-y-2">
-              {filteredDutyCounsel.map((entry) => {
-                const roleLabel = formatDutyCounselRole(entry.role);
-                const amBadge = entry.is_am ? "AM" : null;
-                const pmBadge = entry.is_pm ? "PM" : null;
-                const email = entry.duty_counsel_email ?? null;
-                const phone = entry.duty_counsel_phone ?? null;
-                return (
-                  <div
-                    key={`bail-dc-${entry.id}`}
-                    className="flex items-center justify-between gap-3"
-                  >
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium text-foreground truncate">
-                        {roleLabel
-                          ? `${roleLabel} Duty Counsel`
-                          : "Duty Counsel"}
-                      </div>
-                      <div className="text-sm text-muted-foreground truncate">
-                        {entry.duty_counsel_name}
-                      </div>
-                      {(amBadge || pmBadge) && (
-                        <div className="mt-1 flex flex-wrap gap-1.5">
-                          {amBadge && (
-                            <Badge variant="courtroomType">{amBadge}</Badge>
-                          )}
-                          {pmBadge && (
-                            <Badge variant="courtroomType">{pmBadge}</Badge>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          if (email) window.open(`mailto:${email}`, "_self");
-                        }}
-                        disabled={!email}
-                        className={cn(
-                          "h-8 w-8 rounded-lg",
-                          email
-                            ? "bg-secondary/60 hover:bg-secondary/70"
-                            : "bg-secondary/30 text-muted-foreground/60",
-                        )}
-                        title="Email"
-                      >
-                        <FaAt className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          if (phone) makeCall(phone);
-                        }}
-                        disabled={!phone}
-                        className={cn(
-                          "h-8 w-8 rounded-lg",
-                          phone
-                            ? "bg-semantic-green-bg hover:bg-semantic-green-bg/70"
-                            : "bg-secondary/30 text-muted-foreground/60",
-                        )}
-                        title="Call"
-                      >
-                        <FaPhoneSolid className="w-4 h-4" />
-                      </Button>
-                    </div>
+          filteredDutyCounsel.length > 1 ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setIsDutyCounselOpen((prev) => !prev)}
+                className="w-full flex items-center justify-between px-3 py-2.5 text-left"
+              >
+                <span
+                  className={cn(text.sectionHeader, "text-muted-foreground")}
+                >
+                  Duty Counsel
+                </span>
+                <FaChevronDown
+                  className={cn(
+                    "w-3.5 h-3.5 text-muted-foreground transition-transform",
+                    isDutyCounselOpen && "rotate-180",
+                  )}
+                />
+              </button>
+              <div
+                className={cn(
+                  "overflow-hidden transition-[max-height] duration-300",
+                  isDutyCounselOpen ? "max-h-96" : "max-h-0",
+                )}
+              >
+                <div className="max-h-72 overflow-y-auto overscroll-contain">
+                  <div className="space-y-0 divide-y divide-border/30">
+                    {filteredDutyCounsel.map((entry) => {
+                      const roleLabel = formatDutyCounselRole(entry.role);
+                      const amBadge = entry.is_am ? "AM" : null;
+                      const pmBadge = entry.is_pm ? "PM" : null;
+                      const email = entry.duty_counsel_email ?? null;
+                      const phone = entry.duty_counsel_phone ?? null;
+                      const courtBadge = getCourtBadge(entry.court_id, "ic");
+                      return (
+                        <CardListRow
+                          key={`bail-dc-${entry.id}`}
+                          interactive={false}
+                          className="flex items-stretch gap-0 p-0 bg-slate-950/70"
+                        >
+                          <div className="flex-1 py-2 px-4 min-w-0">
+                            <div
+                              className={cn(
+                                text.roleLabel,
+                                "flex items-center gap-1.5",
+                              )}
+                            >
+                              <span>
+                                {roleLabel
+                                  ? `${roleLabel} Duty Counsel`
+                                  : "Duty Counsel"}
+                              </span>
+                              {courtBadge ? (
+                                <Badge variant="bailCourtScheduleBadge">
+                                  {courtBadge}
+                                </Badge>
+                              ) : null}
+                            </div>
+                            <div className="text-sm font-medium text-foreground truncate">
+                              {entry.duty_counsel_name}
+                            </div>
+                            {(amBadge || pmBadge) && (
+                              <div className="mt-1 flex flex-wrap gap-1.5">
+                                {amBadge && (
+                                  <Badge variant="courtroomType">{amBadge}</Badge>
+                                )}
+                                {pmBadge && (
+                                  <Badge variant="courtroomType">{pmBadge}</Badge>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0 px-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                if (email) window.open(`mailto:${email}`, "_self");
+                              }}
+                              disabled={!email}
+                              className={cn(
+                                "h-8 w-8 rounded-lg transition-colors",
+                                email
+                                  ? "bg-secondary/60 active:bg-secondary/80"
+                                  : "bg-secondary/30 text-muted-foreground/60",
+                              )}
+                              title="Email"
+                            >
+                              <FaAt className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                if (phone) makeCall(phone);
+                              }}
+                              disabled={!phone}
+                              className={cn(
+                                "h-8 w-8 rounded-lg transition-colors",
+                                phone
+                                  ? "bg-secondary/60 active:bg-secondary/80"
+                                  : "bg-secondary/30 text-muted-foreground/60",
+                              )}
+                              title="Call"
+                            >
+                              <FaPhoneSolid className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </CardListRow>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
-          </CardListRow>
+                </div>
+              </div>
+            </>
+          ) : (
+            <CardListRow className="flex items-start gap-3 px-3 py-2.5">
+              <div
+                className={cn(
+                  text.sectionHeader,
+                  "w-24 shrink-0 text-muted-foreground",
+                )}
+              >
+                Duty Counsel
+              </div>
+              <div className="flex-1 min-w-0 space-y-2">
+                {filteredDutyCounsel.map((entry) => {
+                  const roleLabel = formatDutyCounselRole(entry.role);
+                  const amBadge = entry.is_am ? "AM" : null;
+                  const pmBadge = entry.is_pm ? "PM" : null;
+                  const email = entry.duty_counsel_email ?? null;
+                  const phone = entry.duty_counsel_phone ?? null;
+                  const courtBadge = getCourtBadge(entry.court_id, "ic");
+                  return (
+                    <div
+                      key={`bail-dc-${entry.id}`}
+                      className="flex items-center justify-between gap-3"
+                    >
+                      <div className="min-w-0">
+                        <div
+                          className={cn(
+                            text.roleLabel,
+                            "flex items-center gap-1.5",
+                          )}
+                        >
+                          <span>
+                            {roleLabel
+                              ? `${roleLabel} Duty Counsel`
+                              : "Duty Counsel"}
+                          </span>
+                          {courtBadge ? (
+                            <Badge variant="bailCourtScheduleBadge">
+                              {courtBadge}
+                            </Badge>
+                          ) : null}
+                        </div>
+                        <div className="text-sm text-muted-foreground truncate">
+                          {entry.duty_counsel_name}
+                        </div>
+                        {(amBadge || pmBadge) && (
+                          <div className="mt-1 flex flex-wrap gap-1.5">
+                            {amBadge && (
+                              <Badge variant="courtroomType">{amBadge}</Badge>
+                            )}
+                            {pmBadge && (
+                              <Badge variant="courtroomType">{pmBadge}</Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            if (email) window.open(`mailto:${email}`, "_self");
+                          }}
+                          disabled={!email}
+                          className={cn(
+                            "h-8 w-8 rounded-lg",
+                            email
+                              ? "bg-secondary/60 hover:bg-secondary/70"
+                              : "bg-secondary/30 text-muted-foreground/60",
+                          )}
+                          title="Email"
+                        >
+                          <FaAt className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            if (phone) makeCall(phone);
+                          }}
+                          disabled={!phone}
+                          className={cn(
+                            "h-8 w-8 rounded-lg",
+                            phone
+                              ? "bg-semantic-green-bg hover:bg-semantic-green-bg/70"
+                              : "bg-secondary/30 text-muted-foreground/60",
+                          )}
+                          title="Call"
+                        >
+                          <FaPhoneSolid className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardListRow>
+          )
         ) : (
           <CardListRow className="flex items-center gap-3 px-3 py-2.5">
             <div
