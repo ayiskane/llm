@@ -16,7 +16,7 @@ const badgeVariants = cva(
         federal: "border-transparent bg-semantic-sky-bg text-semantic-sky-text",
         region: "border bg-foreground/5 border-border/50 text-muted-foreground font-mono",
         courtroomType: "border border-border/60 bg-secondary/40 text-foreground/80 font-mono",
-        bailCourtScheduleBadge: "border border-border/60 bg-secondary/40 text-foreground/80 font-mono",
+        bailCourtScheduleBadge: "px-1 py-0 border border-border/60 bg-secondary/40 text-foreground/80 font-mono",
         weekday: "text-[10px] normal-case tracking-normal font-mono bg-secondary/20 text-foreground/20",
         weekday_active: "px-2 py-1 text-[10px] normal-case tracking-normal font-mono bg-blue-500/25 border border-blue-500/40 text-blue-300",
         short_name: "border border-border/60 tracking-widest bg-secondary/40 text-foreground/80 font-mono"
