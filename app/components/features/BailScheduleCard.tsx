@@ -507,126 +507,145 @@ export function BailScheduleCard({
       </div>
 
       <div className="border-b border-border/50">
-        <button
-          type="button"
-          onClick={() => setIsCrownOpen((prev) => !prev)}
-          className="w-full flex items-center justify-between px-3 py-2.5 text-left"
-        >
-          <span className={cn(text.sectionHeader, "text-muted-foreground")}>
-            Bail Crowns
-          </span>
-          <FaChevronDown
-            className={cn(
-              "w-3.5 h-3.5 text-muted-foreground transition-transform",
-              isCrownOpen && "rotate-180",
-            )}
-          />
-        </button>
-        <div
-          className={cn(
-            "overflow-hidden transition-[max-height] duration-300",
-            isCrownOpen ? "max-h-96" : "max-h-0",
-          )}
-        >
-          {selectedDateKey && groupedCrowns.length > 0 ? (
-            <div className="max-h-72 overflow-y-auto overscroll-contain">
-              <div className="space-y-0 divide-y divide-border/30">
-                {groupedCrowns.flatMap((group) =>
-                  group.items.map((entry) => (
-                    <CardListRow
-                      key={`bail-crown-${entry.id}`}
-                      interactive={false}
-                      className="flex items-stretch gap-0 p-0 bg-slate-950/70"
-                    >
-                      <div className="flex-1 py-2 px-4 min-w-0">
-                        <div className={cn(text.roleLabel, "flex items-center gap-1.5")}>
-                          <span>
-                            {(() => {
-                              const baseLabel = formatCrownRoleLabel(
-                                entry.crown_role_label ?? group.label,
-                              );
-                              const badgeLabel = entry.badge_label?.trim();
-                              return badgeLabel
-                                ? `${baseLabel} (${badgeLabel})`
-                                : baseLabel;
-                            })()}
-                          </span>
-                          {(() => {
-                            const courtBadge = getCourtBadge(entry.court_id);
-                            return courtBadge ? (
-                              <Badge variant="bailCourtScheduleBadge">{courtBadge}</Badge>
-                            ) : null;
-                          })()}
-                        </div>
-                        <div className="text-sm font-medium text-foreground truncate">
-                          {entry.crown_name}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0 px-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            if (entry.crown_email) {
-                              onCopy?.(
-                                entry.crown_email,
-                                `bail-crown-email-${entry.id}`,
-                              );
-                            }
-                          }}
-                          disabled={!entry.crown_email}
-                          className={cn(
-                            "h-8 w-8 rounded-lg transition-colors",
-                            entry.crown_email
-                              ? "bg-secondary/60 active:bg-secondary/80"
-                              : "bg-secondary/30 text-muted-foreground/60",
-                          )}
-                          title="Copy email"
-                        >
-                          {isCopied?.(`bail-crown-email-${entry.id}`) ? (
-                            <FaClipboardCheck className="w-4 h-4 text-semantic-green-text" />
-                          ) : (
-                            <FaAt className="w-4 h-4" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            if (entry.crown_phone) {
-                              onCopy?.(
-                                entry.crown_phone,
-                                `bail-crown-phone-${entry.id}`,
-                              );
-                            }
-                          }}
-                          disabled={!entry.crown_phone}
-                          className={cn(
-                            "h-8 w-8 rounded-lg transition-colors",
-                            entry.crown_phone
-                              ? "bg-secondary/60 active:bg-secondary/80"
-                              : "bg-secondary/30 text-muted-foreground/60",
-                          )}
-                          title="Copy phone"
-                        >
-                          {isCopied?.(`bail-crown-phone-${entry.id}`) ? (
-                            <FaClipboardCheck className="w-4 h-4 text-semantic-green-text" />
-                          ) : (
-                            <FaPhoneSolid className="w-4 h-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </CardListRow>
-                  )),
+        {selectedDateKey && groupedCrowns.length > 0 ? (
+          <>
+            <button
+              type="button"
+              onClick={() => setIsCrownOpen((prev) => !prev)}
+              className="w-full flex items-center justify-between px-3 py-2.5 text-left"
+            >
+              <span className={cn(text.sectionHeader, "text-muted-foreground")}>
+                Bail Crowns
+              </span>
+              <FaChevronDown
+                className={cn(
+                  "w-3.5 h-3.5 text-muted-foreground transition-transform",
+                  isCrownOpen && "rotate-180",
                 )}
+              />
+            </button>
+            <div
+              className={cn(
+                "overflow-hidden transition-[max-height] duration-300",
+                isCrownOpen ? "max-h-96" : "max-h-0",
+              )}
+            >
+              <div className="max-h-72 overflow-y-auto overscroll-contain">
+                <div className="space-y-0 divide-y divide-border/30">
+                  {groupedCrowns.flatMap((group) =>
+                    group.items.map((entry) => (
+                      <CardListRow
+                        key={`bail-crown-${entry.id}`}
+                        interactive={false}
+                        className="flex items-stretch gap-0 p-0 bg-slate-950/70"
+                      >
+                        <div className="flex-1 py-2 px-4 min-w-0">
+                          <div
+                            className={cn(text.roleLabel, "flex items-center gap-1.5")}
+                          >
+                            <span>
+                              {(() => {
+                                const baseLabel = formatCrownRoleLabel(
+                                  entry.crown_role_label ?? group.label,
+                                );
+                                const badgeLabel = entry.badge_label?.trim();
+                                return badgeLabel
+                                  ? `${baseLabel} (${badgeLabel})`
+                                  : baseLabel;
+                              })()}
+                            </span>
+                            {(() => {
+                              const courtBadge = getCourtBadge(entry.court_id);
+                              return courtBadge ? (
+                                <Badge variant="bailCourtScheduleBadge">
+                                  {courtBadge}
+                                </Badge>
+                              ) : null;
+                            })()}
+                          </div>
+                          <div className="text-sm font-medium text-foreground truncate">
+                            {entry.crown_name}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0 px-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              if (entry.crown_email) {
+                                onCopy?.(
+                                  entry.crown_email,
+                                  `bail-crown-email-${entry.id}`,
+                                );
+                              }
+                            }}
+                            disabled={!entry.crown_email}
+                            className={cn(
+                              "h-8 w-8 rounded-lg transition-colors",
+                              entry.crown_email
+                                ? "bg-secondary/60 active:bg-secondary/80"
+                                : "bg-secondary/30 text-muted-foreground/60",
+                            )}
+                            title="Copy email"
+                          >
+                            {isCopied?.(`bail-crown-email-${entry.id}`) ? (
+                              <FaClipboardCheck className="w-4 h-4 text-semantic-green-text" />
+                            ) : (
+                              <FaAt className="w-4 h-4" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              if (entry.crown_phone) {
+                                onCopy?.(
+                                  entry.crown_phone,
+                                  `bail-crown-phone-${entry.id}`,
+                                );
+                              }
+                            }}
+                            disabled={!entry.crown_phone}
+                            className={cn(
+                              "h-8 w-8 rounded-lg transition-colors",
+                              entry.crown_phone
+                                ? "bg-secondary/60 active:bg-secondary/80"
+                                : "bg-secondary/30 text-muted-foreground/60",
+                            )}
+                            title="Copy phone"
+                          >
+                            {isCopied?.(`bail-crown-phone-${entry.id}`) ? (
+                              <FaClipboardCheck className="w-4 h-4 text-semantic-green-text" />
+                            ) : (
+                              <FaPhoneSolid className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </CardListRow>
+                    )),
+                  )}
+                </div>
               </div>
             </div>
-          ) : (
-          <div className="px-4 pb-3 text-xs text-muted-foreground text-right">
-            No Available Information
-          </div>
-          )}
-        </div>
+          </>
+        ) : (
+          <CardListRow
+            interactive={false}
+            className="flex items-center gap-3 px-3 py-2.5"
+          >
+            <div
+              className={cn(
+                text.sectionHeader,
+                "w-24 shrink-0 text-muted-foreground",
+              )}
+            >
+              Bail Crowns
+            </div>
+            <div className="text-xs text-muted-foreground text-right flex-1">
+              No Available Information
+            </div>
+          </CardListRow>
+        )}
       </div>
 
       <div>
