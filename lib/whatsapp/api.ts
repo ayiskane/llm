@@ -138,7 +138,9 @@ const sendFlowMessageInternal = async (
       let message = 'Unknown error';
       try {
         const payload = await res.json();
+        const details = payload?.error?.error_data?.details;
         message = payload?.error?.message || payload?.message || message;
+        if (details) message = `${message} (${details})`;
         console.error('WhatsApp Flow Error:', { recipient, phoneNumberId, payload });
       } catch (e) {
         console.error('WhatsApp Flow Error (parse):', e);

@@ -259,14 +259,28 @@ export async function fetchProvincialSchedules(
       `
     )
     .eq('court_id', courtId);
+  const dutyCounselPromise = supabase
+    .from('dc_schedules')
+    .select(
+      `
+        id,
+        schedule_date,
+        dc_contact:dc_contacts(id, full_name, email, phone)
+      `
+    )
+    .eq('court_id', courtId)
+    .eq('is_oc', true)
+    .is('bail_hub_id', null);
 
   const [
     { data: crownRows, error: crownError },
     { data: judgeRows, error: judgeError },
-  ] = await Promise.all([crownPromise, judgePromise]);
+    { data: dutyCounselRows, error: dutyCounselError },
+  ] = await Promise.all([crownPromise, judgePromise, dutyCounselPromise]);
 
   if (crownError) throw new Error(crownError.message);
   if (judgeError) throw new Error(judgeError.message);
+  if (dutyCounselError) throw new Error(dutyCounselError.message);
 
   const crownSchedules: CrownScheduleItem[] = (crownRows || []).map(
     (row: any) => ({
@@ -305,7 +319,27 @@ export async function fetchProvincialSchedules(
     return a.judge_name.localeCompare(b.judge_name);
   });
 
-  return { crownSchedules, judgeSchedules };
+  const dutyCounselSchedules: DutyCounselScheduleItem[] = (
+    dutyCounselRows || []
+  ).map((row: any) => ({
+      id: row.id,
+      schedule_date: row.schedule_date,
+      duty_counsel_name: row.dc_contact?.full_name ?? 'Unknown',
+      duty_counsel_email: row.dc_contact?.email ?? null,
+      duty_counsel_phone: row.dc_contact?.phone ?? null,
+      role: 'OC',
+      is_am: null,
+      is_pm: null,
+    }));
+
+  dutyCounselSchedules.sort((a, b) => {
+    const aDate = new Date(a.schedule_date).getTime();
+    const bDate = new Date(b.schedule_date).getTime();
+    if (aDate !== bDate) return aDate - bDate;
+    return a.duty_counsel_name.localeCompare(b.duty_counsel_name);
+  });
+
+  return { crownSchedules, judgeSchedules, dutyCounselSchedules };
 }
 
 export async function fetchBailSchedules(
@@ -348,13 +382,17 @@ export async function fetchBailSchedules(
       `
         id,
         schedule_date,
-        role,
-        is_am,
-        is_pm,
+        court_id,
+        is_ic,
+        is_oc,
+        is_youth,
+        is_evening,
+        is_weekend,
         dc_contact:dc_contacts(id, full_name, email, phone)
       `
     )
-    .eq('bail_hub_id', bailHubId);
+    .eq('bail_hub_id', bailHubId)
+    .eq('is_ic', true);
 
   const [
     crownResult,
@@ -432,16 +470,30 @@ export async function fetchBailSchedules(
 
   const dutyCounselSchedules: DutyCounselScheduleItem[] = (
     dutyCounselRows || []
-  ).map((row: any) => ({
+  ).map((row: any) => {
+    const role = row.is_weekend
+      ? 'Weekend'
+      : row.is_evening
+        ? 'Evening'
+        : row.is_youth
+          ? 'ICY'
+          : row.is_ic
+            ? 'IC'
+            : row.is_oc
+              ? 'OC'
+              : null;
+    return {
       id: row.id,
       schedule_date: row.schedule_date,
+      court_id: row.court_id ?? null,
       duty_counsel_name: row.dc_contact?.full_name ?? 'Unknown',
       duty_counsel_email: row.dc_contact?.email ?? null,
       duty_counsel_phone: row.dc_contact?.phone ?? null,
-      role: row.role ?? null,
-      is_am: row.is_am ?? null,
-      is_pm: row.is_pm ?? null,
-    }));
+      role,
+      is_am: null,
+      is_pm: row.is_evening ? true : null,
+    };
+  });
 
   dutyCounselSchedules.sort((a, b) => {
     const aDate = new Date(a.schedule_date).getTime();

@@ -224,103 +224,6 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
   const pendingStaffRows = pendingStaff.data || [];
   const expiringStaffRows = expiringStaff.data || [];
 
-  if (VERIFICATION_FLOW_ID) {
-    for (const student of pendingStudentRows) {
-      let temp: Record<string, unknown> = {};
-      if (student.temp_data) {
-        try {
-          temp = typeof student.temp_data === 'string' ? JSON.parse(student.temp_data) : student.temp_data;
-        } catch {
-          temp = {};
-        }
-      }
-      await sendFlowMessage(
-        pid,
-        to,
-        '✅ Verify A/S',
-        `${student.full_name || 'A student'} has listed you as their referrer.`,
-        'Verify Student',
-        VERIFICATION_FLOW_ID,
-        {
-          screen: 'VERIFY_AS_SCREEN',
-          action: 'data_exchange',
-          flowToken: user.id as string,
-          data: {
-            user_id: student.id,
-            student_name: student.full_name,
-            student_phone: student.phone_number,
-            principal_name: student.principal_name || student.firm_name || null,
-            firm: student.firm_name,
-            articling_end: temp.articling_end || null,
-            type: 'articling_student',
-          },
-        }
-      );
-    }
-
-    for (const staff of pendingStaffRows) {
-      const roleName = staff.staff_role === 'other'
-        ? staff.staff_role_other || 'Other'
-        : staff.staff_role === 'legal_assistant'
-          ? 'Legal Assistant'
-          : staff.staff_role === 'paralegal'
-            ? 'Paralegal'
-            : staff.staff_role || 'Staff';
-      await sendFlowMessage(
-        pid,
-        to,
-        '✅ Verify Legal Staff',
-        `${staff.full_name || 'A staff member'} has listed you as their referrer.`,
-        'Verify Staff',
-        VERIFICATION_FLOW_ID,
-        {
-          screen: 'VERIFY_STAFF_SCREEN',
-          action: 'data_exchange',
-          flowToken: user.id as string,
-          data: {
-            user_id: staff.id,
-            staff_name: staff.full_name,
-            staff_phone: staff.phone_number,
-            staff_role: roleName,
-            firm: staff.firm_name,
-            type: 'legal_staff',
-          },
-        }
-      );
-    }
-
-    for (const staff of expiringStaffRows) {
-      const roleName = staff.staff_role === 'other'
-        ? staff.staff_role_other || 'Other'
-        : staff.staff_role === 'legal_assistant'
-          ? 'Legal Assistant'
-          : staff.staff_role === 'paralegal'
-            ? 'Paralegal'
-            : staff.staff_role || 'Staff';
-      await sendFlowMessage(
-        pid,
-        to,
-        '🔁 Re-Verify Staff',
-        `${staff.full_name || 'A staff member'} expires soon. Re-verify to extend access.`,
-        'Re-Verify Staff',
-        VERIFICATION_FLOW_ID,
-        {
-          screen: 'REVERIFY_STAFF_SCREEN',
-          action: 'data_exchange',
-          flowToken: user.id as string,
-          data: {
-            user_id: staff.id,
-            staff_name: staff.full_name,
-            staff_phone: staff.phone_number,
-            staff_role: roleName,
-            firm: staff.firm_name,
-            type: 'reverify',
-          },
-        }
-      );
-    }
-  }
-
   const pendingCount = pendingStudentRows.length + pendingStaffRows.length;
   const expiringCount = expiringStaffRows.length;
 
@@ -332,6 +235,124 @@ const showLawyerPortal = async (pid: string, to: string, user: Record<string, un
     );
   } else {
     await sendTextMessage(pid, to, 'No pending verifications right now.');
+  }
+
+  if (VERIFICATION_FLOW_ID) {
+    for (const student of pendingStudentRows) {
+      let temp: Record<string, unknown> = {};
+      if (student.temp_data) {
+        try {
+          temp = typeof student.temp_data === 'string' ? JSON.parse(student.temp_data) : student.temp_data;
+        } catch {
+          temp = {};
+        }
+      }
+      const result = await sendFlowMessageWithError(
+        pid,
+        to,
+        '✅ Verify A/S',
+        `${student.full_name || 'A student'} has listed you as their referrer.`,
+        'Verify Student',
+        VERIFICATION_FLOW_ID,
+        {
+          screen: 'VERIFY_AS_SCREEN',
+          action: 'navigate',
+          flowToken: user.id as string,
+          data: {
+            user_id: String(student.id || ''),
+            student_name: String(student.full_name || ''),
+            student_phone: String(student.phone_number || ''),
+            principal_name: String(student.principal_name || student.firm_name || ''),
+            articling_end: String(temp.articling_end || ''),
+            type: 'articling_student',
+          },
+        }
+      );
+      if (!result.ok) {
+        console.error('Verify A/S flow send failed:', result.error);
+        await sendTextMessage(
+          pid,
+          to,
+          `⚠️ Could not send verification flow for ${student.full_name || 'student'}. ${result.error ? `Reason: ${result.error}` : ''}`
+        );
+      }
+    }
+
+    for (const staff of pendingStaffRows) {
+      const roleName = staff.staff_role === 'other'
+        ? staff.staff_role_other || 'Other'
+        : staff.staff_role === 'legal_assistant'
+          ? 'Legal Assistant'
+          : staff.staff_role === 'paralegal'
+            ? 'Paralegal'
+            : staff.staff_role || 'Staff';
+      const result = await sendFlowMessageWithError(
+        pid,
+        to,
+        '✅ Verify Legal Staff',
+        `${staff.full_name || 'A staff member'} has listed you as their referrer.`,
+        'Verify Staff',
+        VERIFICATION_FLOW_ID,
+        {
+          screen: 'VERIFY_STAFF_SCREEN',
+          action: 'navigate',
+          flowToken: user.id as string,
+          data: {
+            user_id: String(staff.id || ''),
+            staff_name: String(staff.full_name || ''),
+            staff_phone: String(staff.phone_number || ''),
+            staff_role: String(roleName || ''),
+            type: 'legal_staff',
+          },
+        }
+      );
+      if (!result.ok) {
+        console.error('Verify staff flow send failed:', result.error);
+        await sendTextMessage(
+          pid,
+          to,
+          `⚠️ Could not send verification flow for ${staff.full_name || 'staff'}. ${result.error ? `Reason: ${result.error}` : ''}`
+        );
+      }
+    }
+
+    for (const staff of expiringStaffRows) {
+      const roleName = staff.staff_role === 'other'
+        ? staff.staff_role_other || 'Other'
+        : staff.staff_role === 'legal_assistant'
+          ? 'Legal Assistant'
+          : staff.staff_role === 'paralegal'
+            ? 'Paralegal'
+            : staff.staff_role || 'Staff';
+      const result = await sendFlowMessageWithError(
+        pid,
+        to,
+        '🔁 Re-Verify Staff',
+        `${staff.full_name || 'A staff member'} expires soon. Re-verify to extend access.`,
+        'Re-Verify Staff',
+        VERIFICATION_FLOW_ID,
+        {
+          screen: 'REVERIFY_STAFF_SCREEN',
+          action: 'navigate',
+          flowToken: user.id as string,
+          data: {
+            user_id: String(staff.id || ''),
+            staff_name: String(staff.full_name || ''),
+            staff_phone: String(staff.phone_number || ''),
+            staff_role: String(roleName || ''),
+            type: 'reverify',
+          },
+        }
+      );
+      if (!result.ok) {
+        console.error('Reverify staff flow send failed:', result.error);
+        await sendTextMessage(
+          pid,
+          to,
+          `⚠️ Could not send re-verification flow for ${staff.full_name || 'staff'}. ${result.error ? `Reason: ${result.error}` : ''}`
+        );
+      }
+    }
   }
 
   const actionButtons = [
@@ -477,12 +498,9 @@ export async function handleMessage(msg: MessageData) {
       return showMainMenu(pid, from, user);
     }
 
-    if (text === 'flow_reply' && msg.flow?.data) {
+    if (text === 'flow_reply') {
       // Flows are handled via the flow endpoint; ignore flow replies to avoid double-processing.
-      if (msg.flow?.id && (msg.flow.id === REGISTRATION_FLOW_ID || msg.flow.id === VERIFICATION_FLOW_ID)) {
-        return;
-      }
-      return handleRegistrationFlow(pid, from, msg.flow.data, user);
+      return;
     }
 
     switch (text) {
@@ -1059,14 +1077,14 @@ async function handleRegistrationFlow(
         VERIFICATION_FLOW_ID,
         {
           screen: 'VERIFY_AS_SCREEN',
-          action: 'data_exchange',
+          action: 'navigate',
           flowToken: referrer.id as string,
           data: {
-            user_id: student?.id,
-            student_name: fullName,
-            student_phone: from,
-            principal_name: principalName,
-            firm: firmName || principalName || null,
+            user_id: String(student?.id || ''),
+            student_name: String(fullName || ''),
+            student_phone: String(from || ''),
+            principal_name: String(principalName || ''),
+            articling_end: String(''),
             type: 'articling_student',
           },
         }
@@ -1130,14 +1148,13 @@ async function handleRegistrationFlow(
         VERIFICATION_FLOW_ID,
         {
           screen: 'VERIFY_STAFF_SCREEN',
-          action: 'data_exchange',
+          action: 'navigate',
           flowToken: referrer.id as string,
           data: {
-            user_id: staffUser?.id,
-            staff_name: fullName,
-            staff_phone: from,
-            staff_role: roleName,
-            firm: firmName || null,
+            user_id: String(staffUser?.id || ''),
+            staff_name: String(fullName || ''),
+            staff_phone: String(from || ''),
+            staff_role: String(roleName || ''),
             type: 'legal_staff',
           },
         }

@@ -21,7 +21,7 @@ import { toast } from "sonner";
 
 const KIND_LABELS: Record<string, string> = {
   bug: "Bug",
-  inaccurate_info: "Incorrect Info",
+  inaccurate_info: "Info",
   general_feedback: "Feedback",
   other: "Other",
 };

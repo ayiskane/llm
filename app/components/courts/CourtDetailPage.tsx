@@ -80,19 +80,37 @@ export function CourtDetailPage({
     useState<BailAccordionSection>("contacts");
   const showProvincialSchedule = viewMode === "provincial";
   const showCourtScheduleDates = court.is_circuit || viewMode === "fnc";
-  const showScheduleTab = showCourtScheduleDates || showProvincialSchedule;
   const showBailSchedule = true;
   const bailScheduleEnabled = isBailMode;
   const scheduleDatesEnabled =
     courtActiveSection === "schedule" && showCourtScheduleDates;
-  const provincialScheduleEnabled =
-    showProvincialSchedule && courtActiveSection === "schedule";
+  const provincialScheduleEnabled = showProvincialSchedule;
   const { data: scheduleDates, isLoading: scheduleLoading } =
     useCourtScheduleDates(court.id, scheduleDatesEnabled);
   const {
     data: provincialSchedules,
     isLoading: provincialScheduleLoading,
+    error: provincialScheduleError,
   } = useProvincialSchedules(court.id, provincialScheduleEnabled);
+  const hasOutOfCustodySchedule = useMemo(() => {
+    if (showCourtScheduleDates) return true;
+    if (provincialScheduleLoading || provincialScheduleError) return true;
+    const crownCount = provincialSchedules?.crownSchedules.length ?? 0;
+    const judgeCount = provincialSchedules?.judgeSchedules.length ?? 0;
+    const dutyCounselCount =
+      provincialSchedules?.dutyCounselSchedules?.length ?? 0;
+    return crownCount + judgeCount + dutyCounselCount > 0;
+  }, [
+    showCourtScheduleDates,
+    provincialScheduleLoading,
+    provincialScheduleError,
+    provincialSchedules?.crownSchedules.length,
+    provincialSchedules?.judgeSchedules.length,
+    provincialSchedules?.dutyCounselSchedules?.length,
+  ]);
+  const showScheduleTab = showCourtScheduleDates
+    ? true
+    : showProvincialSchedule && hasOutOfCustodySchedule;
   const isBailHubLocation = bailHubSummary?.court_id === court.id;
   const hasBailData = Boolean(bailHubSummary);
   const effectiveBailDetails = isVr9Hub ? vr9Details : bailDetails;

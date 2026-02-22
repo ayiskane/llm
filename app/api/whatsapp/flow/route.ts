@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { sendFlowMessage, sendTextMessage } from "@/lib/whatsapp/api";
+import { sendButtonMessage, sendFlowMessage, sendTextMessage } from "@/lib/whatsapp/api";
 
 const REGISTRATION_FLOW_ID = process.env.WHATSAPP_REGISTRATION_FLOW_ID || "";
 const VERIFICATION_FLOW_ID = process.env.WHATSAPP_VERIFICATION_FLOW_ID || "";
@@ -29,6 +29,16 @@ const SCREENS = {
   REVERIFY_STAFF_SCREEN: "REVERIFY_STAFF_SCREEN",
 };
 
+const isVerificationScreen = (screen: string | undefined) =>
+  screen === SCREENS.VERIFY_AS_SCREEN ||
+  screen === SCREENS.VERIFY_STAFF_SCREEN ||
+  screen === SCREENS.REVERIFY_STAFF_SCREEN;
+
+const isVerificationType = (type: unknown) => {
+  const value = String(type || "").toLowerCase();
+  return value === "articling_student" || value === "legal_staff" || value === "reverify";
+};
+
 const getSupabase = () => {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -37,6 +47,7 @@ const getSupabase = () => {
 };
 
 const normalizePhone = (phone: string) => phone.replace(/\D/g, "");
+const isValidPhoneDigits = (digits: string) => digits.length >= 10 && digits.length <= 15;
 
 const parseDate = (s: string): Date | null => {
   const m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
@@ -82,7 +93,7 @@ const getSenderPhone = (payload: any) => {
   for (const candidate of candidates) {
     if (!candidate) continue;
     const digits = normalizePhone(String(candidate));
-    if (digits.length >= 10 && digits.length <= 15) return digits;
+    if (isValidPhoneDigits(digits)) return digits;
   }
   return "";
 };
@@ -91,11 +102,23 @@ const isUuid = (value: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
 const resolvePhoneFromToken = async (supabase: ReturnType<typeof getSupabase>, token: string) => {
-  if (!token || !isUuid(token)) return "";
+  if (!token) return "";
+  const tokenDigits = normalizePhone(token);
+  if (isValidPhoneDigits(tokenDigits)) return tokenDigits;
+  if (!isUuid(token)) return "";
   const { data } = await supabase.from("whatsapp_users").select("phone_number").eq("id", token).maybeSingle();
   const digits = normalizePhone(String(data?.phone_number || ""));
-  if (digits.length >= 10 && digits.length <= 15) return digits;
+  if (isValidPhoneDigits(digits)) return digits;
   return "";
+};
+
+const resolveSender = async (supabase: ReturnType<typeof getSupabase>, payload: any) => {
+  let from = getSenderPhone(payload);
+  const flowToken = String(payload?.flow_token || payload?.flowToken || from || "");
+  if (!from && flowToken) {
+    from = await resolvePhoneFromToken(supabase, flowToken);
+  }
+  return { from, flowToken };
 };
 
 const decryptFlowPayload = (body: any) => {
@@ -112,7 +135,9 @@ const decryptFlowPayload = (body: any) => {
   }
 
   const key = FLOW_PRIVATE_KEY.replace(/\\n/g, "\n");
-  const privateKey = crypto.createPrivateKey({ key, passphrase: FLOW_PASSPHRASE });
+  const privateKey = crypto.createPrivateKey(
+    FLOW_PASSPHRASE ? { key, passphrase: FLOW_PASSPHRASE } : { key }
+  );
   const aesKey = crypto.privateDecrypt(
     { key: privateKey, padding: crypto.constants.RSA_PKCS1_OAEP_PADDING, oaepHash: "sha256" },
     Buffer.from(encryptedKey, "base64")
@@ -176,9 +201,22 @@ const BACK_MAP: Record<string, string> = {
   STAFF_INFO: SCREENS.STAFF_REFERRER,
 };
 
+const resolveVerificationScreen = (screen: string | undefined, data: any): string => {
+  if (isVerificationScreen(screen)) return screen || SCREENS.VERIFY_AS_SCREEN;
+  const type = String(data?.type || "").toLowerCase();
+  if (type === "articling_student") return SCREENS.VERIFY_AS_SCREEN;
+  if (type === "legal_staff") return SCREENS.VERIFY_STAFF_SCREEN;
+  if (type === "reverify") return SCREENS.REVERIFY_STAFF_SCREEN;
+  return SCREENS.VERIFY_AS_SCREEN;
+};
+
 const handleInit = (payload: any) => {
   const screen = payload?.screen;
   const data = payload?.data || {};
+  const flowId = payload?.flow_id || payload?.flowId || "";
+  if (flowId === VERIFICATION_FLOW_ID) {
+    return buildResponse(resolveVerificationScreen(screen, data), data);
+  }
   if ([SCREENS.VERIFY_AS_SCREEN, SCREENS.VERIFY_STAFF_SCREEN, SCREENS.REVERIFY_STAFF_SCREEN].includes(screen)) {
     return buildResponse(screen, data);
   }
@@ -188,6 +226,10 @@ const handleInit = (payload: any) => {
 const handleBack = (payload: any) => {
   const screen = payload?.screen;
   const data = payload?.data || {};
+  const flowId = payload?.flow_id || payload?.flowId || "";
+  if (flowId === VERIFICATION_FLOW_ID) {
+    return buildResponse(resolveVerificationScreen(screen, data), data);
+  }
   const prev = BACK_MAP[screen] || SCREENS.ROLE_SELECT;
   if (prev === SCREENS.AS_INFO) {
     return buildResponse(prev, { ...data, ...getASDateBounds() });
@@ -238,7 +280,6 @@ const getASDateBounds = () => {
   };
 };
 
-
 const sendVerificationFlow = async (
   pid: string,
   to: string,
@@ -256,7 +297,7 @@ const sendVerificationFlow = async (
     body,
     title,
     VERIFICATION_FLOW_ID,
-    { screen, data, action: "data_exchange", flowToken: flowToken || to }
+    { screen, data, action: "navigate", flowToken: flowToken || to }
   );
 };
 
@@ -264,12 +305,16 @@ async function handleRegistration(payload: any) {
   const supabase = getSupabase();
   const data = payload.data || {};
   const screen = payload.screen || SCREENS.ROLE_SELECT;
-  let from = getSenderPhone(payload);
   const phoneNumberId = getPhoneNumberId(payload);
-  const flowToken = String(payload.flow_token || payload.flowToken || from || "");
-
-  if (!from && flowToken) {
-    from = await resolvePhoneFromToken(supabase, flowToken);
+  const { from, flowToken } = await resolveSender(supabase, payload);
+  if (!from) {
+    console.warn("Flow registration missing sender", {
+      screen,
+      flow_token: flowToken || null,
+      payload_from: payload?.from || null,
+      payload_user: payload?.user || null,
+      data_keys: Object.keys(data || {}),
+    });
   }
 
   if (screen === SCREENS.ROLE_SELECT) {
@@ -294,7 +339,6 @@ async function handleRegistration(payload: any) {
     }
     const inviterName = String(inviter.full_name || inviter.phone_number || "LLM member");
     const inviterId = String(inviter.id ?? "");
-    console.log("Flow LAWYER_INVITE_CODE resolved inviter", { code, inviterId, inviterName });
     return buildResponse(SCREENS.LAWYER_DETAILS, {
       invite_code: code,
       invite_code_id: inviterId,
@@ -325,18 +369,21 @@ async function handleRegistration(payload: any) {
     const pin = existing.data?.pin || await generateUniquePin(supabase);
     const inviteCode = existing.data?.invitation_code || await generateUniqueInviteCode(supabase);
 
-    await supabase.from("whatsapp_users").upsert({
+    const { error: upsertError } = await supabase.from("whatsapp_users").upsert({
       phone_number: from,
       user_type: "lawyer",
       full_name: fullName,
       is_verified: true,
-      lsbc_confirmed: true,
       pin,
       invitation_code: inviteCode,
       pin_expires_at: null,
       invited_by: inviterId,
       updated_at: new Date().toISOString(),
     }, { onConflict: "phone_number" });
+    if (upsertError) {
+      console.error("Flow registration upsert (lawyer) failed:", upsertError);
+      return buildResponse(SCREENS.LAWYER_DETAILS, data, { message: "Registration failed. Please try again." });
+    }
 
     if (phoneNumberId && from) {
       await sendTextMessage(phoneNumberId, from, "✓ Registration Complete\n\nYour account is active.");
@@ -403,7 +450,7 @@ async function handleRegistration(payload: any) {
 
     const expiry = computeASExpiry(endDate);
     const pin = await generateUniquePin(supabase);
-    await supabase.from("whatsapp_users").upsert({
+    const { error: upsertError } = await supabase.from("whatsapp_users").upsert({
       phone_number: from,
       user_type: "articling_student",
       full_name: fullName,
@@ -418,6 +465,10 @@ async function handleRegistration(payload: any) {
       temp_data: JSON.stringify({ articling_end: articlingEnd }),
       updated_at: new Date().toISOString(),
     }, { onConflict: "phone_number" });
+    if (upsertError) {
+      console.error("Flow registration upsert (articling student) failed:", upsertError);
+      return buildResponse(SCREENS.AS_INFO, { ...data, ...getASDateBounds() }, { message: "Registration failed. Please try again." });
+    }
 
     const { data: student } = await supabase.from("whatsapp_users").select("id").eq("phone_number", from).maybeSingle();
 
@@ -438,11 +489,11 @@ async function handleRegistration(payload: any) {
         "Verify Student",
         `${fullName} has listed you as their referrer.`,
         {
-          user_id: student?.id,
-          student_name: fullName,
-          student_phone: from,
-          firm: firmName || "",
-          articling_end: articlingEnd,
+          user_id: String(student?.id || ""),
+          student_name: String(fullName || ""),
+          student_phone: String(from || ""),
+          principal_name: String(principalName || ""),
+          articling_end: String(articlingEnd || ""),
           type: "articling_student",
         },
         referrer.id
@@ -500,7 +551,7 @@ async function handleRegistration(payload: any) {
     }
 
     const pin = await generateUniquePin(supabase);
-    await supabase.from("whatsapp_users").upsert({
+    const { error: upsertError } = await supabase.from("whatsapp_users").upsert({
       phone_number: from,
       user_type: "legal_staff",
       full_name: fullName,
@@ -516,6 +567,10 @@ async function handleRegistration(payload: any) {
       staff_revoked_at: null,
       updated_at: new Date().toISOString(),
     }, { onConflict: "phone_number" });
+    if (upsertError) {
+      console.error("Flow registration upsert (legal staff) failed:", upsertError);
+      return buildResponse(SCREENS.STAFF_INFO, data, { message: "Registration failed. Please try again." });
+    }
 
     const { data: staff } = await supabase.from("whatsapp_users").select("id").eq("phone_number", from).maybeSingle();
     const roleDisplay = staffRole === "other"
@@ -541,11 +596,10 @@ async function handleRegistration(payload: any) {
         "Verify Staff",
         `${fullName} has listed you as their referrer.`,
         {
-          user_id: staff?.id,
-          staff_name: fullName,
-          staff_phone: from,
-          staff_role: roleDisplay,
-          firm: firmName || "",
+          user_id: String(staff?.id || ""),
+          staff_name: String(fullName || ""),
+          staff_phone: String(from || ""),
+          staff_role: String(roleDisplay || ""),
           type: "legal_staff",
         },
         referrer.id
@@ -567,13 +621,8 @@ async function handleVerification(payload: any) {
   const supabase = getSupabase();
   const data = payload.data || {};
   const screen = payload.screen;
-  let from = getSenderPhone(payload);
   const phoneNumberId = getPhoneNumberId(payload);
-  const flowToken = String(payload.flow_token || payload.flowToken || from || "");
-
-  if (!from && flowToken) {
-    from = await resolvePhoneFromToken(supabase, flowToken);
-  }
+  const { from, flowToken } = await resolveSender(supabase, payload);
 
   if (!screen) return buildResponse(SCREENS.SUCCESS, {}, { message: "Missing screen." });
 
@@ -597,8 +646,14 @@ async function handleVerification(payload: any) {
       return buildResponse(SCREENS.VERIFY_AS_SCREEN, data, { message: "User not found." });
     }
 
-    if (from && student.referrer_phone && normalizePhone(student.referrer_phone) !== from) {
-      return buildResponse(SCREENS.VERIFY_AS_SCREEN, data, { message: "Unauthorized." });
+    if (from && student.referrer_phone) {
+      const fromDigits = normalizePhone(from);
+      const refDigits = normalizePhone(student.referrer_phone);
+      const fromLast10 = fromDigits.slice(-10);
+      const refLast10 = refDigits.slice(-10);
+      if (fromLast10 && refLast10 ? fromLast10 !== refLast10 : refDigits !== fromDigits) {
+        return buildResponse(SCREENS.VERIFY_AS_SCREEN, data, { message: "Unauthorized." });
+      }
     }
 
     const storedEnd = student.temp_data ? JSON.parse(student.temp_data as string).articling_end : null;
@@ -611,7 +666,7 @@ async function handleVerification(payload: any) {
     await supabase.from("whatsapp_users").update({
       is_verified: true,
       pin_expires_at: finalExpiry.toISOString(),
-      articling_end: endDate.toISOString().slice(0, 10),
+      articling_end_date: endDate.toISOString().slice(0, 10),
       updated_at: new Date().toISOString(),
     }).eq("id", student.id);
 
@@ -620,6 +675,16 @@ async function handleVerification(payload: any) {
         phoneNumberId,
         student.phone_number,
         `🎉 Your account has been verified.\n\nYour PIN is now active: ${student.pin}\nExpires: ${finalExpiry.toISOString().slice(0, 10)}`
+      );
+    }
+    if (phoneNumberId && from) {
+      await sendTextMessage(phoneNumberId, from, "✅ Verification Success");
+      await sendButtonMessage(
+        phoneNumberId,
+        from,
+        "Menu",
+        "Tap to return to your portal.",
+        [{ id: "menu", title: "Menu" }]
       );
     }
 
@@ -645,8 +710,14 @@ async function handleVerification(payload: any) {
       return buildResponse(screen, data, { message: "User not found." });
     }
 
-    if (from && staff.referrer_phone && normalizePhone(staff.referrer_phone) !== from) {
-      return buildResponse(screen, data, { message: "Unauthorized." });
+    if (from && staff.referrer_phone) {
+      const fromDigits = normalizePhone(from);
+      const refDigits = normalizePhone(staff.referrer_phone);
+      const fromLast10 = fromDigits.slice(-10);
+      const refLast10 = refDigits.slice(-10);
+      if (fromLast10 && refLast10 ? fromLast10 !== refLast10 : refDigits !== fromDigits) {
+        return buildResponse(screen, data, { message: "Unauthorized." });
+      }
     }
 
     const expiry = new Date();
@@ -665,6 +736,16 @@ async function handleVerification(payload: any) {
         phoneNumberId,
         staff.phone_number,
         `🎉 Your account has been verified.\n\nYour PIN is now active: ${staff.pin}\nExpires: ${expiry.toISOString().slice(0, 10)}`
+      );
+    }
+    if (phoneNumberId && from) {
+      await sendTextMessage(phoneNumberId, from, "✅ Verification Success");
+      await sendButtonMessage(
+        phoneNumberId,
+        from,
+        "Menu",
+        "Tap to return to your portal.",
+        [{ id: "menu", title: "Menu" }]
       );
     }
 
@@ -712,8 +793,14 @@ export async function POST(request: NextRequest) {
       response = handleInit(payload);
     } else if (action === "BACK") {
       response = handleBack(payload);
-    } else if (flowId === VERIFICATION_FLOW_ID) {
+    } else if (
+      flowId === VERIFICATION_FLOW_ID ||
+      isVerificationScreen(payload?.screen) ||
+      isVerificationType(payload?.data?.type)
+    ) {
       response = await handleVerification(payload);
+    } else if (REGISTRATION_FLOW_ID && flowId && flowId !== REGISTRATION_FLOW_ID) {
+      response = buildResponse(payload?.screen || SCREENS.ROLE_SELECT, payload?.data || {}, { message: "Unsupported flow." });
     } else {
       response = await handleRegistration(payload);
     }

@@ -419,7 +419,7 @@ export function ScheduleCard({
               <Skeleton className="h-9 w-32 rounded-md" />
               <Skeleton className="h-9 w-40 rounded-md" />
             </div>
-            <Skeleton className="h-[320px] w-full rounded-lg" />
+            <Skeleton className="h-80 w-full rounded-lg" />
             <div className="flex flex-wrap gap-2">
               <Skeleton className="h-6 w-28 rounded-full" />
               <Skeleton className="h-6 w-36 rounded-full" />
