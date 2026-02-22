@@ -445,6 +445,7 @@ export function BailModeContent({
             isLoading={bailScheduleLoading}
             onCopy={onCopy}
             isCopied={isCopied}
+            bailHubId={bailHub?.id ?? null}
             bailHubName={bailHubDisplayName || (bailHub?.name ?? null)}
             regionJusticeCentreName={bailHub?.region_justice_centre_name ?? null}
             bailTeams={bailTeams}

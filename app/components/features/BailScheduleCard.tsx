@@ -156,6 +156,7 @@ const ROLE_LABELS: Record<string, string> = {
 const BAIL_COURTROOM_TYPE_ID = 6;
 const ABBOTSFORD_COURT_ID = 2;
 const CHILLIWACK_COURT_ID = 15;
+const ABBOTSFORD_BAIL_HUB_ID = 9;
 
 interface BailScheduleCardProps {
   crownSchedules: BailCrownScheduleItem[];
@@ -164,6 +165,7 @@ interface BailScheduleCardProps {
   isLoading?: boolean;
   onCopy?: (text: string, id: string) => void;
   isCopied?: (id: string) => boolean;
+  bailHubId?: number | null;
   bailHubName?: string | null;
   regionJusticeCentreName?: string | null;
   bailTeams?: TeamsLink[];
@@ -176,6 +178,7 @@ export function BailScheduleCard({
   isLoading = false,
   onCopy,
   isCopied,
+  bailHubId,
   bailHubName,
   regionJusticeCentreName,
   bailTeams,
@@ -277,8 +280,7 @@ export function BailScheduleCard({
     }));
   }, [filteredCrowns]);
 
-  const bailHubLabel = (bailHubName ?? "").toLowerCase();
-  const isAbbotsfordHub = bailHubLabel.includes("abbotsford");
+  const isAbbotsfordHub = bailHubId === ABBOTSFORD_BAIL_HUB_ID;
   const getCourtSuffix = (courtId?: number | null) => {
     if (!isAbbotsfordHub || !courtId) return "";
     if (courtId === ABBOTSFORD_COURT_ID) return " (ABBY)";
