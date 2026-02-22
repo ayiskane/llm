@@ -157,6 +157,9 @@ const BAIL_COURTROOM_TYPE_ID = 6;
 const ABBOTSFORD_COURT_ID = 2;
 const CHILLIWACK_COURT_ID = 15;
 const ABBOTSFORD_BAIL_HUB_ID = 9;
+const POCO_COURT_ID = 59;
+const NEW_WESTMINSTER_COURT_ID = 54;
+const POCO_NW_BAIL_HUB_ID = 11;
 
 interface BailScheduleCardProps {
   crownSchedules: BailCrownScheduleItem[];
@@ -281,10 +284,18 @@ export function BailScheduleCard({
   }, [filteredCrowns]);
 
   const isAbbotsfordHub = bailHubId === ABBOTSFORD_BAIL_HUB_ID;
+  const isPocoNwHub = bailHubId === POCO_NW_BAIL_HUB_ID;
   const getCourtBadge = (courtId?: number | null) => {
-    if (!isAbbotsfordHub || !courtId) return null;
-    if (courtId === ABBOTSFORD_COURT_ID) return "ABBY";
-    if (courtId === CHILLIWACK_COURT_ID) return "CWK";
+    if (!courtId) return null;
+    if (isAbbotsfordHub) {
+      if (courtId === ABBOTSFORD_COURT_ID) return "ABBY";
+      if (courtId === CHILLIWACK_COURT_ID) return "CWK";
+      return null;
+    }
+    if (isPocoNwHub) {
+      if (courtId === POCO_COURT_ID) return "POCO";
+      if (courtId === NEW_WESTMINSTER_COURT_ID) return "NW";
+    }
     return null;
   };
 
@@ -555,7 +566,7 @@ export function BailScheduleCard({
                           {(() => {
                             const courtBadge = getCourtBadge(entry.court_id);
                             return courtBadge ? (
-                              <Badge variant="courtroomType">{courtBadge}</Badge>
+                              <Badge variant="bailCourtScheduleBadge">{courtBadge}</Badge>
                             ) : null;
                           })()}
                         </div>
