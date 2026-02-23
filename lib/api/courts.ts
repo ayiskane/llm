@@ -847,7 +847,7 @@ export async function fetchBailDetails(
     const { data: bailContactRows, error: bailContactError } = await supabase
       .from('bail_hub_contacts')
       .select(
-        'id, bail_hub_id, contact_type, is_daytime, contact:bail_contacts(id, email, phone)'
+        'id, bail_hub_id, contact_type, is_daytime, contact:bail_contacts(id, email)'
       )
       .eq('bail_hub_id', bailHub.id);
 
@@ -858,7 +858,7 @@ export async function fetchBailDetails(
         bail_hub_id: row.bail_hub_id ?? null,
         contact_type: row.contact_type ?? null,
         email: row.contact?.email ?? null,
-        phone: row.contact?.phone ?? null,
+        phone: null,
         is_daytime: row.is_daytime ?? null,
         label: formatBailContactLabel(row.contact_type ?? null),
       })) ?? [];
@@ -971,7 +971,7 @@ export async function fetchBailHubDetails(
   const { data: bailContactRows, error: bailContactError } = await supabase
     .from('bail_hub_contacts')
     .select(
-      'id, bail_hub_id, contact_type, is_daytime, contact:bail_contacts(id, email, phone)'
+      'id, bail_hub_id, contact_type, is_daytime, contact:bail_contacts(id, email)'
     )
     .eq('bail_hub_id', bailHub.id);
 
@@ -982,7 +982,7 @@ export async function fetchBailHubDetails(
       bail_hub_id: row.bail_hub_id ?? null,
       contact_type: row.contact_type ?? null,
       email: row.contact?.email ?? null,
-      phone: row.contact?.phone ?? null,
+      phone: null,
       is_daytime: row.is_daytime ?? null,
       label: formatBailContactLabel(row.contact_type ?? null),
     })) ?? [];
