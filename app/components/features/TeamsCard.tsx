@@ -432,6 +432,7 @@ export function TeamsCard({
           const scheduleTypeLabels = Array.from(
             new Set(
               scheduleEntries
+                .filter((schedule) => !schedule.is_youth)
                 .map((schedule) => schedule.courtroom_type_name?.trim())
                 .filter(Boolean) as string[],
             ),
